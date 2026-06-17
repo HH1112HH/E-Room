@@ -8,7 +8,6 @@ export function useChatState(roomId, wsSocket, visible) {
   const currentUserId = user?.id || 'me';
 
   const [transcripts, setTranscripts] = useState([]);
-  const [corrections, setCorrections] = useState([]);
   const [chatMessages, setChatMessages] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [input, setInput] = useState('');
@@ -47,45 +46,50 @@ export function useChatState(roomId, wsSocket, visible) {
       setTranscripts((prev) => {
         const updated = [...prev];
         const lastIdx = updated.length - 1;
+        const ts = new Date(data.created_at || Date.now());
         if (data.status === 'interim' && lastIdx >= 0 && updated[lastIdx].status === 'interim') {
           updated[lastIdx] = { ...updated[lastIdx], text: data.text };
         } else if (data.status === 'interim') {
-          updated.push({ id: Date.now(), speaker: data.speaker || data.user_id, text: data.text, status: 'interim', speakerColor: data.speaker_color });
+          updated.push({ id: Date.now(), speaker: data.speaker || data.user_id, text: data.text, status: 'interim', speakerColor: data.speaker_color, time: ts });
         } else if (lastIdx >= 0 && updated[lastIdx].status === 'interim' && updated[lastIdx].speaker === (data.speaker || data.user_id)) {
-          updated[lastIdx] = { ...updated[lastIdx], text: data.text, status: 'final' };
+          updated[lastIdx] = { ...updated[lastIdx], text: data.text, status: 'final', time: ts };
         } else {
-          updated.push({ id: Date.now(), speaker: data.speaker || data.user_id, text: data.text, status: 'final', speakerColor: data.speaker_color });
+          updated.push({ id: Date.now(), speaker: data.speaker || data.user_id, text: data.text, status: 'final', speakerColor: data.speaker_color, time: ts });
         }
         return updated.slice(-200);
       });
     });
 
-    on('correction', (data) => {
-      setCorrections((prev) => {
-        const item = {
-          id: data.id || Date.now(),
-          original: data.original,
-          corrected: data.corrected,
-          explanation: data.explanation,
-          pronunciation_feedback: data.pronunciation_feedback || '',
-          errors: data.errors || [],
-          tts_text: data.tts_text || data.corrected,
-          user_id: data.user_id,
-          time: data.created_at || Date.now(),
-        };
-        return [...prev, item].slice(-50);
-      });
-    });
-
     on('chat_message', (data) => {
       const userId = data.user_id || data.sender_id;
-      setChatMessages((prev) => [...prev, {
-        id: data.id || Date.now(),
-        senderId: userId || 'guest',
-        sender: data.display_name || 'User',
-        text: data.content || data.text,
-        time: new Date(data.timestamp || Date.now()),
-      }]);
+      const text = data.content || data.text || data.question || '';
+      const ttsBase64 = data.tts_audio_base64 || '';
+      const ttsKey = data.tts_audio_key || '';
+      setChatMessages((prev) => {
+        const isDuplicate = prev.some(m =>
+          m.senderId === userId && m.text === text &&
+          (Date.now() - m.time.getTime()) < 3000
+        );
+        if (isDuplicate) return prev;
+        const msg = {
+          id: data.id || data.question_id || Date.now(),
+          senderId: userId || 'guest',
+          sender: data.display_name || 'User',
+          text: text,
+          time: new Date(data.timestamp || Date.now()),
+        };
+        if (ttsBase64) msg.ttsAudioBase64 = ttsBase64;
+        if (ttsKey) msg.ttsAudioKey = ttsKey;
+        if (ttsBase64) {
+          try {
+            const audio = new Audio(`data:audio/wav;base64,${ttsBase64}`);
+            audio.play();
+          } catch (err) {
+            console.warn('TTS playback failed:', err);
+          }
+        }
+        return [...prev, msg];
+      });
     });
 
     return () => listeners.forEach((fn) => fn?.());
@@ -93,22 +97,24 @@ export function useChatState(roomId, wsSocket, visible) {
 
   // Load chat history
   useEffect(() => {
-    if (!roomId || !visible) return;
+    if (!roomId) return;
     setLoadingHistory(true);
     fetchJson(`/messages/rooms/${roomId}`)
       .then((msgs) => {
         if (Array.isArray(msgs)) {
           const chats = [];
           const speech = [];
-          const correctionItems = [];
           for (const m of msgs) {
-            if (m.message_type === 'ai_expert') {
-              chats.push({ id: m.id, senderId: 'assistant', sender: 'assistant', text: m.content, time: new Date(m.created_at) });
+            if (m.message_type === 'ai_expert' || m.message_type === 'ai_heartbeat') {
+              const p = m.payload || {};
+              const item = { id: m.id, senderId: 'assistant', sender: 'assistant', text: m.content, time: new Date(m.created_at) };
+              if (p.tts_audio_base64) item.ttsAudioBase64 = p.tts_audio_base64;
+              if (p.tts_audio_key) item.ttsAudioKey = p.tts_audio_key;
+              chats.push(item);
+            } else if (m.message_type === 'ai_correction') {
+              continue;
             } else if (m.message_type === 'transcript') {
               speech.push({ id: m.id, speaker: m.payload?.display_name || 'You', text: m.content, status: 'final', time: new Date(m.created_at) });
-            } else if (m.message_type === 'ai_correction') {
-              const p = m.payload || {};
-              correctionItems.push({ id: m.id, original: p.original || '', corrected: m.content, explanation: p.explanation || '', pronunciation_feedback: p.pronunciation_feedback || '', errors: p.errors || [], tts_text: p.tts_text || m.content, user_id: m.user_id, time: new Date(m.created_at) });
             } else {
               chats.push({
                 id: m.id || Date.now() + Math.random(),
@@ -121,10 +127,9 @@ export function useChatState(roomId, wsSocket, visible) {
           }
           setChatMessages(chats);
           setTranscripts(speech);
-          setCorrections(correctionItems);
         }
       })
-      .catch(() => {})
+      .catch((err) => console.error('[ChatHistory] Failed to load:', err))
       .finally(() => setLoadingHistory(false));
   }, [roomId, visible]);
 
@@ -134,7 +139,7 @@ export function useChatState(roomId, wsSocket, visible) {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [chatMessages, transcripts, corrections]);
+  }, [chatMessages, transcripts]);
 
   const handleSend = useCallback((e) => {
     e?.preventDefault();
@@ -148,7 +153,7 @@ export function useChatState(roomId, wsSocket, visible) {
     const ws = wsRef.current;
     if (ws && typeof ws.send === 'function') {
       const isRaw = typeof ws.addEventListener === 'function';
-      const payload = { type: 'chat_message', content: text, room_id: roomId, timestamp: new Date().toISOString() };
+      const payload = { type: 'chat', text, room_id: roomId, display_name: currentUser, timestamp: new Date().toISOString() };
       if (isRaw) {
         ws.send(JSON.stringify(payload));
       } else {
@@ -171,7 +176,7 @@ export function useChatState(roomId, wsSocket, visible) {
   }, [roomId]);
 
   return {
-    transcripts, corrections, chatMessages,
+    transcripts, chatMessages,
     loadingHistory, input, setInput, inputRef, bottomRef,
     handleSend, handleTTS, currentUser, currentUserId,
   };
