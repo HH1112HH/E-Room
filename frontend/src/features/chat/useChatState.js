@@ -47,14 +47,16 @@ export function useChatState(roomId, wsSocket, visible) {
         const updated = [...prev];
         const lastIdx = updated.length - 1;
         const ts = new Date(data.created_at || Date.now());
+        const speaker = data.display_name || data.speaker || data.user_id;
+        const userId = data.user_id;
         if (data.status === 'interim' && lastIdx >= 0 && updated[lastIdx].status === 'interim') {
           updated[lastIdx] = { ...updated[lastIdx], text: data.text };
         } else if (data.status === 'interim') {
-          updated.push({ id: Date.now(), speaker: data.speaker || data.user_id, text: data.text, status: 'interim', speakerColor: data.speaker_color, time: ts });
-        } else if (lastIdx >= 0 && updated[lastIdx].status === 'interim' && updated[lastIdx].speaker === (data.speaker || data.user_id)) {
+          updated.push({ id: Date.now(), speaker, userId, text: data.text, status: 'interim', speakerColor: data.speaker_color, time: ts });
+        } else if (lastIdx >= 0 && updated[lastIdx].status === 'interim' && updated[lastIdx].speaker === speaker) {
           updated[lastIdx] = { ...updated[lastIdx], text: data.text, status: 'final', time: ts };
         } else {
-          updated.push({ id: Date.now(), speaker: data.speaker || data.user_id, text: data.text, status: 'final', speakerColor: data.speaker_color, time: ts });
+          updated.push({ id: Date.now(), speaker, userId, text: data.text, status: 'final', speakerColor: data.speaker_color, time: ts });
         }
         return updated.slice(-200);
       });
@@ -114,7 +116,7 @@ export function useChatState(roomId, wsSocket, visible) {
             } else if (m.message_type === 'ai_correction') {
               continue;
             } else if (m.message_type === 'transcript') {
-              speech.push({ id: m.id, speaker: m.payload?.display_name || 'You', text: m.content, status: 'final', time: new Date(m.created_at) });
+              speech.push({ id: m.id, speaker: m.payload?.display_name || 'You', userId: m.user_id, text: m.content, status: 'final', time: new Date(m.created_at) });
             } else {
               chats.push({
                 id: m.id || Date.now() + Math.random(),

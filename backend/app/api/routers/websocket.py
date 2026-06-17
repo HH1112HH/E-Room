@@ -192,9 +192,18 @@ async def process_speech(pcm_data: bytes, user_id: str, room_id: str) -> None:
             log.info("Bo qua doan ghi am trong", extra={"user_id": user_id, "room_id": room_id, "elapsed_s": elapsed_transcribe})
             return
 
+        speaker_name = user_id
         try:
             with Session(engine) as session:
-                saved = save_message(session, room_id, user_id, text, MessageType.TRANSCRIPT, "You")
+                speaker_user = UserService(session).get_by_id(UUID(user_id))
+                if speaker_user:
+                    speaker_name = speaker_user.display_name
+        except Exception:
+            pass
+
+        try:
+            with Session(engine) as session:
+                saved = save_message(session, room_id, user_id, text, MessageType.TRANSCRIPT, speaker_name)
                 if saved:
                     log.info("TRANSCRIPT da luu vao DB", extra={"message_id": str(saved.id), "text": text, "room_id": room_id, "user_id": user_id})
                 else:
@@ -207,6 +216,7 @@ async def process_speech(pcm_data: bytes, user_id: str, room_id: str) -> None:
                 "type": "transcript",
                 "text": text,
                 "user_id": user_id,
+                "display_name": speaker_name,
                 "status": "final",
                 "created_at": now(),
             }

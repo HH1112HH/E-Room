@@ -35,9 +35,10 @@ export function ChatWindow({ roomId, visible, onToggle, wsSocket }) {
         ) : (
           feedItems.map(({ type, item }, index) => {
             if (type === 'speech') {
+              const isMySpeech = item.userId && item.userId === currentUserId;
               return (
-                <div className="chat-window__message is-mine" key={item.id || `speech-${index}`}>
-                  <span className="chat-window__sender">You</span>
+                <div className={`chat-window__message ${isMySpeech ? 'is-mine' : ''}`} key={item.id || `speech-${index}`}>
+                  <span className="chat-window__sender">{isMySpeech ? 'You' : (item.speaker || 'User')}</span>
                   <div className="chat-window__bubble"><ReactMarkdown>{item.text || item.content || ''}</ReactMarkdown></div>
                 </div>
               );
