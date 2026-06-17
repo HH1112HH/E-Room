@@ -15,6 +15,7 @@ services:
         condition: service_healthy
       minio:
         condition: service_started
+      llama:
 
   tidb:
     image: pingcap/tidb:v8.5.0
@@ -64,8 +65,10 @@ services:
 
   livekit:
     image: livekit/livekit-server:latest
-    command: --config /etc/livekit.yaml
+    command: --config /etc/livekit.yaml --node-ip 192.168.1.9
     restart: unless-stopped
+    environment:
+      NODE_IP: 192.168.1.9
     ports:
       - "7880:7880"
       - "7881:7881"
@@ -75,6 +78,23 @@ services:
     depends_on:
       redis:
         condition: service_healthy
+
+  llama:
+    image: ghcr.io/ggml-org/llama.cpp:server
+    entrypoint: llama-server
+    command: ["-hf", "unsloth/gemma-4-E4B-it-qat-GGUF:UD-Q4_K_XL", "--host", "0.0.0.0", "--port", "8012", "-ngl", "99", "-c", "4096"]
+    restart: unless-stopped
+    ports:
+      - "8012:8012"
+    volumes:
+      - llama_data:/root/.cache/llama.cpp
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
 
   coturn:
     image: coturn/coturn:latest
@@ -113,4 +133,5 @@ volumes:
   redis_data:
   minio_data:
   tidb_data:
+  llama_data:
   # postgres_data:
