@@ -16,6 +16,7 @@ services:
       minio:
         condition: service_started
       llama:
+        condition: service_started
 
   tidb:
     image: pingcap/tidb:v8.5.0
@@ -81,20 +82,13 @@ services:
 
   llama:
     image: ghcr.io/ggml-org/llama.cpp:server
-    entrypoint: llama-server
-    command: ["-hf", "unsloth/gemma-4-E4B-it-qat-GGUF:UD-Q4_K_XL", "--host", "0.0.0.0", "--port", "8012", "-ngl", "99", "-c", "4096"]
+    entrypoint: ["/app/llama-server"]
+    command: ["-hf", "unsloth/gemma-4-E4B-it-qat-GGUF:UD-Q4_K_XL", "--host", "0.0.0.0", "--port", "8012", "-c", "4096"]
     restart: unless-stopped
     ports:
       - "8012:8012"
     volumes:
-      - llama_data:/root/.cache/llama.cpp
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+      - llama_data:/root/.cache/huggingface
 
   coturn:
     image: coturn/coturn:latest

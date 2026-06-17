@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from uuid import UUID
+
 from sqlmodel import Session, select
 
 from app.model import Tag, UserTag
@@ -19,9 +21,7 @@ class TagService(CRUDRepository):
         return list(self.session.exec(statement))
 
     def get_popular_tags(self, limit: int = 10) -> list[Tag]:
-        statement = (
-            select(Tag).order_by(Tag.usage_count.desc()).limit(limit)
-        )
+        statement = select(Tag).order_by(Tag.usage_count.desc()).limit(limit)
         return list(self.session.exec(statement))
 
     def save(self, obj: Tag) -> Tag:
@@ -39,7 +39,7 @@ class UserTagService(CRUDRepository):
     def get_by_id(self, id):
         return self.get_one(self.session, id=id)
 
-    def list_user_tags(self, user_id: str) -> list[UserTag]:
+    def list_user_tags(self, user_id: UUID) -> list[UserTag]:
         statement = select(UserTag).where(UserTag.user_id == user_id)
         return list(self.session.exec(statement))
 

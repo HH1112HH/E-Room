@@ -1,0 +1,28 @@
+.tts-player__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 99px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  transition: all 0.12s;
+}
+
+.tts-player__btn:hover {
+  background: var(--color-bg-hover);
+}
+
+.tts-player__btn--playing {
+  background: var(--color-accent-muted);
+  color: var(--color-accent);
+}
+
+.tts-player__btn--playing:hover {
+  background: var(--color-bg-hover);
+}

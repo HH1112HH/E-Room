@@ -33,29 +33,16 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={{ addToast, removeToast }}>
       {children}
-      <div style={{
-        position: 'fixed', top: 16, right: 16, zIndex: 9999,
-        display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 380,
-      }}>
+      <div className="toast-container">
         {toasts.map(t => {
           const { bg, icon } = COLORS[t.type] || COLORS.info;
           return (
-            <div key={t.id} style={{
-              background: '#1a1a1a', borderLeft: `4px solid ${bg}`,
-              color: '#e0e0e0', padding: '12px 16px', borderRadius: 8,
-              fontSize: 14, lineHeight: 1.5, display: 'flex', gap: 10,
-              alignItems: 'flex-start', boxShadow: '0 4px 16px rgba(0,0,0,.4)',
-              animation: 'toastSlideIn 0.25s ease',
-            }}>
-              <span style={{ flexShrink: 0 }}>{icon}</span>
-              <span style={{ flex: 1 }}>{t.message}</span>
+            <div key={t.id} className="toast-item" style={{ borderLeft: `4px solid ${bg}` }}>
+              <span className="toast-icon">{icon}</span>
+              <span className="toast-message">{t.message}</span>
               <button
                 onClick={() => removeToast(t.id)}
-                style={{
-                  background: 'none', border: 'none', color: '#888888',
-                  cursor: 'pointer', fontSize: 16, lineHeight: 1, padding: 0,
-                  flexShrink: 0,
-                }}
+                className="toast-dismiss"
                 aria-label="Dismiss"
               >
                 ✕

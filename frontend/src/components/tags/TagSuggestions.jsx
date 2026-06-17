@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchJson } from '../../lib/api';
 import { TagBadge } from './TagBadge';
+import '../../styles/TagSuggestions.css';
 
 const CAREER_TAGS = {
   Technology: ['Vibe Coding', 'AI/ML', 'LLM', 'Prompt Engineering', 'DevOps', 'Web Dev', 'Python', 'JavaScript', 'Kubernetes', 'Cloud', 'Blockchain', 'Cybersecurity', 'Machine Learning', 'AI Ethics', 'Computer Vision', 'NLP'],
@@ -24,10 +25,10 @@ export function TagSuggestions({ careerField, jobTitle, selected = [], onToggle 
 
   return (
     <div>
-      <div className="text-muted fw-semibold small mb-2" style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+      <div className="text-muted fw-semibold small mb-2 tag-suggestions-label">
         {suggestedTags.length > 0 ? `Suggested for ${careerField || 'you'}` : 'Popular tags'}
       </div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+      <div className="tag-suggestions-list">
         {displayTags.map((tag) => (
           <button
             key={tag}
@@ -49,14 +50,7 @@ export function TagSuggestions({ careerField, jobTitle, selected = [], onToggle 
           <button
             type="button"
             onClick={() => setShowAll(true)}
-            style={{
-              padding: '5px 10px', borderRadius: 99,
-              background: 'transparent',
-              color: 'var(--color-accent)',
-              border: '1px dashed var(--color-accent)',
-              cursor: 'pointer', fontWeight: 600, fontSize: '0.72rem',
-              fontFamily: 'inherit',
-            }}
+            className="tag-suggestions-more"
           >
             +{suggestedTags.length - 12} more
           </button>

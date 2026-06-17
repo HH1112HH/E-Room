@@ -1,7 +1,7 @@
 
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-const WS_BASE = API_BASE_URL.replace(/^http/, 'ws');
+const loc = typeof window !== 'undefined' ? window.location : { protocol: 'http:', host: 'localhost:3000' };
+const WS_BASE = import.meta.env.VITE_WS_BASE_URL || `${loc.protocol === 'https:' ? 'wss:' : 'ws:'}//${loc.host}`;
 const PING_INTERVAL = 30_000;
 const MAX_RECONNECT_ATTEMPTS = 10;
 const BASE_RECONNECT_DELAY = 1000;

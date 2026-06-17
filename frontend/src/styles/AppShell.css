@@ -1,0 +1,36 @@
+.app-shell {
+  background: var(--color-bg);
+}
+
+.app-shell-theme-btn.btn-link {
+  color: var(--color-text-secondary) !important;
+  font-size: 1.1rem;
+}
+
+.app-shell-signout-btn.btn-link {
+  color: var(--color-text-muted) !important;
+  font-size: 1rem;
+}
+
+.app-shell-main {
+  padding-top: 72px;
+  flex: 1;
+}
+
+.page-loader {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg);
+  color: var(--color-text-muted);
+}
+
+.authguard-loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg);
+  color: var(--color-text-muted);
+}

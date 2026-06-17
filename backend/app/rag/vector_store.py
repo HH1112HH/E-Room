@@ -18,34 +18,34 @@ from app.rag.embedding import EmbeddingService
 
 logger = get_logger(__name__)
 
-_rag_metadata = MetaData()
+rag_metadata = MetaData()
 
-_rag_embeddings_table = Table(
+rag_embeddings_table = Table(
     "rag_embeddings",
-    _rag_metadata,
+    rag_metadata,
     Column("id", String(64), primary_key=True),
     Column("text", Text, nullable=False),
     Column("meta", JSON, nullable=False),
     Column("embedding", LargeBinary, nullable=False),
 )
 
-_tidb_raw_store: TiDBRawVectorStore | None = None
+tidb_raw_store: TiDBRawVectorStore | None = None
 
 
 class TiDBRawVectorStore:
     def __init__(self) -> None:
-        self._embed_service: EmbeddingService | None = None
+        self.embed_service: EmbeddingService | None = None
 
-    def _get_embed_service(self) -> EmbeddingService:
-        if self._embed_service is None:
-            self._embed_service = EmbeddingService()
-        return self._embed_service
+    def get_embed_service(self) -> EmbeddingService:
+        if self.embed_service is None:
+            self.embed_service = EmbeddingService()
+        return self.embed_service
 
-    def _get_session(self) -> Session:
+    def get_session(self) -> Session:
         return Session(engine)
 
-    def _ensure_table(self) -> None:
-        _rag_metadata.create_all(engine, checkfirst=True)
+    def ensure_table(self) -> None:
+        rag_metadata.create_all(engine, checkfirst=True)
 
     def add_texts(
         self,
@@ -53,16 +53,14 @@ class TiDBRawVectorStore:
         metadatas: list[dict[str, Any]],
         embeddings: list[list[float]],
     ) -> list[str]:
-        self._ensure_table()
+        self.ensure_table()
         ids: list[str] = []
-        with self._get_session() as session:
+        with self.get_session() as session:
             for text, meta, emb in zip(texts, metadatas, embeddings):
                 chunk_id = str(meta.get("chunk_id", str(uuid.uuid4())))
                 ids.append(chunk_id)
                 emb_bytes = pickle.dumps(np.array(emb, dtype=np.float32))
-                stmt = mysql_insert(_rag_embeddings_table).values(
-                    id=chunk_id, text=text, meta=meta, embedding=emb_bytes
-                )
+                stmt = mysql_insert(rag_embeddings_table).values(id=chunk_id, text=text, meta=meta, embedding=emb_bytes)
                 stmt = stmt.on_duplicate_key_update(
                     text=stmt.inserted.text,
                     meta=stmt.inserted.meta,
@@ -79,19 +77,15 @@ class TiDBRawVectorStore:
         k: int = 10,
         filter: dict[str, Any] | None = None,
     ) -> list[Document]:
-        embed_service = self._get_embed_service()
+        embed_service = self.get_embed_service()
         query_vec = asyncio.run(embed_service.embed_query(query_text))
         return self.similarity_search_by_vector(query_vec, k, filter)
 
-    def _load_all_rows(
-        self, filter: dict[str, Any] | None
-    ) -> list[tuple[str, str, dict[str, Any], np.ndarray]]:
-        self._ensure_table()
+    def load_all_rows(self, filter: dict[str, Any] | None) -> list[tuple[str, str, dict[str, Any], np.ndarray]]:
+        self.ensure_table()
         rows: list[tuple[str, str, dict[str, Any], np.ndarray]] = []
-        with self._get_session() as session:
-            result = session.execute(
-                _rag_embeddings_table.select()
-            )
+        with self.get_session() as session:
+            result = session.execute(rag_embeddings_table.select())
             for row in result:
                 row_meta: dict[str, Any] = row.meta or {}
                 if filter:
@@ -117,7 +111,7 @@ class TiDBRawVectorStore:
     ) -> list[Document]:
         qv = np.array(query_vector, dtype=np.float32)
         qv_norm = np.linalg.norm(qv)
-        rows = self._load_all_rows(filter)
+        rows = self.load_all_rows(filter)
 
         scored: list[tuple[float, str, str, dict[str, Any]]] = []
         for row_id, text, meta, vec in rows:
@@ -144,12 +138,10 @@ class TiDBRawVectorStore:
         return [(doc, float(doc.metadata.get("score", 0.0))) for doc in docs]
 
     def delete(self, filter: dict[str, Any]) -> bool:
-        self._ensure_table()
+        self.ensure_table()
         deleted_count = 0
-        with self._get_session() as session:
-            result = session.execute(
-                _rag_embeddings_table.select()
-            )
+        with self.get_session() as session:
+            result = session.execute(rag_embeddings_table.select())
             for row in result:
                 row_meta: dict[str, Any] = row.meta or {}
                 matched = True
@@ -158,30 +150,24 @@ class TiDBRawVectorStore:
                         matched = False
                         break
                 if matched:
-                    session.execute(
-                        _rag_embeddings_table.delete().where(
-                            _rag_embeddings_table.c.id == row.id
-                        )
-                    )
+                    session.execute(rag_embeddings_table.delete().where(rag_embeddings_table.c.id == row.id))
                     deleted_count += 1
             session.commit()
         return deleted_count > 0
 
     def count(self) -> int:
-        self._ensure_table()
-        with self._get_session() as session:
-            result = session.execute(
-                _rag_embeddings_table.select()
-            )
+        self.ensure_table()
+        with self.get_session() as session:
+            result = session.execute(rag_embeddings_table.select())
             return len(list(result))
 
 
 class NumpyVectorStore:
     def __init__(self) -> None:
-        self._vectors: dict[str, np.ndarray] = {}
-        self._texts: dict[str, str] = {}
-        self._docs: dict[str, dict[str, Any]] = {}
-        self._dim: int | None = None
+        self.vectors: dict[str, np.ndarray] = {}
+        self.texts: dict[str, str] = {}
+        self.docs: dict[str, dict[str, Any]] = {}
+        self.dim: int | None = None
 
     def store_embeddings(self, items: list[dict[str, Any]]) -> int:
         count = 0
@@ -191,11 +177,11 @@ class NumpyVectorStore:
             if emb is None:
                 continue
             arr = np.array(emb, dtype=np.float32)
-            if self._dim is None:
-                self._dim = len(arr)
-            self._vectors[chunk_id] = arr
-            self._texts[chunk_id] = str(item.get("text", ""))
-            self._docs[chunk_id] = {
+            if self.dim is None:
+                self.dim = len(arr)
+            self.vectors[chunk_id] = arr
+            self.texts[chunk_id] = str(item.get("text", ""))
+            self.docs[chunk_id] = {
                 "chunk_id": chunk_id,
                 "document_id": str(item.get("document_id", "")),
                 "text": str(item.get("text", "")),
@@ -213,15 +199,15 @@ class NumpyVectorStore:
         tag_id: str | None = None,
         document_id: str | None = None,
     ) -> list[dict[str, Any]]:
-        if not self._vectors:
+        if not self.vectors:
             return []
         qv = np.array(query_vector, dtype=np.float32)
         qv_norm = np.linalg.norm(qv)
         scored: list[tuple[float, str]] = []
-        for cid, vec in self._vectors.items():
-            if tag_id and self._docs[cid].get("tag_id") != tag_id:
+        for cid, vec in self.vectors.items():
+            if tag_id and self.docs[cid].get("tag_id") != tag_id:
                 continue
-            if document_id and self._docs[cid].get("document_id") != document_id:
+            if document_id and self.docs[cid].get("document_id") != document_id:
                 continue
             vec_norm = np.linalg.norm(vec)
             if qv_norm == 0 or vec_norm == 0:
@@ -232,51 +218,45 @@ class NumpyVectorStore:
         scored.sort(key=lambda x: x[0], reverse=True)
         results = []
         for score, cid in scored[:top_k]:
-            entry = {**self._docs[cid], "score": round(score, 6)}
+            entry = {**self.docs[cid], "score": round(score, 6)}
             results.append(entry)
         return results
 
     def delete_by_document(self, document_id: str) -> int:
-        to_delete = [
-            cid for cid, doc in self._docs.items()
-            if doc.get("document_id") == document_id
-        ]
+        to_delete = [cid for cid, doc in self.docs.items() if doc.get("document_id") == document_id]
         for cid in to_delete:
-            self._vectors.pop(cid, None)
-            self._texts.pop(cid, None)
-            self._docs.pop(cid, None)
+            self.vectors.pop(cid, None)
+            self.texts.pop(cid, None)
+            self.docs.pop(cid, None)
         return len(to_delete)
 
     def count(self) -> int:
-        return len(self._vectors)
+        return len(self.vectors)
 
 
 class VectorStore:
     def __init__(self) -> None:
-        self._store: TiDBRawVectorStore | NumpyVectorStore | None = None
-        self._is_tidb: bool = True
+        self.store: TiDBRawVectorStore | NumpyVectorStore | None = None
+        self.is_tidb: bool = True
 
-    def _get_store(self) -> TiDBRawVectorStore | NumpyVectorStore:
-        if self._store is not None:
-            return self._store
+    def get_store(self) -> TiDBRawVectorStore | NumpyVectorStore:
+        if self.store is not None:
+            return self.store
         try:
-            self._store = TiDBRawVectorStore()
-            self._store.count()
+            self.store = TiDBRawVectorStore()
+            self.store.count()
         except Exception as e:
             logger.warning("tidb_fallback_numpy", extra={"error": str(e)})
-            self._store = NumpyVectorStore()
-            self._is_tidb = False
-        return self._store
+            self.store = NumpyVectorStore()
+            self.is_tidb = False
+        return self.store
 
     def add_batch(self, items: list[tuple[str, list[float], dict[str, Any]]]) -> list[str]:
-        store = self._get_store()
+        store = self.get_store()
         if isinstance(store, TiDBRawVectorStore):
             embeddings = [vec for _, vec, _ in items]
             texts = [meta.get("text", "") for _, _, meta in items]
-            metadatas = [
-                {**meta, "chunk_id": cid}
-                for cid, _, meta in items
-            ]
+            metadatas = [{**meta, "chunk_id": cid} for cid, _, meta in items]
             return store.add_texts(texts=texts, metadatas=metadatas, embeddings=embeddings)
         numpy_items: list[dict[str, Any]] = [
             {
@@ -299,7 +279,7 @@ class VectorStore:
         tag_id: str | None = None,
         document_id: str | None = None,
     ) -> list[dict[str, Any]]:
-        store = self._get_store()
+        store = self.get_store()
         if isinstance(store, TiDBRawVectorStore):
             filter_dict: dict[str, Any] = {}
             if tag_id:
@@ -313,37 +293,39 @@ class VectorStore:
             )
             results: list[dict[str, Any]] = []
             for doc in docs:
-                results.append({
-                    "chunk_id": doc.metadata.get("chunk_id", ""),
-                    "text": doc.page_content,
-                    "score": round(float(doc.metadata.get("score", 0)), 6),
-                    "metadata": doc.metadata,
-                    "tag_id": doc.metadata.get("tag", ""),
-                })
+                results.append(
+                    {
+                        "chunk_id": doc.metadata.get("chunk_id", ""),
+                        "text": doc.page_content,
+                        "score": round(float(doc.metadata.get("score", 0)), 6),
+                        "metadata": doc.metadata,
+                        "tag_id": doc.metadata.get("tag", ""),
+                    }
+                )
             return results
         return store.similarity_search(query_vector, top_k, tag_id, document_id)
 
     def delete_by_document(self, document_id: str) -> int:
-        store = self._get_store()
+        store = self.get_store()
         if isinstance(store, TiDBRawVectorStore):
             deleted = store.delete({"document_id": document_id})
             return 1 if deleted else 0
         return store.delete_by_document(document_id)
 
     def count(self) -> int:
-        store = self._get_store()
+        store = self.get_store()
         return store.count()
 
 
 def init_vector_store() -> TiDBRawVectorStore:
-    global _tidb_raw_store
-    if _tidb_raw_store is not None:
-        return _tidb_raw_store
-    _tidb_raw_store = TiDBRawVectorStore()
+    global tidb_raw_store
+    if tidb_raw_store is not None:
+        return tidb_raw_store
+    tidb_raw_store = TiDBRawVectorStore()
     logger.info("tidb_vector_store_initialized")
-    return _tidb_raw_store
+    return tidb_raw_store
 
 
 def reset_vector_store() -> None:
-    global _tidb_raw_store
-    _tidb_raw_store = None
+    global tidb_raw_store
+    tidb_raw_store = None

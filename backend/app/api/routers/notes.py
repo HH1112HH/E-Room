@@ -15,9 +15,11 @@ router = APIRouter()
 async def list_notes(
     session: Session = Depends(get_db_session),
     current_user: dict = Depends(get_current_user),
+    skip: int = 0,
+    limit: int = 20,
 ) -> list[dict]:
     note_service = SessionNoteService(session)
-    notes = note_service.list_for_user(UUID(current_user["id"]))
+    notes = note_service.list_for_user(UUID(current_user["id"]), skip=skip, limit=limit)
     return [
         {
             "id": str(n.id),
@@ -58,11 +60,7 @@ async def delete_note(
     current_user: dict = Depends(get_current_user),
 ) -> None:
     note_service = SessionNoteService(session)
-    note = note_service.get_user_note(
-        note_id, UUID(current_user["id"])
-    )
+    note = note_service.get_user_note(note_id, UUID(current_user["id"]))
     if note is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Note not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Note not found")
     note_service.delete(note)

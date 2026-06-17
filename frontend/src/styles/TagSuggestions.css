@@ -1,0 +1,23 @@
+.tag-suggestions-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tag-suggestions-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag-suggestions-more {
+  padding: 5px 10px;
+  border-radius: 99px;
+  background: transparent;
+  color: var(--color-accent);
+  border: 1px dashed var(--color-accent);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.72rem;
+  font-family: inherit;
+}

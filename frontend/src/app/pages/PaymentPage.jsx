@@ -4,12 +4,11 @@ import { useMutation } from '@tanstack/react-query';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Spinner from 'react-bootstrap/Spinner';
 import Alert from 'react-bootstrap/Alert';
-import { HiCreditCard, HiCheckCircle, HiLockClosed, HiArrowLeft } from 'react-icons/hi2';
+import { HiCheckCircle, HiLockClosed, HiArrowLeft } from 'react-icons/hi2';
 import { fetchJson } from '../../lib/api';
 import { queryClient } from '../../lib/queryClient';
 
@@ -17,12 +16,10 @@ const PLANS = {
   pro: {
     name: 'Pro', price: 9.99, period: 'month',
     features: ['Unlimited AI corrections', 'Advanced AI feedback', 'Priority matching', '3 heartbeats per room', 'Web Search Expert'],
-    color: 'primary',
   },
   pro_plus: {
     name: 'Pro+', price: 19.99, period: 'month',
     features: ['Everything in Pro', 'TTS pronunciation', 'Full RAG + Web Expert', 'Auto session notes', 'Room series', 'Leaderboard', 'Up to 15 participants'],
-    color: 'success',
   },
 };
 
@@ -91,26 +88,21 @@ export function PaymentPage() {
 
   if (done) {
     return (
-      <Container className="py-5">
-        <div className="text-center" style={{ maxWidth: 480, margin: '0 auto' }}>
-          <div style={{
-            width: 72, height: 72, borderRadius: '50%',
-            background: 'var(--color-success-muted)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            margin: '0 auto 16px',
-          }}>
-            <HiCheckCircle size={40} style={{ color: 'var(--color-success)' }} />
+      <Container className="py-5 text-center">
+        <div style={{ maxWidth: 400, margin: '0 auto' }}>
+          <div style={{ marginBottom: 8 }}>
+            <HiCheckCircle size={36} style={{ color: 'var(--color-success)' }} />
           </div>
-          <h3 className="fw-extrabold mb-2" style={{ fontFamily: 'Nunito, sans-serif' }}>Payment Successful!</h3>
-          <p className="text-muted mb-4">
-            You're now on the <strong>{plan.name}</strong> plan. Welcome aboard! 🎉
+          <h3 style={{ fontWeight: 700, margin: '0 0 8px', color: 'var(--color-text-primary)', fontSize: '1.15rem' }}>Payment successful!</h3>
+          <p className="text-muted mb-4" style={{ fontSize: '0.85rem' }}>
+            You are now on the <strong>{plan.name}</strong> plan.
           </p>
           <div className="d-flex gap-2 justify-content-center">
             <Link to="/profile">
-              <Button variant="outline-primary" className="rounded-pill">Manage Subscription</Button>
+              <Button variant="outline-primary" className="px-4">Manage subscription</Button>
             </Link>
             <Link to="/">
-              <Button variant="primary" className="rounded-pill fw-semibold px-4">Go to Dashboard</Button>
+              <Button variant="primary" className="px-4 fw-semibold">Go to dashboard</Button>
             </Link>
           </div>
         </div>
@@ -119,147 +111,133 @@ export function PaymentPage() {
   }
 
   return (
-    <div className="payment-page fade-in">
+    <main className="fade-in" style={{ minHeight: 'calc(100dvh - 72px)', background: 'var(--color-bg)' }}>
       <Container className="py-4">
-        <div style={{ maxWidth: 900, margin: '0 auto' }}>
-          <div className="text-center mb-4">
-            <HiCreditCard size={40} className="mb-2" style={{ color: 'var(--color-accent)' }} />
-            <h2 className="fw-extrabold mb-1" style={{ fontFamily: 'Nunito, sans-serif' }}>Complete Subscription</h2>
-            <p className="text-muted">
-              Upgrading to <span className="fw-bold" style={{ color: 'var(--color-accent)' }}>{plan.name}</span>
+        <div style={{ maxWidth: 960, margin: '0 auto' }}>
+          <div style={{ marginBottom: 32 }}>
+            <h2 style={{ fontWeight: 800, margin: '0 0 4px', color: 'var(--color-text-primary)', fontSize: '1.35rem' }}>Complete your subscription</h2>
+            <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', margin: 0 }}>
+              Upgrading to <strong style={{ color: 'var(--color-accent)' }}>{plan.name}</strong>
             </p>
           </div>
 
           <Row>
-            {/* Plan summary */}
             <Col lg={5} className="mb-4 mb-lg-0">
-              <Card className="border-0 h-100" style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)' }}>
-                <Card.Body className="p-4 d-flex flex-column">
-                  <div className="d-flex align-items-center gap-2 mb-3">
+              <div>
+                <div className="d-flex align-items-center gap-2 mb-3">
+                  <span style={{
+                    display: 'inline-flex', padding: '2px 10px',
+                    background: selectedPlan === 'pro_plus' ? 'var(--color-success-muted)' : 'var(--color-accent-muted)',
+                    color: selectedPlan === 'pro_plus' ? 'var(--color-success)' : 'var(--color-accent)',
+                    fontSize: '0.72rem', fontWeight: 700,
+                  }}>
+                    {plan.name}
+                  </span>
+                  {selectedPlan === 'pro_plus' && (
                     <span style={{
-                      padding: '2px 10px', borderRadius: 99,
-                      background: selectedPlan === 'pro_plus' ? 'var(--color-success-muted)' : 'var(--color-accent-muted)',
-                      color: selectedPlan === 'pro_plus' ? 'var(--color-success)' : 'var(--color-accent)',
-                      fontSize: '0.72rem', fontWeight: 700,
-                    }}>
-                      {plan.name}
-                    </span>
-                    {selectedPlan === 'pro_plus' && (
-                      <span style={{ padding: '2px 8px', borderRadius: 99, background: 'var(--color-warning-muted)', color: 'var(--color-warning)', fontSize: '0.65rem', fontWeight: 700 }}>
-                        BEST VALUE
-                      </span>
-                    )}
-                  </div>
-                  <div className="mb-3">
-                    <span className="fw-bold" style={{ fontSize: '2rem', fontFamily: 'Nunito, sans-serif' }}>
-                      ${plan.price}
-                    </span>
-                    <span className="text-muted" style={{ fontSize: '0.85rem' }}>/{plan.period}</span>
-                  </div>
-                  <ul className="list-unstyled flex-grow-1" style={{ fontSize: '0.85rem' }}>
-                    {plan.features.map((f) => (
-                      <li key={f} className="mb-2 d-flex align-items-center gap-2">
-                        <HiCheckCircle size={14} style={{ color: 'var(--color-success)', flexShrink: 0 }} />
-                        <span>{f}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Link to="/pricing" className="small text-decoration-none"
-                    style={{ color: 'var(--color-accent)' }}>
-                    <HiArrowLeft size={12} className="me-1" />
-                    Change plan
-                  </Link>
-                </Card.Body>
-              </Card>
+                      display: 'inline-flex', padding: '2px 8px',
+                      fontSize: '0.65rem', fontWeight: 700,
+                      background: 'var(--color-warning-muted)', color: 'var(--color-warning)',
+                    }}>BEST VALUE</span>
+                  )}
+                </div>
+                <div className="mb-3">
+                  <strong style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--color-text-primary)', lineHeight: 1 }}>${plan.price}</strong>
+                  <span style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)', marginLeft: 4 }}>/{plan.period}</span>
+                </div>
+                <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 16px', fontSize: '0.85rem' }}>
+                  {plan.features.map((f) => (
+                    <li key={f} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, color: 'var(--color-text-secondary)' }}>
+                      <HiCheckCircle size={14} style={{ color: 'var(--color-success)', flexShrink: 0 }} />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Link to="/pricing" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: 'var(--color-text-muted)', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none' }}>
+                  <HiArrowLeft size={12} /> Change plan
+                </Link>
+              </div>
             </Col>
 
-            {/* Payment form */}
             <Col lg={7}>
-              <Card style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)' }}>
-                <Card.Body className="p-4">
-                  <h5 className="fw-bold mb-4 d-flex align-items-center gap-2">
-                    <HiCreditCard size={20} style={{ color: 'var(--color-accent)' }} />
-                    Payment Details
-                  </h5>
+              <div>
+                <h5 style={{ fontWeight: 700, marginBottom: 20, color: 'var(--color-text-primary)', fontSize: '0.95rem' }}>
+                  Payment details
+                </h5>
 
-                  <Form onSubmit={handleSubmit}>
-                    {error && <Alert variant="danger" className="py-2 small">{error}</Alert>}
+                <Form onSubmit={handleSubmit}>
+                  {error && <Alert variant="danger" className="py-2 small">{error}</Alert>}
 
-                    <Form.Group className="mb-3">
-                      <Form.Label className="fw-semibold small text-muted">Cardholder Name</Form.Label>
+                  <Form.Group className="mb-3">
+                    <Form.Label className="fw-semibold small text-muted" style={{ fontSize: '0.78rem' }}>Cardholder name</Form.Label>
+                    <Form.Control
+                      type="text" placeholder="John Doe" required
+                      value={form.name}
+                      onChange={(e) => updateField('name', e.target.value)}
+                    />
+                  </Form.Group>
+
+                  <Form.Group className="mb-3">
+                    <Form.Label className="fw-semibold small text-muted" style={{ fontSize: '0.78rem' }}>Card number</Form.Label>
+                    <Form.Control
+                      type="text" placeholder="4242 4242 4242 4242"
+                      value={form.cardNumber}
+                      onChange={(e) => updateField('cardNumber', formatCardNumber(e.target.value))}
+                      maxLength={19} required
+                    />
+                  </Form.Group>
+
+                  <Row>
+                    <Col md={6} className="mb-3">
+                      <Form.Label className="fw-semibold small text-muted" style={{ fontSize: '0.78rem' }}>Expiry</Form.Label>
                       <Form.Control
-                        type="text" placeholder="John Doe" required
-                        value={form.name}
-                        onChange={(e) => updateField('name', e.target.value)}
-                        className="rounded-3" style={{ fontSize: '0.88rem' }}
+                        type="text" placeholder="MM/YY"
+                        value={form.expiry}
+                        onChange={(e) => updateField('expiry', formatExpiry(e.target.value))}
+                        maxLength={5} required
                       />
-                    </Form.Group>
-
-                    <Form.Group className="mb-3">
-                      <Form.Label className="fw-semibold small text-muted">Card Number</Form.Label>
+                    </Col>
+                    <Col md={6} className="mb-3">
+                      <Form.Label className="fw-semibold small text-muted" style={{ fontSize: '0.78rem' }}>CVC</Form.Label>
                       <Form.Control
-                        type="text" placeholder="4242 4242 4242 4242"
-                        value={form.cardNumber}
-                        onChange={(e) => updateField('cardNumber', formatCardNumber(e.target.value))}
-                        maxLength={19} required className="rounded-3" style={{ fontSize: '0.88rem' }}
+                        type="text" placeholder="123"
+                        value={form.cvc}
+                        onChange={(e) => updateField('cvc', e.target.value.replace(/\D/g, '').slice(0, 3))}
+                        maxLength={3} required
                       />
-                    </Form.Group>
+                    </Col>
+                  </Row>
 
-                    <Row>
-                      <Col md={6} className="mb-3">
-                        <Form.Label className="fw-semibold small text-muted">Expiry</Form.Label>
-                        <Form.Control
-                          type="text" placeholder="MM/YY"
-                          value={form.expiry}
-                          onChange={(e) => updateField('expiry', formatExpiry(e.target.value))}
-                          maxLength={5} required className="rounded-3" style={{ fontSize: '0.88rem' }}
-                        />
-                      </Col>
-                      <Col md={6} className="mb-3">
-                        <Form.Label className="fw-semibold small text-muted">CVC</Form.Label>
-                        <Form.Control
-                          type="text" placeholder="123"
-                          value={form.cvc}
-                          onChange={(e) => updateField('cvc', e.target.value.replace(/\D/g, '').slice(0, 3))}
-                          maxLength={3} required className="rounded-3" style={{ fontSize: '0.88rem' }}
-                        />
-                      </Col>
-                    </Row>
-
-                    <div className="d-flex justify-content-between align-items-center border-top pt-3"
-                      style={{ borderColor: 'var(--color-border)' }}>
-                      <div>
-                        <div className="fw-bold">Total</div>
-                        <small className="text-muted">Billed monthly, cancel anytime</small>
-                      </div>
-                      <div className="fw-bold" style={{ fontSize: '1.2rem', fontFamily: 'Nunito, sans-serif' }}>
-                        ${plan.price}
-                      </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', marginTop: 8, borderTop: '1px solid var(--color-border)' }}>
+                    <div>
+                      <div style={{ color: 'var(--color-text-primary)', fontWeight: 700, fontSize: '0.9rem' }}>Total</div>
+                      <small style={{ color: 'var(--color-text-muted)', fontSize: '0.78rem' }}>Billed monthly, cancel anytime</small>
                     </div>
+                    <div style={{ color: 'var(--color-text-primary)', fontSize: '1.4rem', fontWeight: 800 }}>${plan.price}</div>
+                  </div>
 
-                    <Button
-                      type="submit"
-                      variant="primary"
-                      size="lg"
-                      className="rounded-pill w-100 mt-3 fw-semibold"
-                      disabled={paymentMutation.isPending}
-                      style={{ minHeight: 48 }}
-                    >
-                      {paymentMutation.isPending ? (
-                        <><Spinner animation="border" size="sm" className="me-2" /> Processing...</>
-                      ) : `Pay $${plan.price}`}
-                    </Button>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    size="lg"
+                    className="w-100 mt-3 fw-semibold"
+                    style={{ height: 48, fontSize: '0.95rem' }}
+                    disabled={paymentMutation.isPending}
+                  >
+                    {paymentMutation.isPending ? (
+                      <><Spinner animation="border" size="sm" className="me-2" /> Processing...</>
+                    ) : `Pay $${plan.price}`}
+                  </Button>
 
-                    <p className="text-muted text-center small mt-2 mb-0 d-flex align-items-center justify-content-center gap-1">
-                      <HiLockClosed size={14} /> Secured by Stripe
-                    </p>
-                  </Form>
-                </Card.Body>
-              </Card>
+                  <p style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 14, color: 'var(--color-text-muted)', fontSize: '0.78rem', fontWeight: 600 }}>
+                    <HiLockClosed size={14} /> Secured by Stripe
+                  </p>
+                </Form>
+              </div>
             </Col>
           </Row>
         </div>
       </Container>
-    </div>
+    </main>
   );
 }

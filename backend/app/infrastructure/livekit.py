@@ -9,17 +9,13 @@ from app.config import settings
 
 
 class LiveKitService:
-    _ALGORITHM = "HS256"
-    _TOKEN_TTL_SECONDS = 3600
+    ALGORITHM = "HS256"
+    TOKEN_TTL_SECONDS = 3600
 
     def __init__(self) -> None:
-        self._api_key = settings.livekit_api_key
-        self._api_secret = settings.livekit_api_secret
-        self._server_url = settings.livekit_url
-
-    @property
-    def server_url(self) -> str:
-        return self._server_url
+        self.api_key = settings.livekit_api_key
+        self.api_secret = settings.livekit_api_secret
+        self.server_url = settings.livekit_url
 
     def generate_token(
         self,
@@ -32,9 +28,9 @@ class LiveKitService:
     ) -> str:
         now = int(time.time())
         claims = {
-            "exp": now + self._TOKEN_TTL_SECONDS,
+            "exp": now + self.TOKEN_TTL_SECONDS,
             "iat": now,
-            "iss": self._api_key,
+            "iss": self.api_key,
             "sub": participant_identity,
             "nbf": now,
             "video": {
@@ -50,14 +46,14 @@ class LiveKitService:
         if metadata:
             claims["metadata"] = json.dumps(metadata)
 
-        return jwt.encode(claims, self._api_secret, algorithm=self._ALGORITHM)
+        return jwt.encode(claims, self.api_secret, algorithm=self.ALGORITHM)
 
     def generate_admin_token(self, room_name: str) -> str:
         now = int(time.time())
         claims = {
-            "exp": now + self._TOKEN_TTL_SECONDS,
+            "exp": now + self.TOKEN_TTL_SECONDS,
             "iat": now,
-            "iss": self._api_key,
+            "iss": self.api_key,
             "sub": f"admin_{room_name}",
             "nbf": now,
             "video": {
@@ -69,7 +65,10 @@ class LiveKitService:
                 "canPublishData": True,
             },
         }
-        return jwt.encode(claims, self._api_secret, algorithm=self._ALGORITHM)
+        return jwt.encode(claims, self.api_secret, algorithm=self.ALGORITHM)
 
-    def verify_webhook_token(self, token: str) -> dict:
-        return jwt.decode(token, self._api_secret, algorithms=[self._ALGORITHM])
+    def verify_webhook_token(self, token: str) -> dict | None:
+        try:
+            return jwt.decode(token, self.api_secret, algorithms=[self.ALGORITHM])
+        except jwt.PyJWTError:
+            return None

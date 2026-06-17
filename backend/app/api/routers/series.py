@@ -30,7 +30,7 @@ from app.service.series import (
 router = APIRouter()
 
 
-def _series_to_response(series: RoomSeries) -> SeriesResponse:
+def series_to_response(series: RoomSeries) -> SeriesResponse:
     return SeriesResponse(
         id=str(series.id),
         title=series.title,
@@ -45,7 +45,7 @@ def _series_to_response(series: RoomSeries) -> SeriesResponse:
     )
 
 
-def _topic_room_to_response(room: TopicRoom) -> TopicRoomResponse:
+def topic_room_to_response(room: TopicRoom) -> TopicRoomResponse:
     return TopicRoomResponse(
         id=str(room.id),
         title=room.title,
@@ -62,14 +62,14 @@ def _topic_room_to_response(room: TopicRoom) -> TopicRoomResponse:
     )
 
 
-def _get_series_or_404(service: RoomSeriesService, series_id: UUID) -> RoomSeries:
+def get_series_or_404(service: RoomSeriesService, series_id: UUID) -> RoomSeries:
     series = service.get_by_id(series_id)
     if series is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Series not found")
     return series
 
 
-def _check_series_owner(series: RoomSeries, user_id: str) -> None:
+def check_series_owner(series: RoomSeries, user_id: str) -> None:
     if str(series.creator_id) != user_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -77,19 +77,19 @@ def _check_series_owner(series: RoomSeries, user_id: str) -> None:
         )
 
 
-def _get_topic_room_or_404(service: TopicRoomService, room_id: UUID) -> TopicRoom:
+def get_topic_room_or_404(service: TopicRoomService, room_id: UUID) -> TopicRoom:
     room = service.get_by_id(room_id)
     if room is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Topic room not found")
     return room
 
 
-def _check_topic_room_not_full(room: TopicRoom) -> None:
+def check_topic_room_not_full(room: TopicRoom) -> None:
     if room.registered_count >= room.max_participants:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Room is full")
 
 
-def _check_not_already_registered(
+def check_not_already_registered(
     reg_service: TopicRoomRegistrationService,
     room_id: UUID,
     user_id: str,
@@ -101,6 +101,7 @@ def _check_not_already_registered(
 
 # ─── Series ──────────────────────────────────────────
 
+
 @router.get("", response_model=list[SeriesResponse])
 async def list_series(
     tag_id: str | None = None,
@@ -110,10 +111,10 @@ async def list_series(
     service = RoomSeriesService(session)
     skip, limit = pagination
     if tag_id:
-        items = service.list_series_by_tag(tag_id)
+        items = service.list_series_by_tag(tag_id, skip=skip, limit=limit)
     else:
-        items = service.list_all()
-    return [_series_to_response(s) for s in items[skip : skip + limit]]
+        items = service.list_all(skip=skip, limit=limit)
+    return [series_to_response(s) for s in items]
 
 
 @router.post("", response_model=SeriesResponse, status_code=status.HTTP_201_CREATED)
@@ -133,7 +134,7 @@ async def create_series(
         status=SeriesStatus.ACTIVE,
     )
     saved = service.create(session, series.model_dump())
-    return _series_to_response(saved)
+    return series_to_response(saved)
 
 
 @router.get("/{series_id}", response_model=SeriesResponse)
@@ -142,7 +143,7 @@ async def get_series(
     session: Session = Depends(get_db_session),
 ) -> SeriesResponse:
     service = RoomSeriesService(session)
-    return _series_to_response(_get_series_or_404(service, series_id))
+    return series_to_response(get_series_or_404(service, series_id))
 
 
 @router.patch("/{series_id}", response_model=SeriesResponse)
@@ -153,11 +154,11 @@ async def update_series(
     current_user: dict = Depends(get_current_user),
 ) -> SeriesResponse:
     service = RoomSeriesService(session)
-    series = _get_series_or_404(service, series_id)
-    _check_series_owner(series, current_user["id"])
+    series = get_series_or_404(service, series_id)
+    check_series_owner(series, current_user["id"])
     update_data = payload.model_dump(exclude_unset=True)
     updated = service.update(session, series, update_data)
-    return _series_to_response(updated)
+    return series_to_response(updated)
 
 
 @router.delete("/{series_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -167,12 +168,13 @@ async def delete_series(
     current_user: dict = Depends(get_current_user),
 ) -> None:
     service = RoomSeriesService(session)
-    series = _get_series_or_404(service, series_id)
-    _check_series_owner(series, current_user["id"])
+    series = get_series_or_404(service, series_id)
+    check_series_owner(series, current_user["id"])
     service.delete(session, series)
 
 
 # ─── Topic Rooms ────────────────────────────────────
+
 
 @router.get("/topic-rooms", response_model=list[TopicRoomResponse])
 async def list_topic_rooms(
@@ -183,10 +185,10 @@ async def list_topic_rooms(
 ) -> list[TopicRoomResponse]:
     service = TopicRoomService(session)
     skip, limit = pagination
-    items = service.list_upcoming_rooms(tag_id)
+    items = service.list_upcoming_rooms(tag_id, skip=skip, limit=limit)
     if series_id:
         items = [r for r in items if str(r.series_id) == series_id]
-    return [_topic_room_to_response(r) for r in items[skip : skip + limit]]
+    return [topic_room_to_response(r) for r in items]
 
 
 @router.post("/topic-rooms", response_model=TopicRoomResponse, status_code=status.HTTP_201_CREATED)
@@ -207,7 +209,7 @@ async def create_topic_room(
         status=TopicRoomStatus.UPCOMING,
     )
     saved = service.create(session, room.model_dump())
-    return _topic_room_to_response(saved)
+    return topic_room_to_response(saved)
 
 
 @router.post("/topic-rooms/{room_id}/register", response_model=dict)
@@ -220,9 +222,9 @@ async def register_topic_room(
     topic_service = TopicRoomService(session)
     reg_service = TopicRoomRegistrationService(session)
 
-    room = _get_topic_room_or_404(topic_service, room_id)
-    _check_topic_room_not_full(room)
-    _check_not_already_registered(reg_service, room_id, current_user["id"])
+    room = get_topic_room_or_404(topic_service, room_id)
+    check_topic_room_not_full(room)
+    check_not_already_registered(reg_service, room_id, current_user["id"])
 
     registration = TopicRoomRegistration(
         topic_room_id=room_id,

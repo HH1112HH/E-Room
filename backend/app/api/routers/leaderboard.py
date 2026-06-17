@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import date, timedelta
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 from sqlmodel import Session
 
 from app.api.dependencies import get_db_session
@@ -35,10 +35,7 @@ async def get_leaderboard(
         entries = list(service.list_all()) if not tag_id else list(service.list_by_tag(tag_id))
         entries = [e for e in entries if str(e.week_start) >= ws]
     else:
-        entries = [
-            e for e in (service.list_all() if not tag_id else service.list_by_tag(tag_id))
-            if str(e.week_start) == week_start
-        ]
+        entries = [e for e in (service.list_all() if not tag_id else service.list_by_tag(tag_id)) if str(e.week_start) == week_start]
 
     entries.sort(key=lambda e: e.rank)
 

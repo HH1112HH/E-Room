@@ -100,8 +100,8 @@ def save_message(
         from uuid import UUID
 
         payload = dict(extra_payload or {})
-        if sender_name and "display_name" not in payload:
-            payload["display_name"] = sender_name
+        if "display_name" not in payload:
+            payload["display_name"] = sender_name or user_id or "system"
         msg = Message(
             room_id=UUID(room_id) if isinstance(room_id, str) else room_id,
             user_id=UUID(user_id) if isinstance(user_id, str) else user_id,

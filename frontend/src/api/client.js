@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000/api/v1';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '/api/v1';
 
 function getTokens() {
   const access = localStorage.getItem('e-room-access-token');
@@ -41,7 +41,7 @@ export async function fetchJson(path, options = {}) {
 
   const response = await fetch(`${API_BASE_URL}${path}`, { ...options, headers });
 
-  if (response.status === 401 && path !== '/auth/refresh') {
+  if ((response.status === 401 || response.status === 403) && path !== '/auth/refresh') {
     const refreshed = await refreshTokens();
     if (refreshed) {
       headers['Authorization'] = `Bearer ${refreshed.access}`;

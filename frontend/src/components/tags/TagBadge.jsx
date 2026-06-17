@@ -1,4 +1,5 @@
 import { HiXMark } from 'react-icons/hi2';
+import '../../styles/TagBadge.css';
 
 const CATEGORY_COLORS = {
   technology: { bg: '#ffffff20', fg: '#ffffff' },
@@ -36,7 +37,7 @@ export function TagBadge({ label, category, removable, onRemove, onClick }) {
       {removable && (
         <HiXMark
           size={14}
-          style={{ cursor: 'pointer', opacity: 0.7, flexShrink: 0 }}
+          className="tag-badge-remove"
           onClick={(e) => { e.stopPropagation(); onRemove?.(); }}
         />
       )}

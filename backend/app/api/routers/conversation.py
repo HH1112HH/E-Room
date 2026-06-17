@@ -16,7 +16,7 @@ router = APIRouter()
 async def list_sessions(pagination: tuple[int, int] = Depends(get_pagination_params), session: Session = Depends(get_db_session)) -> list[SessionResponse]:
     session_service = SessionService(session)
     skip, limit = pagination
-    sessions = session_service.list_all()[skip : skip + limit]
+    sessions = session_service.list_all(skip=skip, limit=limit)
     return [
         SessionResponse(
             id=str(item.id),

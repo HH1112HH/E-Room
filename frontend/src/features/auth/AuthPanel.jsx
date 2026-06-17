@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Card } from '../../components/ui/Card';
-
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000/api/v1';
+import { API_BASE_URL } from '../../api/client';
+import '../../styles/DevTools.css';
 
 export function AuthPanel() {
   const [email, setEmail] = useState('demo@eroom.local');
@@ -43,11 +43,11 @@ export function AuthPanel() {
         <input value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email" />
         <input value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Password" type="password" />
       </div>
-      <div className="form-row" style={{ marginTop: 12 }}>
+      <div className="form-row mt-2">
         <button onClick={register}>Register</button>
         <button onClick={login}>Login</button>
       </div>
-      <p style={{ marginTop: 10, fontSize: 13, color: '#94a3b8' }}>{status}</p>
+      <p className="devtools-status">{status}</p>
     </Card>
   );
 }

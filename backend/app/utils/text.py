@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import re
-from typing import Optional
 
 
 def truncate(text: str, max_length: int = 500, ellipsis: str = "…") -> str:
@@ -40,13 +39,7 @@ def normalize_whitespace(text: str) -> str:
 
 
 def sanitize_html(text: str) -> str:
-    return (
-        text.replace("&", "&amp;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
-        .replace('"', "&quot;")
-        .replace("'", "&#x27;")
-    )
+    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;").replace("'", "&#x27;")
 
 
 def slugify(text: str) -> str:

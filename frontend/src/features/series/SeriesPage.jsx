@@ -12,7 +12,7 @@ import { useSubscriptionStore } from '../../stores/subscriptionStore';
 import { UpgradePrompt } from '../subscription/UpgradePrompt';
 import { useTagStore } from '../../stores/tagStore';
 import { TagBadge } from '../../components/tags/TagBadge';
-import { HiCalendarDays, HiPlus, HiPlay, HiTrash } from 'react-icons/hi2';
+import '../../styles/SeriesPage.css';
 
 export function SeriesPage() {
   const { t } = useTranslation();
@@ -33,14 +33,15 @@ export function SeriesPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['series'] }),
   });
 
-  if (!features.series) {  // Series requires Pro+
+  if (!features.series) {
     return (
       <>
-        <Container className="py-5 text-center" style={{ maxWidth: 600 }}>
-          <HiCalendarDays size={48} style={{ opacity: 0.3, color: 'var(--color-text-muted)', marginBottom: 12 }} />
-          <h3 className="fw-extrabold mb-2" style={{ fontFamily: 'Nunito, sans-serif' }}>{t('series.upgrade_title')}</h3>
-          <p className="text-muted mb-3">{t('series.upgrade_desc')}</p>
-          <Button variant="primary" className="rounded-pill" onClick={() => setShowUpgrade(true)}>{t('series.upgrade_btn')}</Button>
+        <Container className="series-page py-4 text-center">
+          <div className="series-page__upgrade">
+            <h3>Series are a Pro+ feature</h3>
+            <p>Create recurring room schedules by topic, set learning goals, and build a consistent speaking habit.</p>
+            <Button variant="primary" onClick={() => setShowUpgrade(true)}>Upgrade to Pro+</Button>
+          </div>
         </Container>
         <UpgradePrompt feature="Room Series" visible={showUpgrade} onClose={() => setShowUpgrade(false)} />
       </>
@@ -48,78 +49,50 @@ export function SeriesPage() {
   }
 
   return (
-    <Container className="py-4" style={{ maxWidth: 720 }}>
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div className="d-flex align-items-center gap-3">
-          <div style={{
-            width: 44, height: 44, borderRadius: 12,
-            background: 'var(--color-accent-muted)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <HiCalendarDays size={22} style={{ color: 'var(--color-accent)' }} />
-          </div>
-          <div>
-            <h2 className="fw-extrabold mb-0" style={{ fontFamily: 'Nunito, sans-serif' }}>{t('series.title')}</h2>
-            <p className="text-muted small mb-0">{t('series.description')}</p>
-          </div>
+    <Container className="series-page py-4 fade-in">
+      <div className="series-page__top">
+        <div>
+          <h1>Series</h1>
+          <p className="series-page__subtitle">Schedule topic-based room series that run on a recurring cadence so you never skip a practice day.</p>
         </div>
-        <Button variant="primary" size="sm" className="rounded-pill" onClick={() => setShowCreate(true)}>
-          <HiPlus size={14} className="me-1" /> {t('series.create')}
+        <Button variant="primary" onClick={() => setShowCreate(true)}>
+          Create series
         </Button>
       </div>
 
       {isLoading ? (
-        <div className="text-center py-5"><Spinner animation="border" /></div>
+        <div className="series-page__loading">
+          <Spinner animation="border" variant="primary" />
+          <span>Loading series...</span>
+        </div>
       ) : series.length === 0 ? (
-        <div className="text-center py-5" style={{ color: 'var(--color-text-muted)' }}>
-          <HiCalendarDays size={36} style={{ opacity: 0.3, marginBottom: 8 }} />
-          <h5 className="fw-bold" style={{ fontFamily: 'Nunito, sans-serif' }}>{t('series.no_series')}</h5>
-          <p className="small">{t('series.no_series_desc')}</p>
+        <div className="series-page__empty">
+          <h3>No series yet</h3>
+          <p>Create your first recurring room series and build a consistent speaking habit.</p>
+          <Button variant="primary" onClick={() => setShowCreate(true)}>Create series</Button>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div className="series-page__list">
           {series.map((s) => {
             const totalSessions = s.total_sessions || 0;
-            const pct = 0;
-
             return (
-              <div key={s.id} style={{
-                padding: '16px', borderRadius: 14,
-                background: 'var(--color-bg-elevated)',
-                border: '1px solid var(--color-border)',
-              }}>
-                <div className="d-flex justify-content-between align-items-start mb-2">
-                  <div style={{ flex: 1 }}>
-                    <div className="fw-bold" style={{ fontSize: '0.9rem' }}>{s.title}</div>
-                    <div className="text-muted" style={{ fontSize: '0.78rem' }}>
-                      {s.tag_id && tagMap[s.tag_id] ? <TagBadge label={tagMap[s.tag_id]} /> : s.tag_id ? <span className="badge bg-secondary me-1">{s.tag_id.slice(0, 8)}</span> : null}
-                      {s.schedule_cron || 'Scheduled'} • {totalSessions} sessions
+              <div key={s.id} className="series-page__row">
+                <div className="series-page__row-top">
+                  <div className="series-page__row-body">
+                    <div className="series-page__row-title">{s.title}</div>
+                    <div className="series-page__row-meta">
+                      {s.tag_id && tagMap[s.tag_id] ? <TagBadge label={tagMap[s.tag_id]} /> : s.tag_id ? <span className="series-page__tag-placeholder">{s.tag_id.slice(0, 8)}</span> : null}
+                      <span>{totalSessions} sessions</span>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: 4 }}>
-                    <button style={{
-                      padding: '4px 10px', borderRadius: 99, border: 'none',
-                      background: 'var(--color-success-muted)', color: 'var(--color-success)',
-                      cursor: 'pointer', fontWeight: 600, fontSize: '0.72rem', fontFamily: 'inherit',
-                      display: 'flex', alignItems: 'center', gap: 4,
-                    }}>
-                      <HiPlay size={12} /> {t('series.active')}
-                    </button>
-                    <button
-                      onClick={() => deleteMutation.mutate(s.id)}
-                      style={{
-                        width: 28, height: 28, borderRadius: '50%', border: 'none',
-                        background: 'transparent', color: 'var(--color-text-muted)', cursor: 'pointer',
-                      }}
-                    >
-                      <HiTrash size={14} />
-                    </button>
+                  <div className="series-page__row-actions">
+                    <span className="series-page__active-label">Active</span>
+                    <button onClick={() => deleteMutation.mutate(s.id)} className="series-page__delete-btn">Delete</button>
                   </div>
                 </div>
-                {/* Progress bar */}
-                <div style={{ height: 4, borderRadius: 99, background: 'var(--color-bg-surface)', marginTop: 8, overflow: 'hidden' }} />
-                <div className="text-muted text-end" style={{ fontSize: '0.65rem', marginTop: 2 }}>
-                  {0}/{totalSessions} sessions
+                <div className="series-page__progress">
+                  <div className="series-page__progress-track"><div className="series-page__progress-fill" style={{ width: '0%' }} /></div>
+                  <span className="series-page__progress-text">0/{totalSessions} sessions</span>
                 </div>
               </div>
             );
@@ -127,7 +100,6 @@ export function SeriesPage() {
         </div>
       )}
 
-      {/* Create Modal */}
       <CreateSeriesModal visible={showCreate} onClose={() => setShowCreate(false)} onCreated={() => { setShowCreate(false); queryClient.invalidateQueries({ queryKey: ['series'] }); }} />
     </Container>
   );
@@ -148,45 +120,41 @@ function CreateSeriesModal({ visible, onClose, onCreated }) {
     createMutation.mutate(form);
   }
 
-  function setFormField(field, value) {
-    setForm({ ...form, [field]: value });
-  }
-
   return (
-    <Modal show={visible} onHide={onClose} centered className="rounded-4">
-      <Modal.Body className="p-4">
-        <h5 className="fw-bold mb-3" style={{ fontFamily: 'Nunito, sans-serif' }}>{t('series.modal_title')}</h5>
+    <Modal show={visible} onHide={onClose} centered>
+      <Modal.Body className="series-page__modal-body">
+        <h2 className="series-page__modal-title">Create a series</h2>
         <Form onSubmit={handleSubmit}>
           <Form.Group className="mb-3">
-            <Form.Label className="small fw-semibold text-muted">{t('series.form_title')}</Form.Label>
-            <Form.Control type="text" placeholder={t('series.form_title_placeholder')} value={form.title} onChange={(e) => setFormField('title', e.target.value)} required className="rounded-3" />
+            <Form.Label className="series-page__modal-label">Title</Form.Label>
+            <Form.Control type="text" placeholder="e.g. Weekly Business English" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
           </Form.Group>
           <Form.Group className="mb-3">
-            <Form.Label className="small fw-semibold text-muted">{t('series.form_topic_tag')}</Form.Label>
-            <Form.Select value={form.tag_id} onChange={(e) => setFormField('tag_id', e.target.value)} required className="rounded-3">
-              <option value="">{t('series.form_select_tag')}</option>
-              {popularTags.map((t) => (
+            <Form.Label className="series-page__modal-label">Topic tag</Form.Label>
+            <Form.Select value={form.tag_id} onChange={(e) => setForm({ ...form, tag_id: e.target.value })} required>
+              <option value="">Select a tag</option>
+              {(popularTags || []).map((t) => (
                 <option key={t.id || t} value={t.id || t}>{t.name || t}</option>
               ))}
             </Form.Select>
           </Form.Group>
           <Form.Group className="mb-3">
-            <Form.Label className="small fw-semibold text-muted">{t('series.form_sessions')}</Form.Label>
-            <Form.Control type="number" min={1} max={20} value={form.total_sessions} onChange={(e) => setFormField('total_sessions', parseInt(e.target.value) || 4)} className="rounded-3" />
+            <Form.Label className="series-page__modal-label">Total sessions</Form.Label>
+            <Form.Control type="number" min={1} max={20} value={form.total_sessions} onChange={(e) => setForm({ ...form, total_sessions: parseInt(e.target.value) || 4 })} />
           </Form.Group>
           <Form.Group className="mb-3">
-            <Form.Label className="small fw-semibold text-muted">{t('series.form_schedule')}</Form.Label>
-            <Form.Select value={form.schedule_cron} onChange={(e) => setFormField('schedule_cron', e.target.value)} className="rounded-3">
-              <option value="0 0 * * *">{t('series.form_daily')}</option>
-              <option value="0 0 * * 1">{t('series.form_weekly')}</option>
-              <option value="0 0 1,15 * *">{t('series.form_biweekly')}</option>
-              <option value="0 0 1 * *">{t('series.form_monthly')}</option>
+            <Form.Label className="series-page__modal-label">Schedule</Form.Label>
+            <Form.Select value={form.schedule_cron} onChange={(e) => setForm({ ...form, schedule_cron: e.target.value })}>
+              <option value="0 0 * * *">Daily</option>
+              <option value="0 0 * * 1">Weekly</option>
+              <option value="0 0 1,15 * *">Bi-weekly</option>
+              <option value="0 0 1 * *">Monthly</option>
             </Form.Select>
           </Form.Group>
-          <div className="d-flex gap-2 mt-3">
-            <Button variant="outline-secondary" onClick={onClose} className="rounded-pill flex-fill">{t('common.cancel')}</Button>
-            <Button type="submit" variant="primary" disabled={createMutation.isPending} className="rounded-pill flex-fill">
-              {createMutation.isPending ? t('series.creating') : t('series.create')}
+          <div className="series-page__modal-actions">
+            <Button variant="outline-secondary" onClick={onClose} className="flex-fill">Cancel</Button>
+            <Button type="submit" variant="primary" disabled={createMutation.isPending} className="flex-fill">
+              {createMutation.isPending ? 'Creating...' : 'Create series'}
             </Button>
           </div>
         </Form>

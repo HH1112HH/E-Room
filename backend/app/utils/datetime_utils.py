@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from zoneinfo import ZoneInfo
 
-_TZ_SAIGON = ZoneInfo("Asia/Ho_Chi_Minh")
+TZ_SAIGON = ZoneInfo("Asia/Ho_Chi_Minh")
 
 
 def now_utc() -> datetime:
@@ -11,18 +11,18 @@ def now_utc() -> datetime:
 
 
 def now_saigon() -> datetime:
-    return datetime.now(_TZ_SAIGON)
+    return datetime.now(TZ_SAIGON)
 
 
 def utc_to_saigon(dt: datetime) -> datetime:
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=UTC)
-    return dt.astimezone(_TZ_SAIGON)
+    return dt.astimezone(TZ_SAIGON)
 
 
 def saigon_to_utc(dt: datetime) -> datetime:
     if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=_TZ_SAIGON)
+        dt = dt.replace(tzinfo=TZ_SAIGON)
     return dt.astimezone(UTC)
 
 

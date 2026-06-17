@@ -1,0 +1,17 @@
+.tag-cloud-grouped {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tag-cloud-category {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.7rem;
+}
+
+.tag-cloud-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}

@@ -11,7 +11,7 @@ from app.log import get_logger
 
 logger = get_logger(__name__)
 
-_JSON_PATTERN = re.compile(r'\{.*\}|\[.*\]', re.DOTALL)
+JSON_PATTERN = re.compile(r"\{.*\}|\[.*\]", re.DOTALL)
 
 
 async def call_llm_json(
@@ -24,7 +24,7 @@ async def call_llm_json(
     content = response.content
     if isinstance(content, dict):
         return content
-    match = _JSON_PATTERN.search(content)
+    match = JSON_PATTERN.search(content)
     if match:
         try:
             return json.loads(match.group())

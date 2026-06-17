@@ -87,9 +87,7 @@ def get_tag_count() -> int:
 def seed_default_tags(session) -> int:
     inserted = 0
     for tag_data in DEFAULT_TAGS:
-        existing = session.exec(
-            select(Tag).where(Tag.slug == tag_data["slug"])
-        ).first()
+        existing = session.exec(select(Tag).where(Tag.slug == tag_data["slug"])).first()
         if existing is None:
             tag = Tag(
                 name=tag_data["name"],

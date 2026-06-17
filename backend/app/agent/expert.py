@@ -13,7 +13,7 @@ from app.log import get_logger
 logger = get_logger(__name__)
 
 
-def _extract_sources(docs: list[dict[str, Any]]) -> list[str]:
+def extract_sources(docs: list[dict[str, Any]]) -> list[str]:
     seen: set[str] = set()
     sources: list[str] = []
     for d in docs:
@@ -25,7 +25,7 @@ def _extract_sources(docs: list[dict[str, Any]]) -> list[str]:
     return sources
 
 
-async def _web_search(query: str, tag: str | None = None) -> tuple[str, list[str]]:
+async def web_search(query: str, tag: str | None = None) -> tuple[str, list[str]]:
     if not settings.brave_search_api_key:
         return "", []
 
@@ -74,9 +74,9 @@ async def answer_expert(question: str, room_id: str, tags: list[str] | None = No
         docs = []
 
     rag_context = "\n\n".join([d["text"][:500] for d in docs]) if docs else ""
-    sources = _extract_sources(docs)
+    sources = extract_sources(docs)
 
-    web_context, web_sources = await _web_search(question, tag_str)
+    web_context, web_sources = await web_search(question, tag_str)
     sources.extend(web_sources)
 
     if rag_context:
@@ -89,10 +89,7 @@ async def answer_expert(question: str, room_id: str, tags: list[str] | None = No
         combined = "No relevant documents or web results found."
 
     system_prompt = EXPERT_SYSTEM_TEMPLATE
-    user_prompt = (
-        f"Question: {question}\n\nContext:\n{combined}\n\n"
-        "Provide a helpful answer. If from the web, mention source URLs."
-    )
+    user_prompt = f"Question: {question}\n\nContext:\n{combined}\n\nProvide a helpful answer. If from the web, mention source URLs."
 
     messages = [
         SystemMessage(content=system_prompt),

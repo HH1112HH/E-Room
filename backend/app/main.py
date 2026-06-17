@@ -8,16 +8,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, text
 
 from app.api import api_router
+from app.api.middleware import AuthMiddleware, LoggingMiddleware
+from app.api.routers.websocket import handle_audio_ws, handle_room_ws
 from app.config import settings
 from app.database import create_db_and_tables, engine
-from app.infrastructure.celery_bridge import celery_bridge
+from app.infrastructure.event_bus import event_bus
 from app.log import get_logger
-from app.model import RoomParticipant
-from app.seed.seed_data import seed_rooms
-from app.seed.tag_seed import seed_default_tags
+from app.seed import seed_all
 from app.service.heartbeat import heartbeat_loop
 from app.service.model_warmup import warmup_models
-from app.ws.handlers import handle_audio_ws, handle_room_ws
 
 log = get_logger(__name__)
 
@@ -26,20 +25,20 @@ log = get_logger(__name__)
 async def lifespan(app: FastAPI):
     create_db_and_tables()
     with Session(engine) as session:
-        inserted_tags = seed_default_tags(session)
-        log.info("Đã tạo %s thẻ tag mặc định", inserted_tags)
-        inserted_rooms = seed_rooms(session)
-        log.info("Đã tạo %s phòng mẫu", inserted_rooms)
+        counts = seed_all(session)
+        log.info("Đã tạo %s thẻ tag mặc định", counts.get("tags", 0))
+        log.info("Đã tạo %s phòng mẫu", counts.get("rooms", 0))
+        log.info("Đã tạo %s tài khoản admin", counts.get("admins", 0))
         session.exec(text("DELETE FROM room_participants"))
         session.commit()
         log.info("Đã xoá dữ liệu người tham gia cũ")
     await warmup_models()
-    await celery_bridge.start()
+    await event_bus.start()
     hb_task = asyncio.create_task(heartbeat_loop())
     log.info("%s đã khởi động", settings.app_name)
     yield
     hb_task.cancel()
-    await celery_bridge.stop()
+    await event_bus.stop()
     log.info("%s đã tắt", settings.app_name)
 
 
@@ -57,6 +56,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(LoggingMiddleware)
+app.add_middleware(AuthMiddleware)
 
 app.include_router(api_router, prefix="/api/v1")
 

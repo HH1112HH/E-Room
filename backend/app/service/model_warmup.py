@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-from app.infrastructure.audio_pipeline import PronunciationPipeline
+from app.infrastructure.audio_whisper import get_whisper_model
 from app.log import get_logger
 
 log = get_logger(__name__)
 
 
 async def warmup_models() -> None:
-    log.info("Khởi tạo mô hình...")
+    log.info("Đang tải mô hình Whisper small.en...")
     try:
-        pipeline = PronunciationPipeline()
-        log.info("Khởi tạo mô hình hoàn tất")
+        get_whisper_model()
+        log.info("Tải mô hình Whisper hoàn tất")
     except Exception:
-        log.warning("Khởi tạo mô hình thất bại", exc_info=True)
+        log.warning("Tải mô hình Whisper thất bại", exc_info=True)

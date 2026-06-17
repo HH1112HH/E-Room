@@ -9,7 +9,6 @@ import Spinner from 'react-bootstrap/Spinner';
 import Badge from 'react-bootstrap/Badge';
 import {
   HiArrowRightOnRectangle,
-  HiBars3,
   HiBell,
   HiBookOpen,
   HiCalendarDays,
@@ -23,6 +22,7 @@ import {
   HiShieldCheck,
   HiSparkles,
   HiUserCircle,
+  HiBars3,
 } from 'react-icons/hi2';
 import { useAuth } from '../AuthContext';
 import { fetchJson } from '../../lib/api';
@@ -70,11 +70,10 @@ function ProfileSidebar({ activeSection, onSelect, user, sessionsCount, tier }) 
   const initials = (user.display_name || user.email || 'U').slice(0, 1).toUpperCase();
 
   return (
-    <aside className="profile-sidebar" aria-label="Profile dashboard sections">
-      <div className="profile-sidebar__label">Dashboard</div>
+    <aside className="profile-sidebar">
       <div className="profile-sidebar__identity">
-        <div className="profile-avatar" aria-hidden="true">{initials}</div>
-        <div>
+        <div className="profile-avatar">{initials}</div>
+        <div className="profile-sidebar__identity-text">
           <strong>{user.display_name || 'E-Room learner'}</strong>
           <span>{user.email}</span>
         </div>
@@ -84,12 +83,7 @@ function ProfileSidebar({ activeSection, onSelect, user, sessionsCount, tier }) 
         {sections.map((section) => <SidebarButton key={section.key} section={section} active={activeSection === section.key} onSelect={onSelect} />)}
       </nav>
 
-      <div className="profile-sidebar__summary">
-        <div><strong>{sessionsCount}</strong><span>sessions</span></div>
-        <div><strong>{tier === 'pro_plus' ? 'Pro+' : tier === 'pro' ? 'Pro' : 'Free'}</strong><span>plan</span></div>
-      </div>
-
-      <nav className="profile-sidebar__nav profile-sidebar__nav--account" aria-label="Account sections">
+      <nav className="profile-sidebar__nav profile-sidebar__nav--account">
         {accountSections.map((section) => <SidebarButton key={section.key} section={section} active={activeSection === section.key} onSelect={onSelect} />)}
       </nav>
     </aside>
@@ -99,7 +93,7 @@ function ProfileSidebar({ activeSection, onSelect, user, sessionsCount, tier }) 
 function SidebarButton({ section, active, onSelect }) {
   const Icon = section.icon;
   return (
-    <button type="button" className={`profile-sidebar__button ${active ? 'is-active' : ''}`} onClick={() => onSelect(section.key)} aria-current={active ? 'page' : undefined}>
+    <button type="button" className={`profile-sidebar__btn${active ? ' is-active' : ''}`} onClick={() => onSelect(section.key)} aria-current={active ? 'page' : undefined}>
       <Icon size={18} />
       <span>{section.label}</span>
     </button>
@@ -109,16 +103,12 @@ function SidebarButton({ section, active, onSelect }) {
 function ProfileHeader({ user, sessionsCount, tier, activeSection }) {
   const sectionTitle = [...sections, ...accountSections].find((section) => section.key === activeSection)?.label || 'Dashboard';
   return (
-    <header className="profile-hero">
-      <div>
-        <span className="profile-hero__eyebrow">Profile dashboard</span>
-        <h1>{sectionTitle}</h1>
-        <p>Manage your speaking practice, review progress, and keep your account ready for every live room.</p>
-      </div>
-      <div className="profile-hero__stats" aria-label="Account summary">
-        <div><strong>{sessionsCount}</strong><span>Sessions</span></div>
-        <div><strong>{tier === 'pro_plus' ? 'Pro+' : tier === 'pro' ? 'Pro' : 'Free'}</strong><span>Plan</span></div>
-        <div><strong>{user.display_name ? 'Ready' : 'Setup'}</strong><span>Profile</span></div>
+    <header className="profile-header">
+      <h1>{sectionTitle}</h1>
+      <div className="profile-header__stats">
+        <span><strong>{sessionsCount}</strong> Sessions</span>
+        <span><strong>{tier === 'pro_plus' ? 'Pro+' : tier === 'pro' ? 'Pro' : 'Free'}</strong> Plan</span>
+        <span><strong>{user.display_name ? 'Ready' : 'Setup'}</strong> Profile</span>
       </div>
     </header>
   );
@@ -131,13 +121,10 @@ function UserInfoSection({ user, displayName, setDisplayName, editing, setEditin
   }
 
   return (
-    <section className="profile-panel" aria-labelledby="profile-user-title">
-      <div className="profile-panel__head">
-        <div>
-          <span>Account identity</span>
-          <h2 id="profile-user-title">Personal information</h2>
-        </div>
-        {!editing && <Button variant="outline-primary" className="rounded-pill d-flex align-items-center gap-2" onClick={() => setEditing(true)}><HiPencil size={16} /> Edit</Button>}
+    <section className="profile-section">
+      <div className="profile-section__head">
+        <h2>Personal information</h2>
+        {!editing && <Button variant="outline-primary" onClick={() => setEditing(true)}><HiPencil size={16} /> Edit</Button>}
       </div>
 
       <div className="profile-form-grid">
@@ -164,10 +151,10 @@ function UserInfoSection({ user, displayName, setDisplayName, editing, setEditin
 
       {editing && (
         <div className="profile-actions">
-          <Button variant="primary" className="rounded-pill px-4 d-flex align-items-center gap-2" disabled={saveMutation.isPending || !displayName.trim()} onClick={() => saveMutation.mutate({ display_name: displayName.trim() })}>
+          <Button variant="primary" disabled={saveMutation.isPending || !displayName.trim()} onClick={() => saveMutation.mutate({ display_name: displayName.trim() })}>
             {saveMutation.isPending ? <><Spinner animation="border" size="sm" /> Saving</> : <><HiCheckCircle size={16} /> Save changes</>}
           </Button>
-          <Button variant="outline-secondary" className="rounded-pill px-4" onClick={cancelEdit}>Cancel</Button>
+          <Button variant="outline-secondary" onClick={cancelEdit}>Cancel</Button>
         </div>
       )}
     </section>
@@ -176,33 +163,30 @@ function UserInfoSection({ user, displayName, setDisplayName, editing, setEditin
 
 function SessionsSection({ sessions, isLoading, isError, onRetry }) {
   return (
-    <section className="profile-panel" aria-labelledby="profile-sessions-title">
-      <div className="profile-panel__head">
-        <div>
-          <span>Progress timeline</span>
-          <h2 id="profile-sessions-title">Session history</h2>
-        </div>
-        <Button as={Link} to="/learning" variant="outline-primary" className="rounded-pill">Find a meeting</Button>
+    <section className="profile-section">
+      <div className="profile-section__head">
+        <h2>Session history</h2>
+        <Button as={Link} to="/learning" variant="outline-primary">Find a meeting</Button>
       </div>
 
       {isLoading && <LoadingRows />}
       {isError && <ErrorState title="Could not load sessions" text="Refresh this panel to retry your session history request." onRetry={onRetry} />}
       {!isLoading && !isError && sessions.length === 0 && (
-        <EmptyState icon={HiBookOpen} title="No completed sessions yet" text="Join a meeting room and your session history will appear here with scores, duration, and notes when available." action={<Button as={Link} to="/learning" variant="primary" className="rounded-pill px-4">Open Meeting</Button>} />
+        <EmptyState title="No completed sessions yet" text="Join a meeting room and your session history will appear here." action={<Button as={Link} to="/learning" variant="primary">Open Meeting</Button>} />
       )}
       {!isLoading && !isError && sessions.length > 0 && (
-        <div className="session-list">
+        <div className="profile-session-list">
           {sessions.map((session) => (
-            <article className="session-card" key={session.id || `${getSessionTitle(session)}-${getSessionDate(session)}`}>
-              <div className="session-card__duration"><strong>{formatDuration(session.duration_seconds)}</strong><span>duration</span></div>
+            <article className="profile-session" key={session.id || `${getSessionTitle(session)}-${getSessionDate(session)}`}>
+              <div className="profile-session__duration"><strong>{formatDuration(session.duration_seconds)}</strong><span>duration</span></div>
               <div>
                 <h3>{getSessionTitle(session)}</h3>
                 <p>{getSessionDate(session)}</p>
-                <div className="session-card__tags">
+                <div className="profile-session__tags">
                   {(session.tags || session.room?.tags || []).slice(0, 3).map((tag) => <span key={tag}>#{typeof tag === 'string' ? tag : tag.name}</span>)}
                 </div>
               </div>
-              {session.overall_score != null && <Badge bg={session.overall_score > 7 ? 'success' : session.overall_score > 4 ? 'warning' : 'secondary'}>{session.overall_score}/10</Badge>}
+              {session.overall_score != null && <Badge bg={session.overall_score > 7 ? 'success' : session.overall_score > 4 ? 'warning' : 'secondary'} className="profile-session__score">{session.overall_score}/10</Badge>}
             </article>
           ))}
         </div>
@@ -213,35 +197,26 @@ function SessionsSection({ sessions, isLoading, isError, onRetry }) {
 
 function NotesSection() {
   return (
-    <section className="profile-panel" aria-labelledby="profile-notes-title">
-      <div className="profile-panel__head">
-        <div>
-          <span>Learning memory</span>
-          <h2 id="profile-notes-title">Notes</h2>
-        </div>
-        <Button as={Link} to="/notes" variant="outline-primary" className="rounded-pill">Open notes</Button>
+    <section className="profile-section">
+      <div className="profile-section__head">
+        <h2>Notes</h2>
+        <Button as={Link} to="/notes" variant="outline-primary">Open notes</Button>
       </div>
-      <EmptyState icon={HiDocumentText} title="Session notes live here" text="Saved notes and AI-generated summaries are managed from the Notes feature. After a room produces notes, this dashboard gives you a faster path back to them." action={<Button as={Link} to="/notes" variant="primary" className="rounded-pill px-4">Go to Notes</Button>} />
+      <EmptyState title="Session notes live here" text="After a room produces notes, this dashboard gives you a faster path back to them." action={<Button as={Link} to="/notes" variant="primary">Go to Notes</Button>} />
     </section>
   );
 }
 
 function ScheduleSection({ onCreateRoom }) {
   return (
-    <section className="profile-panel profile-panel--schedule" aria-labelledby="profile-schedule-title">
-      <div className="profile-panel__head">
-        <div>
-          <span>Room planning</span>
-          <h2 id="profile-schedule-title">Schedule room</h2>
-        </div>
+    <section className="profile-section">
+      <div className="profile-section__head">
+        <h2>Schedule room</h2>
       </div>
-      <div className="schedule-card">
-        <div className="schedule-card__icon"><HiCalendarDays size={28} /></div>
-        <div>
-          <h3>Prepare your next speaking room</h3>
-          <p>Create a room with topic, level, participants, and tags. Calendar-based scheduling is not enabled by the current room API, so this dashboard keeps the instant creation flow reliable.</p>
-          <Button variant="primary" className="rounded-pill px-4 d-inline-flex align-items-center gap-2" onClick={onCreateRoom}><HiPlusCircle size={18} /> Create room</Button>
-        </div>
+      <div className="profile-schedule">
+        <h3>Prepare your next speaking room</h3>
+        <p>Create a room with topic, level, participants, and tags. Calendar-based scheduling is not enabled by the current room API, so this dashboard keeps the instant creation flow reliable.</p>
+        <Button variant="primary" onClick={onCreateRoom}><HiPlusCircle size={18} /> Create room</Button>
       </div>
     </section>
   );
@@ -249,29 +224,26 @@ function ScheduleSection({ onCreateRoom }) {
 
 function SubscriptionSection({ tier }) {
   return (
-    <section className="profile-panel" aria-labelledby="profile-subscription-title">
-      <div className="profile-panel__head">
-        <div>
-          <span>Plan access</span>
-          <h2 id="profile-subscription-title">Subscription</h2>
-        </div>
+    <section className="profile-section">
+      <div className="profile-section__head">
+        <h2>Subscription</h2>
       </div>
-      <div className="plan-grid">
+      <div className="profile-plan-grid">
         {plans.map((plan) => {
           const current = plan.key === tier;
           return (
-            <article className={`plan-card ${plan.popular ? 'is-popular' : ''}`} key={plan.key}>
-              <div className="plan-card__top">
+            <article className={`profile-plan${plan.popular ? ' is-popular' : ''}`} key={plan.key}>
+              <div className="profile-plan__top">
                 <h3>{plan.name}</h3>
                 {current && <Badge bg="success">Current</Badge>}
                 {plan.popular && !current && <Badge bg="primary">Popular</Badge>}
               </div>
-              <strong>{plan.price}</strong>
+              <strong className="profile-plan__price">{plan.price}</strong>
               <ul>{plan.features.map((feature) => <li key={feature}><HiCheckCircle size={14} /> {feature}</li>)}</ul>
               {plan.key === 'free' ? (
-                <Button variant="outline-secondary" className="rounded-pill w-100" disabled={current}>Free plan</Button>
+                <Button variant="outline-secondary" className="w-100" disabled={current}>Free plan</Button>
               ) : (
-                <Button as={Link} to={`/payment?plan=${plan.key}`} variant={plan.popular ? 'primary' : 'outline-primary'} className="rounded-pill w-100">{current ? 'Manage plan' : 'Upgrade'}</Button>
+                <Button as={Link} to={`/payment?plan=${plan.key}`} variant={plan.popular ? 'primary' : 'outline-primary'} className="w-100">{current ? 'Manage plan' : 'Upgrade'}</Button>
               )}
             </article>
           );
@@ -284,45 +256,42 @@ function SubscriptionSection({ tier }) {
 function SettingsSection({ logout, onLogout }) {
   const { theme, toggleTheme } = useTheme();
   return (
-    <section className="profile-panel" aria-labelledby="profile-settings-title">
-      <div className="profile-panel__head">
-        <div>
-          <span>Preferences</span>
-          <h2 id="profile-settings-title">Settings</h2>
-        </div>
+    <section className="profile-section">
+      <div className="profile-section__head">
+        <h2>Settings</h2>
       </div>
-      <div className="settings-grid">
-        <div className="settings-card">
-          <HiBell size={22} />
-          <div>
+      <div className="profile-settings-list">
+        <div className="profile-settings-item">
+          <HiBell size={18} />
+          <div className="profile-settings-item__body">
             <h3>Notifications</h3>
             <Form.Check type="switch" id="match-notifications" label="Room match notifications" defaultChecked />
             <Form.Check type="switch" id="session-reminders" label="Session reminders" defaultChecked />
             <Form.Check type="switch" id="email-updates" label="Email updates" />
           </div>
         </div>
-        <div className="settings-card">
-          <HiShieldCheck size={22} />
-          <div>
+        <div className="profile-settings-item">
+          <HiShieldCheck size={18} />
+          <div className="profile-settings-item__body">
             <h3>Privacy</h3>
             <Form.Check type="switch" id="show-profile" label="Show profile in rooms" defaultChecked />
             <Form.Check type="switch" id="show-leaderboard" label="Show on leaderboard" defaultChecked />
           </div>
         </div>
-        <div className="settings-card">
-          <HiSparkles size={22} />
-          <div>
+        <div className="profile-settings-item">
+          <HiSparkles size={18} />
+          <div className="profile-settings-item__body">
             <h3>Appearance</h3>
             <p>Current theme: {theme}</p>
-            <Button variant="outline-primary" className="rounded-pill" onClick={toggleTheme}>Toggle theme</Button>
+            <Button variant="outline-primary" onClick={toggleTheme}>Toggle theme</Button>
           </div>
         </div>
-        <div className="settings-card settings-card--danger">
-          <HiExclamationTriangle size={22} />
-          <div>
+        <div className="profile-settings-item">
+          <HiExclamationTriangle size={18} />
+          <div className="profile-settings-item__body">
             <h3>Account access</h3>
             <p>Sign out of this device when you finish practicing.</p>
-            <Button variant="outline-danger" className="rounded-pill d-inline-flex align-items-center gap-2" onClick={() => { logout(); onLogout(); }}><HiArrowRightOnRectangle size={16} /> Sign out</Button>
+            <Button variant="outline-danger" onClick={() => { logout(); onLogout(); }}><HiArrowRightOnRectangle size={16} /> Sign out</Button>
           </div>
         </div>
       </div>
@@ -331,15 +300,15 @@ function SettingsSection({ logout, onLogout }) {
 }
 
 function LoadingRows() {
-  return <div className="loading-rows" aria-busy="true" aria-label="Loading sessions">{[0, 1, 2].map((item) => <span key={item} />)}</div>;
+  return <div className="profile-loading" aria-busy="true" aria-label="Loading sessions">{[0, 1, 2].map((item) => <span key={item} />)}</div>;
 }
 
 function ErrorState({ title, text, onRetry }) {
-  return <div className="profile-empty profile-empty--error"><HiExclamationTriangle size={36} /><h3>{title}</h3><p>{text}</p><Button variant="outline-primary" className="rounded-pill px-4" onClick={onRetry}>Try again</Button></div>;
+  return <div className="profile-empty"><h3>{title}</h3><p>{text}</p><Button variant="outline-primary" onClick={onRetry}>Try again</Button></div>;
 }
 
-function EmptyState({ icon: Icon, title, text, action }) {
-  return <div className="profile-empty"><Icon size={38} /><h3>{title}</h3><p>{text}</p>{action}</div>;
+function EmptyState({ title, text, action }) {
+  return <div className="profile-empty"><h3>{title}</h3><p>{text}</p>{action}</div>;
 }
 
 export function ProfilePage() {
@@ -400,9 +369,9 @@ export function ProfilePage() {
       <Container className="profile-dashboard__container">
         <ProfileHeader user={user} sessionsCount={sessionsCount} tier={tier} activeSection={activeSection} />
         {message && <Alert variant={message.type} dismissible onClose={() => setMessage(null)} className="profile-alert">{message.type === 'success' && <HiCheckCircle size={16} />} {message.text}</Alert>}
-        <div className={`profile-dashboard__layout ${sidebarOpen ? '' : 'is-sidebar-collapsed'}`}>
+        <div className={`profile-dashboard__layout${sidebarOpen ? '' : ' is-collapsed'}`}>
           <div className="profile-dashboard__sidebar-wrap">
-            <button type="button" className="profile-sidebar-toggle" onClick={() => setSidebarOpen(prev => !prev)} aria-expanded={sidebarOpen}>
+            <button type="button" className="profile-toggle" onClick={() => setSidebarOpen(prev => !prev)} aria-expanded={sidebarOpen}>
               <HiBars3 size={18} /> {sidebarOpen ? 'Hide menu' : 'Show menu'}
             </button>
             {sidebarOpen && <ProfileSidebar activeSection={activeSection} onSelect={setActiveSection} user={user} sessionsCount={sessionsCount} tier={tier} />}

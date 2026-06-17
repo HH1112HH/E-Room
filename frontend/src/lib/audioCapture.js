@@ -15,10 +15,8 @@ export function createAudioCapture(roomId, token, audioWsRef, onStateChange, ini
   let enabled = initialState.enabled;
 
   function connectWs() {
-    const base = API_BASE_URL
-      .replace('http://', 'ws://')
-      .replace('https://', 'wss://')
-      .replace('/api/v1', '');
+    const loc = window.location;
+    const base = import.meta.env.VITE_WS_BASE_URL || `${loc.protocol === 'https:' ? 'wss:' : 'ws:'}//${loc.host}`;
     const url = `${base}/ws/audio/${roomId}?token=${token}`;
     ws = new WebSocket(url);
     ws.onopen = () => { audioWsRef.current = ws; };

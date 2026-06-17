@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
 import hashlib
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import uuid4
 
@@ -33,7 +33,7 @@ def hash_token(token: str) -> str:
 
 def create_access_token(subject: str, expires_delta: timedelta | None = None) -> str:
     now = datetime.now(UTC)
-    expires_at = now + (expires_delta or timedelta(minutes=settings.access_token_expires_minutes))
+    expires_at = now + (expires_delta or timedelta(days=settings.access_token_expires_days))
     payload = {"sub": subject, "exp": expires_at, "iat": now, "type": "access", "jti": str(uuid4())}
     return jwt.encode(payload, settings.secret_key, algorithm=settings.algorithm)
 

@@ -1,18 +1,33 @@
 from __future__ import annotations
 
+import os
+from pathlib import Path
+from unittest.mock import MagicMock, patch
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine
-from unittest.mock import MagicMock, patch
 
 from app.api.dependencies import get_db_session
 from app.api.routers.infra import rate_limit_login
 from app.main import app
-from app.model.user import User
 from app.security import hash_password
 
-
 TEST_DATABASE_URL = "sqlite:///./test_eroom.db"
+WEIGHT_DIR = Path(__file__).parent.parent / "app" / "weight"
+
+
+def pytest_configure(config):
+    config.addinivalue_line("markers", "e2e: End-to-end tests requiring all services")
+    config.addinivalue_line("markers", "slow: Tests taking >30s (model loads)")
+    config.addinivalue_line("markers", "requires_llm: Tests calling external LLM API")
+    config.addinivalue_line("markers", "requires_redis: Tests requiring Redis")
+    config.addinivalue_line("markers", "requires_db: Tests requiring database")
+
+
+@pytest.fixture(scope="session", autouse=True)
+def setup_env():
+    os.environ.setdefault("SUPERTONIC_CACHE_DIR", str(WEIGHT_DIR / "supertonic"))
 
 
 @pytest.fixture(scope="session")
@@ -20,8 +35,6 @@ def engine():
     engine = create_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": False}, echo=False)
     SQLModel.metadata.create_all(engine)
     yield engine
-    # Clean up test DB after all tests
-    import os
     try:
         os.remove("./test_eroom.db")
     except OSError:
@@ -37,7 +50,8 @@ def db_session(engine):
         yield session
     finally:
         session.close()
-        transaction.rollback()
+        if transaction.is_active:
+            transaction.rollback()
         connection.close()
 
 
@@ -47,7 +61,7 @@ def client(db_session):
         yield db_session
 
     async def override_rate_limit(request=None):
-        pass  # no-op in tests — Redis may not be available
+        pass
 
     app.dependency_overrides[get_db_session] = override_get_session
     app.dependency_overrides[rate_limit_login] = override_rate_limit
@@ -58,9 +72,13 @@ def client(db_session):
 
 @pytest.fixture
 def test_user(db_session):
+    from app.model.user import User
+
     user = User(
         email="test@example.com",
         password_hash=hash_password("password123"),
+        first_name="Test",
+        last_name="User",
         display_name="Test User",
         english_level="B1",
         learning_goal="Improve speaking",

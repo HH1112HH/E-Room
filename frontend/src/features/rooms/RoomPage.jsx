@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef, forwardRef, useImperativeHandle } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { LiveKitRoom, GridLayout, ParticipantTile, useLocalParticipant, useRemoteParticipants, useRoomContext, useTracks } from '@livekit/components-react';
+import { LiveKitRoom, GridLayout, ParticipantTile, useLocalParticipant, useRemoteParticipants, useRoomContext, useTracks, AudioTrack } from '@livekit/components-react';
 import '@livekit/components-styles';
 import { Track } from 'livekit-client';
 import { fetchJson, ApiClient, API_BASE_URL, getTokens } from '../../lib/api';
@@ -13,7 +13,7 @@ import {
   HiMicrophone as HiMicOff, HiPhoneXMark, HiChatBubbleLeftRight,
   HiUserGroup, HiShieldExclamation, HiClock, HiCheckCircle, HiArrowRight,
   HiHandRaised, HiFaceSmile, HiComputerDesktop,
-  HiUserPlus, HiUser, HiEllipsisVertical,
+  HiUserPlus, HiUser, HiEllipsisVertical, HiCog6Tooth,
 } from 'react-icons/hi2';
 
 const SIZES = { topbar: 56, controls: 68 };
@@ -245,6 +245,17 @@ function SelfPreview() {
   );
 }
 
+function RemoteAudioRenderer() {
+  const remoteParticipants = useRemoteParticipants();
+  return (
+    <>
+      {remoteParticipants?.map(p => (
+        <AudioTrack key={p.identity} trackRef={{ participant: p, source: Track.Source.Microphone }} />
+      ))}
+    </>
+  );
+}
+
 function WaitingForOthers() {
   return (
     <div className="waiting-card">
@@ -334,7 +345,7 @@ function ParticipantsPanel({ participants, onClose }) {
     <aside className="room-page__panel">
       <header className="room-page__panel-header">
         <div className="room-page__panel-header-left">
-          <HiUserGroup size={18} className="room-page__panel-header-icon" />
+          <span className="room-page__panel-header-icon"><HiUserGroup size={16} /></span>
           <h3 className="room-page__panel-header-title">Participants</h3>
           <span className="room-page__panel-header-count">{participants?.length ?? 0}</span>
         </div>
@@ -394,6 +405,140 @@ function ParticipantsPanel({ participants, onClose }) {
   );
 }
 
+const ENGLISH_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+const AGENT_LEVELS = [
+  { value: 'basic', label: 'Basic', desc: 'Basic pronunciation feedback' },
+  { value: 'advanced', label: 'Advanced', desc: 'Grammar + word choice tips' },
+  { value: 'full', label: 'Full', desc: 'Full AI conversation coach' },
+];
+const DURATIONS = [
+  { value: 300, label: '5 min' },
+  { value: 600, label: '10 min' },
+  { value: 900, label: '15 min' },
+  { value: 1200, label: '20 min' },
+  { value: 1800, label: '30 min' },
+  { value: 2700, label: '45 min' },
+  { value: 3600, label: '60 min' },
+];
+
+function ToggleSwitch({ label, value, onChange }) {
+  return (
+    <div className="room-settings__toggle-row" onClick={() => onChange(!value)}>
+      <span className="room-settings__toggle-label">{label}</span>
+      <div className={`room-settings__toggle ${value ? 'active' : ''}`}>
+        <div className="room-settings__toggle-knob" />
+      </div>
+    </div>
+  );
+}
+
+function RoomSettings({ roomId, current, onClose, onSave, api }) {
+  const [topic, setTopic] = useState(current.topic || '');
+  const [englishLevel, setEnglishLevel] = useState(current.english_level || '');
+  const [agentLevel, setAgentLevel] = useState(current.agent_level || 'basic');
+  const [maxParticipants, setMaxParticipants] = useState(current.max_participants || 5);
+  const [duration, setDuration] = useState(current.session_duration_seconds || 900);
+  const [enableHeartbeat, setEnableHeartbeat] = useState(current.enable_heartbeat !== false);
+  const [enableCorrection, setEnableCorrection] = useState(current.enable_pronunciation_correction !== false);
+  const [enableVoice, setEnableVoice] = useState(current.enable_voice_recognition !== false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
+
+  const handleSave = useCallback(async () => {
+    setSaving(true);
+    setSaveError('');
+    try {
+      await api.patch(`/rooms/${roomId}`, {
+        topic: topic || undefined,
+        english_level: englishLevel || undefined,
+        agent_level: agentLevel,
+        max_participants: maxParticipants,
+        session_duration_seconds: duration,
+        enable_heartbeat: enableHeartbeat,
+        enable_pronunciation_correction: enableCorrection,
+        enable_voice_recognition: enableVoice,
+      });
+      if (onSave) await onSave();
+      onClose();
+    } catch (err) {
+      setSaveError(err?.message || 'Save failed');
+    } finally {
+      setSaving(false);
+    }
+  }, [roomId, topic, englishLevel, agentLevel, maxParticipants, duration, enableHeartbeat, enableCorrection, enableVoice, api, onSave, onClose]);
+
+  return (
+    <aside className="room-page__panel">
+      <header className="room-page__panel-header">
+        <div className="room-page__panel-header-left">
+          <span className="room-page__panel-header-icon"><HiCog6Tooth size={16} /></span>
+          <h3 className="room-page__panel-header-title">Room Settings</h3>
+        </div>
+        <button onClick={onClose} aria-label="Close" className="room-page__panel-close-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+        </button>
+      </header>
+      <div className="room-page__panel-body room-settings__body">
+        <div className="room-settings__group">
+          <label className="room-settings__label">Topic</label>
+          <input className="room-settings__input" value={topic} onChange={e => setTopic(e.target.value)} placeholder="Discussion topic" />
+        </div>
+        <div className="room-settings__group">
+          <label className="room-settings__label">English Level</label>
+          <div className="room-settings__chips">
+            <button className={`room-settings__chip ${!englishLevel ? 'active' : ''}`} onClick={() => setEnglishLevel('')}>Any</button>
+            {ENGLISH_LEVELS.map(lv => (
+              <button key={lv} className={`room-settings__chip ${englishLevel === lv ? 'active' : ''}`} onClick={() => setEnglishLevel(lv)}>{lv}</button>
+            ))}
+          </div>
+        </div>
+        <div className="room-settings__group">
+          <label className="room-settings__label">AI Agent Level</label>
+          <div className="room-settings__agent-options">
+            {AGENT_LEVELS.map(al => (
+              <button key={al.value} className={`room-settings__agent-card ${agentLevel === al.value ? 'active' : ''}`} onClick={() => setAgentLevel(al.value)}>
+                <div className="room-settings__agent-name">{al.label}</div>
+                <div className="room-settings__agent-desc">{al.desc}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="room-settings__group">
+          <label className="room-settings__label">Max Participants: {maxParticipants}</label>
+          <div className="room-settings__chips">
+            {[2, 3, 4, 5].map(n => (
+              <button key={n} className={`room-settings__chip ${maxParticipants === n ? 'active' : ''}`} onClick={() => setMaxParticipants(n)}>{n}</button>
+            ))}
+          </div>
+        </div>
+        <div className="room-settings__group">
+          <label className="room-settings__label">Session Duration</label>
+          <div className="room-settings__chips">
+            {DURATIONS.map(d => (
+              <button key={d.value} className={`room-settings__chip ${duration === d.value ? 'active' : ''}`} onClick={() => setDuration(d.value)}>{d.label}</button>
+            ))}
+          </div>
+        </div>
+        <div className="room-settings__divider" />
+        <div className="room-settings__group">
+          <label className="room-settings__label">Features</label>
+          <ToggleSwitch label="Heartbeat questions" value={enableHeartbeat} onChange={setEnableHeartbeat} />
+          <ToggleSwitch label="Pronunciation correction" value={enableCorrection} onChange={setEnableCorrection} />
+          <ToggleSwitch label="Voice recognition" value={enableVoice} onChange={setEnableVoice} />
+        </div>
+      </div>
+      {saveError && <div className="room-settings__error">{saveError}</div>}
+      <div className="room-page__panel-footer room-settings__footer">
+        <button className="room-settings__btn room-settings__btn--cancel" onClick={onClose}>Cancel</button>
+        <button className="room-settings__btn room-settings__btn--save" onClick={handleSave} disabled={saving}>
+          {saving ? 'Saving...' : 'Save Settings'}
+        </button>
+      </div>
+    </aside>
+  );
+}
+
+
 export function RoomPage() {
   const api = new ApiClient();
   const { roomId } = useParams();
@@ -402,6 +547,7 @@ export function RoomPage() {
   const [token, setToken] = useState('');
   const [livekitUrl, setLivekitUrl] = useState('');
   const [roomName, setRoomName] = useState('');
+  const [roomData, setRoomData] = useState(null);
   const [error, setError] = useState('');
   const [phase, setPhase] = useState('loading');
   const [activePanel, setActivePanel] = useState(null);
@@ -436,6 +582,14 @@ export function RoomPage() {
     setPhase('loading');
     setRetrySignal(s => s + 1);
   }, []);
+  const refreshRoomData = useCallback(async () => {
+    try {
+      const data = await fetchJson(`/rooms/${roomId}`);
+      setRoomData(data);
+      setRoomName(data?.topic || data?.name || data?.room_name || 'Room');
+    } catch {}
+  }, [roomId]);
+
   const handleLeave = useCallback(() => {
     hasLeftRef.current = true;
     api.post(`/rooms/${roomId}/leave`, {}).catch(() => {});
@@ -491,6 +645,7 @@ export function RoomPage() {
         const roomData = await fetchJson(`/rooms/${roomId}`);
         if (cancelled) return;
         setRoomName(roomData?.topic || roomData?.name || roomData?.room_name || 'Room');
+        setRoomData(roomData);
         if (!joinedRef.current) {
           await api.post(`/rooms/${roomId}/join`, {});
           joinedRef.current = true;
@@ -500,11 +655,12 @@ export function RoomPage() {
         if (cancelled) return;
 
         const backendUrl = tokenResult.livekit_url || '';
+        const host = `${window.location.hostname}:7880`;
         const lkUrl = backendUrl
-
-          .replace(/ws:\/\/livekit:/, 'ws://localhost:')
-          .replace(/ws:\/\/lk:/, 'ws://localhost:')
-        const finalUrl = lkUrl || 'ws://localhost:7880';
+          .replace(/localhost/, window.location.hostname)
+          .replace(/ws:\/\/livekit:/, `ws://${host}`)
+          .replace(/ws:\/\/lk:/, `ws://${host}`)
+        const finalUrl = lkUrl || `ws://${host}`;
         setToken(tokenResult.livekit_token);
         setLivekitUrl(finalUrl);
         setPhase('connected');
@@ -523,7 +679,8 @@ export function RoomPage() {
   useEffect(() => {
     if (phase !== 'connected') return;
     const authToken = getTokens()?.access || '';
-    const wsBase = API_BASE_URL.replace('http://', 'ws://').replace('/api/v1', '');
+    const loc = window.location;
+    const wsBase = import.meta.env.VITE_WS_BASE_URL || `${loc.protocol === 'https:' ? 'wss:' : 'ws:'}//${loc.host}`;
 
     const wsUrl = `${wsBase}/ws/rooms/${roomId}?token=${authToken}`;
     const ws = new WebSocket(wsUrl);
@@ -646,7 +803,7 @@ export function RoomPage() {
     );
   }
 
-  const showSidebar = activePanel === 'chat' || activePanel === 'participants';
+  const showSidebar = activePanel === 'chat' || activePanel === 'participants' || activePanel === 'settings';
   const participantCount = participantsList.length || 1;
 
   return (
@@ -668,10 +825,13 @@ export function RoomPage() {
             <span className="room-page__hand-raised-badge">✋ Raised</span>
           )}
           <button className={`meet-participant-count ${activePanel==='participants'?'active':''}`} onClick={openParticipants} title="View participants"
-            style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 99, background: activePanel==='participants'?'rgba(255,255,255,0.12)':'rgba(255,255,255,0.06)', border: 'none', cursor: 'pointer', fontSize: 12, color: activePanel==='participants'?COLOR.accent:COLOR.muted, fontFamily: 'inherit', transition: 'all 0.15s' }}
+            style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 99, background: activePanel==='participants'?'rgba(255,255,255,0.14)':'rgba(255,255,255,0.06)', border: 'none', cursor: 'pointer', fontSize: 12, color: '#ffffff', fontFamily: 'inherit', transition: 'all 0.15s' }}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
             <span>{participantCount}</span>
+          </button>
+          <button className={`meet-chat-toggle ${activePanel==='settings'?'active':''}`} onClick={()=>togglePanel('settings')} title="Room settings" style={{ marginRight: 4 }}>
+            <HiCog6Tooth size={18} />
           </button>
           <button className={`meet-chat-toggle ${activePanel==='chat'?'active':''}`} onClick={()=>togglePanel('chat')} title={activePanel==='chat'?'Hide chat':'Show chat'}>
             <HiChatBubbleLeftRight size={18} />
@@ -683,6 +843,7 @@ export function RoomPage() {
         <div className={`meet-video ${showSidebar ? 'with-chat' : 'full'}`}>
           <LiveKitRoom token={token} serverUrl={livekitUrl} video={true} audio={true} onDisconnected={handleDisconnected}
             className="room-page__livekit" data-lk-theme="default">
+            <RemoteAudioRenderer />
             <MeetControls onLeave={handleLeave} togglePanel={togglePanel} activePanel={activePanel}
               handRaised={handRaised} setHandRaised={setHandRaised}
               showEmojiPicker={showEmojiPicker} setShowEmojiPicker={setShowEmojiPicker}
@@ -703,6 +864,11 @@ export function RoomPage() {
         />
         {activePanel === 'participants' && (
           <aside className="meet-chat-panel"><ParticipantsPanel participants={participantsList} onClose={() => setActivePanel(null)} /></aside>
+        )}
+        {activePanel === 'settings' && roomData && (
+          <aside className="meet-chat-panel">
+            <RoomSettings roomId={roomId} current={roomData} onClose={() => setActivePanel(null)} onSave={refreshRoomData} api={api} />
+          </aside>
         )}
       </div>
 

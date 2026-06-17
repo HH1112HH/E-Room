@@ -23,3 +23,4 @@ class MessageResponse(BaseModel):
     content: str
     message_type: MessageType
     payload: dict = Field(default_factory=dict)
+    created_at: str | None = None

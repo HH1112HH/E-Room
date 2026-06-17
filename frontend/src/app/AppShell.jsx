@@ -10,6 +10,8 @@ import { useAuth } from './AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { Avatar } from '../components/ui/Avatar';
 import { LanguageSwitch } from '../components/ui/LanguageSwitch';
+import { Logo } from '../components/ui/Logo';
+import '../styles/AppShell.css';
 
 export function AppShell({ children }) {
   const { user, logout } = useAuth();
@@ -45,31 +47,19 @@ export function AppShell({ children }) {
   ];
 
   return (
-    <div className="app-shell d-flex flex-column min-vh-100" style={{ background: 'var(--color-bg)' }}>
+    <div className="app-shell d-flex flex-column min-vh-100">
       <Navbar
         expand="lg"
         fixed="top"
         expanded={expanded}
         onToggle={setExpanded}
         className="glass-panel"
-        style={{
-          background: 'var(--color-bg-glass)',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-          borderBottom: '1px solid var(--color-border)',
-          fontFamily: 'Nunito, sans-serif',
-        }}
       >
         <Container>
           <Navbar.Brand as={Link} to="/" onClick={() => setExpanded(false)}
-            className="fw-extrabold d-flex align-items-center gap-2"
-            style={{ color: 'var(--color-text-primary)', fontSize: '1.1rem' }}
+            className="fw-extrabold d-flex align-items-center"
           >
-            <span className="d-flex align-items-center justify-content-center rounded-3"
-              style={{ width: 32, height: 32, background: 'var(--color-accent)', color: '#fff', fontSize: '0.95rem', fontWeight: 800 }}>
-              E
-            </span>
-            E-Room
+            <Logo />
           </Navbar.Brand>
 
           <Navbar.Toggle aria-controls="main-navbar" className="border-0" />
@@ -95,8 +85,7 @@ export function AppShell({ children }) {
 
             <Nav className="align-items-lg-center gap-1">
               <LanguageSwitch compact />
-              <Button variant="link" size="sm" className="text-decoration-none rounded-pill px-2 d-flex align-items-center"
-                style={{ color: 'var(--color-text-secondary)', fontSize: '1.1rem' }}
+              <Button variant="link" size="sm" className="text-decoration-none rounded-pill px-2 d-flex align-items-center app-shell-theme-btn"
                 onClick={toggleTheme} title={t('common.toggle_theme')}
               >
                 {theme === 'dark' ? <HiSun size={18} /> : <HiMoon size={18} />}
@@ -117,8 +106,7 @@ export function AppShell({ children }) {
                   </Nav.Link>
 
                   <Button variant="link" size="sm"
-                    className="text-decoration-none rounded-pill px-2 d-none d-lg-flex align-items-center"
-                    style={{ color: 'var(--color-text-muted)', fontSize: '1rem' }}
+                    className="text-decoration-none rounded-pill px-2 d-none d-lg-flex align-items-center app-shell-signout-btn"
                     onClick={handleLogout} title="Sign out"
                   >
                     <HiArrowRightOnRectangle size={18} />
@@ -139,25 +127,37 @@ export function AppShell({ children }) {
         </Container>
       </Navbar>
 
-      <main style={{ paddingTop: '72px', flex: 1 }}>{children}</main>
+      <main className="app-shell-main">{children}</main>
 
-      <footer className="py-3 border-top" style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-elevated)' }}>
-        <Container>
-          <div className="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
-            <small className="text-muted">
-              <span className="fw-bold" style={{ fontFamily: 'Nunito, sans-serif', color: 'var(--color-text-primary)' }}>E-Room</span>
-              {' '}— {t('footer.tagline')}
-            </small>
-            <div className="d-flex gap-3">
-              <Link to="/" className="text-muted small text-decoration-none">Home</Link>
-              <Link to="/learning" className="text-muted small text-decoration-none">Meeting</Link>
-              <Link to="/blog" className="text-muted small text-decoration-none">Blog</Link>
-              <Link to="/leaderboard" className="text-muted small text-decoration-none">Rankings</Link>
-              <Link to="/pricing" className="text-muted small text-decoration-none">Pricing</Link>
-              <Link to="/contact" className="text-muted small text-decoration-none">Contact</Link>
+      <footer className="hp-footer">
+        <div className="hp-contained">
+          <div className="hp-footer-grid">
+            <div className="hp-footer-brand">
+              <Logo size={36} />
+              <p>{t('footer.tagline')}</p>
+            </div>
+            <div className="hp-footer-col">
+              <h4>Product</h4>
+              <Link to="/learning">Meeting</Link>
+              <Link to="/pricing">Pricing</Link>
+              <Link to="/leaderboard">Rankings</Link>
+            </div>
+            <div className="hp-footer-col">
+              <h4>Resources</h4>
+              <Link to="/blog">Blog</Link>
+              <Link to="/contact">Contact</Link>
+              <Link to="/faq">FAQ</Link>
+            </div>
+            <div className="hp-footer-col">
+              <h4>Legal</h4>
+              <a href="#privacy">Privacy Policy</a>
+              <a href="#terms">Terms of Service</a>
             </div>
           </div>
-        </Container>
+          <div className="hp-footer-bottom">
+            <span>&copy; {new Date().getFullYear()} E-Room. All rights reserved.</span>
+          </div>
+        </div>
       </footer>
     </div>
   );

@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { Card } from '../../components/ui/Card';
 import { useAsyncResource } from '../../hooks/useAsyncResource';
 import { fetchJson } from '../../lib/api';
+import '../../styles/DevTools.css';
 
 function statusPill(status) {
   if (status === 'ACTIVE') return <span className="pill pill-active">active</span>;
@@ -18,7 +19,7 @@ export function RoomList({ onSelectRoom }) {
       data.length > 0 ? <span className="pill pill-active">{data.length} total</span> : null
     }>
       {isLoading ? <p className="empty-state">Loading rooms...</p> : null}
-      {error ? <p className="empty-state" style={{ color: '#f87171' }}>{error}</p> : null}
+      {error ? <p className="empty-state empty-state-error">{error}</p> : null}
       {!isLoading && !error && data.length === 0 ? (
         <p className="empty-state">No rooms yet. Create one to get started.</p>
       ) : null}
@@ -31,14 +32,14 @@ export function RoomList({ onSelectRoom }) {
           >
             <div>
               <strong>{room.topic || room.livekit_room_name}</strong>
-              <div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+              <div className="room-list-tags">
                 {room.tags?.map((t) => (
-                  <span key={t} className="tag-chip" style={{ fontSize: 11, padding: '2px 8px' }}>{t}</span>
+                  <span key={t} className="tag-chip tag-chip-sm">{t}</span>
                 ))}
               </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ color: '#94a3b8', fontSize: 12 }}>{room.current_participants}/{room.max_participants}</span>
+            <div className="room-list-meta">
+              <span className="room-list-count">{room.current_participants}/{room.max_participants}</span>
               {statusPill(room.status)}
             </div>
           </li>

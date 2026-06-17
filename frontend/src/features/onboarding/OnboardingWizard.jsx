@@ -10,6 +10,7 @@ import { StepTagPicker } from './StepTagPicker';
 import { StepJobTitle } from './StepJobTitle';
 import { StepLearningGoal } from './StepLearningGoal';
 import { StepConfirm } from './StepConfirm';
+import '../../styles/OnboardingWizard.css';
 
 const STEPS = [
   { key: 'level', title: 'English Level', component: StepEnglishLevel },
@@ -53,13 +54,7 @@ export function OnboardingWizard() {
     saveProgress(updated);
   }
 
-  const canProceed = () => {
-    if (step === 0) return true; // level is skippable
-    if (step === 1) return true; // tags are skippable (but auto-match disabled)
-    if (step === 2) return true; // job is skippable
-    if (step === 3) return true; // goal is skippable
-    return true;
-  };
+  const canProceed = () => true;
 
   async function handleFinish() {
     setSaving(true);
@@ -98,63 +93,25 @@ export function OnboardingWizard() {
   const progress = ((step + 1) / STEPS.length) * 100;
 
   return (
-    <div style={{
-      minHeight: '100vh', background: 'var(--color-bg)',
-      display: 'flex', flexDirection: 'column',
-    }}>
-      {/* Progress bar */}
-      <div style={{
-        position: 'fixed', top: 0, left: 0, right: 0, height: 3, zIndex: 100,
-        background: 'var(--color-border)',
-      }}>
-        <div style={{
-          height: '100%', width: `${progress}%`,
-          background: 'var(--color-accent-gradient)',
-          transition: 'width 0.4s ease',
-        }} />
+    <div className="onboarding-wizard">
+      <div className="onboarding-wizard__progress">
+        <div className="onboarding-wizard__progress-fill" style={{ width: `${progress}%` }} />
       </div>
 
-      <Container className="py-5" style={{ maxWidth: 600, flex: 1, display: 'flex', flexDirection: 'column' }}>
-        {/* Header */}
-        <div className="text-center mb-4">
-          <div style={{
-            width: 48, height: 48, borderRadius: '50%',
-            background: 'var(--color-accent-gradient)',
-            color: '#fff', display: 'flex', alignItems: 'center',
-            justifyContent: 'center', margin: '0 auto 12px',
-            fontWeight: 800, fontFamily: 'Nunito, sans-serif',
-            fontSize: '1.2rem', boxShadow: 'var(--shadow-glow)',
-          }}>E</div>
-          <h2 className="fw-extrabold mb-1" style={{ fontFamily: 'Nunito, sans-serif' }}>
-            {step === 0 ? 'Welcome to E-Room!' : STEPS[step].title}
-          </h2>
-          <p className="text-muted mb-0" style={{ fontSize: '0.9rem' }}>
-            Step {step + 1} of {STEPS.length}
-          </p>
+      <Container className="onboarding-wizard__container">
+        <div className="onboarding-wizard__logo">E</div>
+
+        <div className="onboarding-wizard__heading">
+          <h1>{step === 0 ? 'Welcome to E-Room!' : STEPS[step].title}</h1>
+          <p>Step {step + 1} of {STEPS.length}</p>
         </div>
 
-        {/* Step content */}
-        <div style={{
-          flex: 1,
-          background: 'var(--color-bg-elevated)',
-          border: '1px solid var(--color-border)',
-          borderRadius: 20, padding: '32px 24px',
-          boxShadow: 'var(--shadow-card)',
-        }}>
-          <CurrentStep
-            form={form}
-            updateField={updateField}
-            error={error}
-          />
-        </div>
+        <CurrentStep form={form} updateField={updateField} error={error} />
 
-        {/* Navigation buttons */}
-        <div style={{
-          display: 'flex', justifyContent: 'space-between', marginTop: 20, gap: 12,
-        }}>
+        <div className="onboarding-wizard__nav">
           <Button
             variant="outline-secondary"
-            className="rounded-pill px-4"
+            className="px-4"
             onClick={() => step > 0 ? setStep(s => s - 1) : navigate('/')}
           >
             {step === 0 ? 'Skip Setup' : 'Back'}
@@ -163,10 +120,9 @@ export function OnboardingWizard() {
           {isLast ? (
             <Button
               variant="primary"
-              className="rounded-pill px-4 fw-semibold"
+              className="px-4 fw-semibold onboarding-wizard__btn-continue"
               onClick={handleFinish}
               disabled={saving}
-              style={{ minWidth: 140 }}
             >
               {saving ? (
                 <><Spinner animation="border" size="sm" className="me-2" /> Saving...</>
@@ -175,7 +131,7 @@ export function OnboardingWizard() {
           ) : (
             <Button
               variant="primary"
-              className="rounded-pill px-4 fw-semibold"
+              className="px-4 fw-semibold"
               onClick={() => canProceed() && setStep(s => s + 1)}
               disabled={!canProceed()}
             >

@@ -1,4 +1,5 @@
 import { useSubscriptionStore } from '../../stores/subscriptionStore';
+import '../../styles/QuotaIndicator.css';
 
 export function QuotaIndicator({ type = 'corrections', used = 0, total = 3 }) {
   const { tier } = useSubscriptionStore();
@@ -8,13 +9,8 @@ export function QuotaIndicator({ type = 'corrections', used = 0, total = 3 }) {
   const isExhausted = !isUnlimited && used >= total;
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      <div style={{
-        flex: 1, height: 6, borderRadius: 99,
-        background: 'var(--color-bg-surface)',
-        overflow: 'hidden',
-        maxWidth: 80,
-      }}>
+    <div className="quota-indicator">
+      <div className="quota-track">
         <div style={{
           height: '100%', width: isUnlimited ? 100 : `${pct}%`,
           borderRadius: 99,
@@ -34,11 +30,8 @@ export function QuotaIndicator({ type = 'corrections', used = 0, total = 3 }) {
 
 export function QuotaRow({ label, type, used, total }) {
   return (
-    <div style={{
-      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-      padding: '6px 0', fontSize: '0.78rem',
-    }}>
-      <span style={{ color: 'var(--color-text-secondary)', fontWeight: 600 }}>{label}</span>
+    <div className="quota-row">
+      <span className="quota-row-label">{label}</span>
       <QuotaIndicator type={type} used={used} total={total} />
     </div>
   );

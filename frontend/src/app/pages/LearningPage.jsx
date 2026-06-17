@@ -36,86 +36,43 @@ function RoomCard({ room }) {
   const max = room.max_participants || 5;
 
   return (
-    <Card className="h-100 border-0 room-card-v2 fade-in" style={{
-      borderRadius: 16, overflow: 'hidden',
-      background: 'var(--color-bg-elevated)',
-      boxShadow: 'var(--shadow-card)',
-      transition: 'all 0.25s ease',
-    }}>
+    <Card className="h-100 border-0 room-card-v2 fade-in">
       <Card.Body className="d-flex flex-column justify-content-between gap-1 p-4">
 
         <div className="d-flex justify-content-between align-items-start gap-2">
-          <Card.Title style={{
-            fontFamily: "'Nunito', sans-serif", fontWeight: 800,
-            fontSize: '1.05rem', margin: 0, color: 'var(--color-text-primary)',
-            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-            flex: 1, minWidth: 0,
-          }}>
+          <Card.Title className="room-card-v2__title">
             {room.topic || room.name || 'Untitled'}
           </Card.Title>
-          <Badge bg={status.badge} pill className="text-uppercase fw-semibold flex-shrink-0"
-            style={{ fontSize: '0.62rem', padding: '4px 10px' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <Badge bg={status.badge} pill className="text-uppercase fw-semibold flex-shrink-0 badge-pill-sm">
+            <span className="badge-inner-flex">
               <StatusIcon size={12} /> {status.label}
             </span>
           </Badge>
         </div>
 
-        <Card.Text style={{
-          color: 'var(--color-text-secondary)', fontSize: '0.83rem',
-          lineHeight: 1.55,
-          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
-          overflow: 'hidden',
-        }}>
+        <Card.Text className="room-card-v2__desc">
           {room.description || 'Join this room to practice English speaking skills.'}
         </Card.Text>
 
-        <span style={{
-          display: 'inline-flex', alignItems: 'center', gap: 4,
-          padding: '3px 10px', borderRadius: 99, marginBottom: 12,
-          background: 'var(--color-accent-muted)', color: 'var(--color-accent)',
-          fontSize: '0.68rem', fontWeight: 700, alignSelf: 'flex-start',
-        }}>
+        <span className="room-card-v2__level">
           <HiLanguage size={11} /> {level.toUpperCase()}
         </span>
 
         <div className="d-flex flex-wrap align-items-center gap-2">
           {tags.slice(0, 3).map(tag => (
-            <span key={tag} style={{
-              display: 'inline-block', padding: '3px 8px',
-              background: 'var(--color-bg-surface)',
-              color: 'var(--color-text-secondary)',
-              borderRadius: 99, fontSize: '0.65rem', fontWeight: 600,
-            }}>
-              #{tag}
-            </span>
+            <span key={tag} className="room-card-v2__tag">#{tag}</span>
           ))}
           {tags.length > 3 && (
-            <span style={{
-              fontSize: '0.6rem', color: 'var(--color-text-muted)', fontWeight: 600,
-            }}>
-              +{tags.length - 3}
-            </span>
+            <span className="room-card-v2__tag-more">+{tags.length - 3}</span>
           )}
         </div>
 
-        <div className="d-flex justify-content-between align-items-center pt-2" style={{ borderTop: '1px solid var(--color-border)' }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'var(--color-text-muted)', fontSize: '0.75rem', fontWeight: 600 }}>
+        <div className="room-card-v2__footer">
+          <span className="room-card-v2__participants">
             <HiUsers size={14} /> {current}/{max}
           </span>
-          <Link to={`/rooms/${room.id}`} style={{ textDecoration: 'none' }}>
-            <button style={{
-              padding: '6px 16px', borderRadius: 10,
-              background: 'var(--color-accent-gradient)', color: '#fff',
-              border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: '0.78rem',
-              fontFamily: 'inherit', transition: 'all 0.2s',
-              display: 'flex', alignItems: 'center', gap: 5,
-            }}
-            onMouseOver={e => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(255,255,255,0.08)'; }}
-            onMouseOut={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none'; }}
-            >
-              Join <HiArrowRight size={13} />
-            </button>
+          <Link to={`/rooms/${room.id}`} className="room-card-v2__join-btn">
+            Join <HiArrowRight size={13} />
           </Link>
         </div>
       </Card.Body>
@@ -128,35 +85,25 @@ function MatchResultCard({ room, onJoin, onRetry, onClose }) {
   const StatusIcon = status.icon;
 
   return (
-    <div className="scale-in p-4 rounded-4"
-      style={{
-        background: 'var(--color-bg-elevated)',
-        border: '2px solid var(--color-success)',
-        boxShadow: 'var(--shadow-glow)',
-        maxWidth: 420, width: '100%',
-      }}>
+    <div className="scale-in p-4 match-card">
       <div className="text-center mb-3">
-        <div className="d-inline-flex align-items-center justify-content-center rounded-circle mb-2"
-          style={{ width: 56, height: 56, background: 'var(--color-success-muted)' }}>
-          <HiCheckCircle size={32} style={{ color: 'var(--color-success)' }} />
+        <div className="d-inline-flex align-items-center justify-content-center modal-badge modal-badge--success mb-2">
+          <HiCheckCircle size={32} className="icon-success" />
         </div>
-        <h5 className="fw-extrabold mb-1" style={{ fontFamily: 'Nunito, sans-serif' }}>Match Found!</h5>
+        <h5 className="fw-extrabold mb-1">Match Found!</h5>
         <p className="text-muted small mb-0">We found a great room for you</p>
       </div>
 
-      <div className="p-3 rounded-3 mb-3" style={{ background: 'var(--color-bg-surface)' }}>
+      <div className="match-card__detail mb-3">
         <div className="d-flex align-items-center gap-2 mb-2">
           <StatusIcon size={18} style={{ color: status.color }} />
           <h6 className="fw-bold mb-0">{room.topic || room.name || 'Untitled'}</h6>
-          <Badge bg={status.badge} pill style={{ fontSize: '0.6rem' }}>{status.label}</Badge>
+          <Badge bg={status.badge} pill className="badge-tiny">{status.label}</Badge>
         </div>
         <p className="text-muted small mb-2">{room.description || 'Join this room to practice English.'}</p>
         <div className="d-flex flex-wrap gap-1 mb-2">
           {room.tags?.slice(0, 4).map(tag => (
-            <span key={tag} className="rounded-pill fw-medium"
-              style={{ display: 'inline-block', padding: '0.25em 0.65em', background: 'var(--color-accent-muted)', color: 'var(--color-accent)', fontSize: '0.62rem', fontWeight: 600 }}>
-              #{tag}
-            </span>
+            <span key={tag} className="match-card__tag">#{tag}</span>
           ))}
         </div>
         <div className="d-flex gap-3 text-muted small">
@@ -321,13 +268,13 @@ export function LearningPage() {
   ];
 
   return (
-    <div className="learning-page fade-in" style={{ minHeight: '80vh' }}>
+    <div className="learning-page fade-in">
       <Container className="py-4">
 
         <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-          <div>
-            <h2 className="fw-extrabold mb-1 d-flex align-items-center gap-2" style={{ fontFamily: 'Nunito, sans-serif' }}>
-              <HiAcademicCap size={28} style={{ color: 'var(--color-accent)' }} />
+          <div className="page-header">
+            <h2>
+              <HiAcademicCap size={28} className="icon-accent" />
               Learning Rooms
             </h2>
             <p className="text-muted mb-0">Find a room, join a conversation, improve your English</p>
@@ -353,8 +300,7 @@ export function LearningPage() {
               onClick={loadRooms} disabled={loading}>
               <FiRefreshCw size={14} className={loading ? 'spin' : ''} /> Refresh
             </Button>
-            <Button variant="primary" size="sm" className="rounded-pill d-flex align-items-center gap-1 fw-semibold px-3"
-              style={{ background: 'var(--color-accent-gradient)' }}
+            <Button variant="primary" size="sm" className="rounded-pill d-flex align-items-center gap-1 fw-semibold px-3 accent-gradient-btn"
               onClick={() => setShowCreateRoom(true)}>
               <HiPlusCircle size={16} /> Create Room
             </Button>
@@ -368,12 +314,12 @@ export function LearningPage() {
               <Col xs={6} md={3} key={i}>
                 <Card className="border-0 shadow-sm h-100 stat-card">
                   <Card.Body className="p-3 d-flex align-items-center gap-3">
-                    <div className="d-flex align-items-center justify-content-center rounded-3"
-                      style={{ width: 40, height: 40, background: `${stat.color}18` }}>
+                    <div className="stat-card__icon"
+                      style={{ background: `${stat.color}18` }}>
                       <Icon size={20} style={{ color: stat.color }} />
                     </div>
                     <div>
-                      <div className="fw-bold fs-5 lh-1" style={{ color: 'var(--color-text-primary)' }}>{stat.value}</div>
+                      <div className="stat-card__value">{stat.value}</div>
                       <small className="text-muted">{stat.label}</small>
                     </div>
                   </Card.Body>
@@ -398,13 +344,12 @@ export function LearningPage() {
               );
             })}
           </div>
-          <div className="flex-grow-1" style={{ maxWidth: 320 }}>
+          <div className="flex-grow-1 search-wrapper">
             <div className="position-relative">
-              <FiSearch size={16} className="position-absolute top-50 translate-middle-y ms-3"
-                style={{ color: 'var(--color-text-muted)', zIndex: 5 }} />
+              <FiSearch size={16} className="position-absolute top-50 translate-middle-y ms-3 search-icon" />
               <Form.Control type="text" placeholder="Search rooms..."
                 value={search} onChange={e => setSearch(e.target.value)}
-                className="rounded-pill ps-5" style={{ fontSize: '0.85rem' }} />
+                className="rounded-pill ps-5 search-input" />
             </div>
           </div>
         </div>
@@ -416,14 +361,14 @@ export function LearningPage() {
           </div>
         ) : error ? (
           <div className="text-center py-5">
-            <HiExclamationTriangle size={64} className="mb-3" style={{ color: 'var(--color-warning)' }} />
+            <HiExclamationTriangle size={64} className="mb-3 icon-warning" />
             <h5 className="fw-bold">Couldn't load rooms</h5>
             <p className="text-muted mb-3">{error}</p>
             <Button variant="primary" className="rounded-pill px-4" onClick={loadRooms}>Try Again</Button>
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-5">
-            <HiAcademicCap size={64} className="mb-3" style={{ color: 'var(--color-text-muted)' }} />
+            <HiAcademicCap size={64} className="mb-3 icon-muted" />
             <h5 className="fw-bold">{search || filter !== 'all' ? 'No matching rooms' : 'No rooms yet'}</h5>
             <p className="text-muted mb-3">
               {search || filter !== 'all'
@@ -452,29 +397,23 @@ export function LearningPage() {
                 <span className="ms-2 text-muted">Loading more rooms...</span>
               </div>
             )}
-            <div ref={loadMoreRef} style={{ height: 1 }} />
+            <div ref={loadMoreRef} className="sentinel" />
           </>
         )}
       </Container>
 
       <Modal show={showConfig} onHide={() => setShowConfig(false)} centered contentClassName="bg-transparent border-0">
-        <div className="p-4 rounded-4 scale-in"
-          style={{
-            background: 'var(--color-bg-elevated)',
-            border: '1px solid var(--color-border)',
-            boxShadow: 'var(--shadow-lg)',
-          }}>
+        <div className="p-4 modal-inner scale-in">
           <div className="text-center mb-4">
-            <div className="d-inline-flex align-items-center justify-content-center rounded-circle mb-2"
-              style={{ width: 56, height: 56, background: 'var(--color-accent-muted)' }}>
-              <HiBolt size={28} style={{ color: 'var(--color-accent)' }} />
+              <div className="d-inline-flex align-items-center justify-content-center modal-badge modal-badge--accent mb-2">
+              <HiBolt size={28} className="icon-accent" />
             </div>
-            <h5 className="fw-extrabold mb-1" style={{ fontFamily: 'Nunito, sans-serif' }}>Quick Match</h5>
+            <h5 className="fw-extrabold mb-1">Quick Match</h5>
             <p className="text-muted small mb-0">Tell us your preferences and we'll find the perfect room</p>
           </div>
 
           <Form.Group className="mb-3">
-            <Form.Label className="fw-semibold small" style={{ color: 'var(--color-text-secondary)' }}>
+            <Form.Label className="fw-semibold small text-secondary">
               Your English Level
             </Form.Label>
             <div className="d-flex gap-2 flex-wrap">
@@ -491,7 +430,7 @@ export function LearningPage() {
           </Form.Group>
 
           <Form.Group className="mb-4">
-            <Form.Label className="fw-semibold small" style={{ color: 'var(--color-text-secondary)' }}>
+            <Form.Label className="fw-semibold small text-secondary">
               Topics You're Interested In
             </Form.Label>
             <div className="d-flex gap-2 flex-wrap">
@@ -523,8 +462,7 @@ export function LearningPage() {
           </div>
 
           <div className="text-center mt-3">
-            <Button variant="link" size="sm" className="text-decoration-none"
-              style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem' }}
+            <Button variant="link" size="sm" className="text-decoration-none skip-link"
               onClick={() => { setShowConfig(false); startQuickMatch(); }}>
               Skip & try with defaults
             </Button>
@@ -534,19 +472,12 @@ export function LearningPage() {
 
       <Modal show={matchOpen && !matchResult && !matchError} onHide={resetMatch} centered
         contentClassName="bg-transparent border-0">
-        <div className="p-5 rounded-4 text-center"
-          style={{
-            background: 'var(--color-bg-elevated)',
-            border: '1px solid var(--color-border)',
-            boxShadow: 'var(--shadow-lg)',
-            minWidth: 320,
-          }}>
-          <div className="d-inline-flex align-items-center justify-content-center rounded-circle mb-3 pulse-glow"
-            style={{ width: 72, height: 72, background: 'var(--color-accent-muted)' }}>
-            <HiMagnifyingGlass size={36} style={{ color: 'var(--color-accent)' }} />
+        <div className="p-5 modal-inner text-center match-modal-body">
+          <div className="d-inline-flex align-items-center justify-content-center rounded-circle mb-3 pulse-glow searching-circle">
+            <HiMagnifyingGlass size={36} className="icon-accent" />
           </div>
-          <ProgressBar now={(matchStep + 1) * 25} className="mb-3" style={{ height: 4, borderRadius: 2 }} />
-          <p className="fw-semibold mb-0" style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>
+          <ProgressBar now={(matchStep + 1) * 25} className="mb-3 match-progress" />
+          <p className="fw-semibold mb-0 text-secondary match-step-text">
             {MATCH_STEPS[matchStep]}
           </p>
           <small className="text-muted">Please wait a moment...</small>
@@ -563,18 +494,12 @@ export function LearningPage() {
             onClose={resetMatch}
           />
         ) : matchError ? (
-          <div className="p-4 rounded-4 scale-in" style={{
-            background: 'var(--color-bg-elevated)',
-            border: '2px solid var(--color-warning)',
-            boxShadow: 'var(--shadow-lg)',
-            maxWidth: 400, width: '100%',
-          }}>
+          <div className="p-4 modal-inner scale-in no-match-card">
             <div className="text-center mb-3">
-              <div className="d-inline-flex align-items-center justify-content-center rounded-circle mb-2"
-                style={{ width: 56, height: 56, background: 'var(--color-warning-muted)' }}>
-                <HiExclamationTriangle size={32} style={{ color: 'var(--color-warning)' }} />
+                <div className="d-inline-flex align-items-center justify-content-center modal-badge modal-badge--warning mb-2">
+                  <HiExclamationTriangle size={32} className="icon-warning" />
               </div>
-              <h5 className="fw-extrabold mb-1" style={{ fontFamily: 'Nunito, sans-serif' }}>No Match</h5>
+              <h5 className="fw-extrabold mb-1">No Match</h5>
               <p className="text-muted small mb-0">{matchError}</p>
             </div>
             <div className="d-flex gap-2">

@@ -23,3 +23,12 @@ frontend/build/
 # misc
 .vscode/
 .idea/
+
+.codegraph/
+.opencode/
+
+# model weights
+backend/app/weight/
+
+# temp files
+temp.json

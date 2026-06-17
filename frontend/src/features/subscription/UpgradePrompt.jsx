@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSubscriptionStore } from '../../stores/subscriptionStore';
 import { HiRocketLaunch, HiXMark } from 'react-icons/hi2';
+import '../../styles/UpgradePrompt.css';
 
 export function UpgradePrompt({ feature = 'this feature', visible, onClose }) {
   const navigate = useNavigate();
@@ -47,35 +48,15 @@ export function UpgradePrompt({ feature = 'this feature', visible, onClose }) {
   ];
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 1060,
-      background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: 16,
-    }}>
-      <div style={{
-        maxWidth: 600, width: '100%',
-        background: 'var(--color-bg-elevated)',
-        border: '1px solid var(--color-border-strong)',
-        borderRadius: 20, padding: '28px 24px',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.45)',
-        animation: 'scaleIn 0.25s ease',
-        position: 'relative',
-      }}>
-        {/* Close */}
-        <button onClick={onClose} style={{
-          position: 'absolute', top: 14, right: 14,
-          width: 28, height: 28, borderRadius: '50%',
-          border: 'none', background: 'var(--color-bg-surface)',
-          color: 'var(--color-text-muted)', cursor: 'pointer',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
+    <div className="upgrade-prompt">
+      <div className="upgrade-prompt__card">
+        <button onClick={onClose} className="upgrade-prompt__close">
           <HiXMark size={16} />
         </button>
 
         <div className="text-center mb-4">
-          <HiRocketLaunch size={36} style={{ color: 'var(--color-accent)' }} />
-          <h4 className="fw-extrabold mt-2 mb-1" style={{ fontFamily: 'Nunito, sans-serif' }}>
+          <HiRocketLaunch size={36} className="upgrade-prompt__icon" />
+          <h4 className="fw-extrabold mt-2 mb-1">
             Unlock {feature}
           </h4>
           <p className="text-muted small mb-0">
@@ -83,55 +64,46 @@ export function UpgradePrompt({ feature = 'this feature', visible, onClose }) {
           </p>
         </div>
 
-        {/* Plans */}
-        <div style={{ display: 'flex', gap: 10 }}>
+        <div className="upgrade-prompt__plans">
           {plans.map((plan) => {
             const isSelected = selected === plan.key;
+            const planClasses = [
+              'upgrade-prompt__plan',
+              plan.disabled ? 'upgrade-prompt__plan--disabled' : '',
+              isSelected ? 'upgrade-prompt__plan--selected' : '',
+              plan.highlighted ? 'upgrade-prompt__plan--highlighted' : '',
+            ].filter(Boolean).join(' ');
+            const ctaClasses = [
+              'upgrade-prompt__plan-cta',
+              isSelected ? 'upgrade-prompt__plan-cta--selected' : '',
+              plan.disabled ? 'upgrade-prompt__plan-cta--disabled' : '',
+            ].filter(Boolean).join(' ');
             return (
               <div
                 key={plan.key}
                 onClick={() => !plan.disabled && setSelected(plan.key)}
-                style={{
-                  flex: 1, padding: '16px 12px', borderRadius: 14, cursor: plan.disabled ? 'default' : 'pointer',
-                  background: isSelected ? 'var(--color-accent-muted)' : 'var(--color-bg-surface)',
-                  border: `2px solid ${isSelected ? 'var(--color-accent)' : plan.highlighted ? 'var(--color-border-strong)' : 'var(--color-border)'}`,
-                  opacity: plan.disabled ? 0.6 : 1,
-                  transition: 'all 0.15s',
-                  position: 'relative',
-                }}
+                className={planClasses}
               >
                 {plan.highlighted && (
-                  <div style={{
-                    position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)',
-                    padding: '2px 10px', borderRadius: 99,
-                    background: 'var(--color-accent-gradient)',
-                    color: '#fff', fontSize: '0.6rem', fontWeight: 700, whiteSpace: 'nowrap',
-                  }}>
+                  <div className="upgrade-prompt__plan-badge">
                     POPULAR
                   </div>
                 )}
-                <div className="fw-bold mb-2" style={{ fontSize: '0.95rem' }}>{plan.name}</div>
-                <div style={{ fontSize: '1.5rem', fontWeight: 800, fontFamily: 'Nunito, sans-serif' }}>
-                  {plan.price}<span style={{ fontSize: '0.7rem', fontWeight: 400, color: 'var(--color-text-muted)' }}>{plan.period || ''}</span>
+                <div className="fw-bold mb-2 upgrade-prompt__plan-name">{plan.name}</div>
+                <div className="upgrade-prompt__plan-price">
+                  {plan.price}<span className="upgrade-prompt__plan-period">{plan.period || ''}</span>
                 </div>
-                <ul style={{ margin: '10px 0', padding: 0, listStyle: 'none', fontSize: '0.72rem', lineHeight: 1.8, color: 'var(--color-text-secondary)' }}>
+                <ul className="upgrade-prompt__plan-features">
                   {plan.features.map((f, i) => (
                     <li key={i} className="d-flex align-items-center gap-1">
-                      <span style={{ color: 'var(--color-success)' }}>✓</span> {f}
+                      <span className="upgrade-prompt__check">✓</span> {f}
                     </li>
                   ))}
                 </ul>
                 <button
                   disabled={plan.disabled}
                   onClick={() => { if (!plan.disabled) navigate('/payment'); }}
-                  style={{
-                    width: '100%', padding: '8px', borderRadius: 99,
-                    background: isSelected ? 'var(--color-accent-gradient)' : 'var(--color-bg-hover)',
-                    color: isSelected ? '#fff' : 'var(--color-text-secondary)',
-                    border: 'none', cursor: plan.disabled ? 'not-allowed' : 'pointer',
-                    fontWeight: 700, fontSize: '0.78rem', fontFamily: 'inherit',
-                    opacity: plan.disabled ? 0.5 : 1,
-                  }}
+                  className={ctaClasses}
                 >
                   {plan.cta}
                 </button>
@@ -140,7 +112,7 @@ export function UpgradePrompt({ feature = 'this feature', visible, onClose }) {
           })}
         </div>
 
-        <p className="text-muted text-center mt-3 mb-0" style={{ fontSize: '0.7rem' }}>
+        <p className="text-muted text-center mt-3 mb-0 upgrade-prompt__footer">
           7-day free trial • Cancel anytime • Secure payment
         </p>
       </div>

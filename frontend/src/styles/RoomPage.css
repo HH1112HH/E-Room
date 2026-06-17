@@ -32,28 +32,29 @@
         
 @keyframes fadeInUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
 
-        .meet-root{display:flex;flex-direction:column;height:100vh;width:100vw;background:var(--color-bg);overflow:hidden;font-family:'Nunito',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--color-text-primary)}
+        .meet-root{--color-bg:#0a0a0a;--color-bg-elevated:#0f0f0f;--color-bg-surface:#141414;--color-text-primary:#e8e8f0;--color-text-secondary:#aaaaaa;--color-text-muted:#666666;display:flex;flex-direction:column;height:100dvh;width:100vw;background:var(--color-bg);overflow:hidden;font-family:'Geist',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--color-text-primary)}
         .meet-root,.meet-root *{scrollbar-width:none;-ms-overflow-style:none}
         .meet-root::-webkit-scrollbar,.meet-root *::-webkit-scrollbar{display:none;width:0;height:0}
         .meet-topbar{display:flex;align-items:center;justify-content:space-between;height:56px;min-height:56px;padding:0 16px;background:rgba(16,16,16,0.92);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,0.06);z-index:30}
         .meet-topbar-left{display:flex;align-items:center;gap:12px}
-        .meet-back{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;color:#aaa;border:none;background:transparent;cursor:pointer;transition:all 0.15s ease}
-        .meet-back:hover{color:#fff;background:rgba(255,255,255,0.08)}
+        .meet-back{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;color:#ffffff;border:none;background:rgba(255,255,255,0.06);cursor:pointer;transition:all 0.15s ease}
+        .meet-back:hover{color:#ffffff;background:rgba(255,255,255,0.12)}
         .meet-room-info{display:flex;flex-direction:column;gap:1px}
-        .meet-room-name{font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;color:#ffffff;margin:0;line-height:1.2;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .meet-room-name{font-family:'Geist',sans-serif;font-size:15px;font-weight:700;color:#ffffff;margin:0;line-height:1.2;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         .meet-room-meta{display:flex;align-items:center;gap:10px}
         .meet-badge-live{font-size:10px;font-weight:700;letter-spacing:0.08em;color:#ffffff;text-transform:uppercase}
         .meet-timer{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--color-text-muted);font-variant-numeric:tabular-nums}
         .meet-topbar-right{display:flex;align-items:center;gap:8px}
         .meet-participant-count{transition:all 0.15s ease}
         .meet-participant-count:hover{background:rgba(255,255,255,0.12)!important}
-        .meet-chat-toggle{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;color:var(--color-text-muted);border:none;background:transparent;cursor:pointer;transition:all 0.15s ease}
-        .meet-chat-toggle:hover,.meet-chat-toggle.active{color:var(--color-accent);background:rgba(255,255,255,0.06)}
+        .meet-chat-toggle{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;color:#ffffff;border:none;background:rgba(255,255,255,0.06);cursor:pointer;transition:all 0.15s ease}
+        .meet-chat-toggle:hover,.meet-chat-toggle.active{color:#ffffff;background:rgba(255,255,255,0.14)}
         .meet-main{display:flex;flex:1;overflow:hidden}
         .meet-video{flex:1;position:relative;background:var(--color-bg);transition:all 0.3s ease;padding-bottom:68px}
         .meet-video.with-chat{flex:1}
         .meet-video.full{flex:1}
         .meet-chat-panel{flex:0 0 320px;min-width:280px;max-width:380px;display:flex;flex-direction:column;border-left:1px solid rgba(255,255,255,0.04);background:var(--color-bg-elevated);animation:slideIn 0.2s ease both;padding-bottom:68px}
+.meet-chat-panel--hidden{display:none}
         @keyframes slideIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
 
         .meet-controls{position:fixed;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:center;height:68px;padding:0 16px;background:rgba(16,16,16,0.92);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-top:1px solid rgba(255,255,255,0.06);z-index:100}
@@ -115,4 +116,94 @@
         @media(max-width:500px){.meet-video.with-chat{display:none}.meet-chat-panel{width:100%!important;max-width:none}.meet-room-name{font-size:13px;max-width:120px}.meet-topbar{padding:0 10px}.ctrl-hangup{width:42px;height:42px}}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
         @keyframes fadeOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(16px)}}
-      
+        
+        /* === Extracted inline styles === */
+        .room-page__loading-wrap{min-height:100vh;background:var(--color-bg);display:flex;align-items:center;justify-content:center}
+        .room-page__connecting-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:14px;color:#888}
+        .room-page__connecting-spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,0.1);border-top-color:var(--color-accent);border-radius:50%;animation:gs 0.7s linear infinite}
+        .room-page__connecting-text{font-size:14px;margin:0}
+        .room-page__error-wrap{min-height:100vh;background:var(--color-bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:20px}
+        .room-page__error-title{font-family:inherit;font-size:20px;margin:0;color:var(--color-text-primary)}
+        .room-page__error-message{color:#888;font-size:14px;max-width:400px;margin:0}
+        .room-page__error-actions{display:flex;gap:10px;margin-top:4px}
+        .room-page__left-wrap{min-height:100vh;background:var(--color-bg);display:flex;align-items:center;justify-content:center;padding:20px}
+        .room-page__left-card{background:var(--color-bg-elevated);border:1px solid rgba(255,255,255,0.06);border-radius:24px;padding:40px 32px;max-width:440px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5);animation:fadeInUp 0.4s ease both}
+        .room-page__left-icon-wrap{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
+        .room-page__left-title{font-family:inherit;font-weight:800;font-size:1.5rem;margin:0 0 6px;color:var(--color-text-primary)}
+        .room-page__left-message{color:#888;font-size:0.9rem;margin:0 0 24px;line-height:1.5}
+        .room-page__left-stats{display:flex;justify-content:center;gap:32px;padding:16px 0;margin-bottom:24px;border-top:1px solid rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.06)}
+        .room-page__left-stat-value{font-size:1.5rem;font-weight:800;color:var(--color-text-primary);font-family:inherit}
+        .room-page__left-stat-label{font-size:0.7rem;color:#888;margin-top:2px}
+        .room-page__left-return-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:99px;background:var(--color-accent-gradient);color:#fff;border:none;cursor:pointer;font-weight:700;font-size:0.9rem;font-family:inherit;box-shadow:0 4px 20px var(--color-accent-glow);transition:all 0.2s}
+        .meet-controls__emoji-wrap{position:relative}
+        .meet-controls__emoji-picker{position:absolute;bottom:54px;left:50%;transform:translateX(-50%);display:flex;gap:4px;padding:6px 10px;border-radius:99px;background:rgba(30,30,50,0.96);border:1px solid rgba(255,255,255,0.1);box-shadow:0 8px 32px rgba(0,0,0,0.5);z-index:50}
+        .meet-controls__emoji-btn{font-size:1.3rem;background:transparent;border:none;cursor:pointer;padding:4px 6px;border-radius:8px;transition:all 0.12s;line-height:1}
+        .room-page__video-inner{position:relative;height:100%}
+        .room-page__hand-raised-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:99px;background:rgba(251,191,36,0.15);color:var(--color-warning);font-size:11px;font-weight:700;animation:pulse 1.5s ease-in-out infinite}
+        .room-page__panel{display:flex;flex-direction:column;height:100%;background:var(--color-bg-elevated)}
+        .room-page__panel-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.06);flex-shrink:0}
+        .room-page__panel-header-left{display:flex;align-items:center;gap:10px}
+        .room-page__panel-header-icon{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(255,255,255,0.06);color:#ffffff;flex-shrink:0}
+        .room-page__panel-header-title{font-family:inherit;font-size:14px;font-weight:700;color:var(--color-text-primary);margin:0}
+        .room-page__panel-header-count{font-size:11px;color:var(--color-text-muted);background:var(--color-bg-surface);padding:2px 10px;border-radius:99px;font-weight:600}
+        .room-page__panel-close-btn{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;border:none;background:rgba(255,255,255,0.06);color:#ffffff;cursor:pointer;transition:all 0.15s}
+        .room-page__panel-body{flex:1;overflow-y:auto;padding:8px 12px}
+        .room-page__panel-row{display:flex;align-items:center;gap:10px;padding:10px 8px;border-radius:12px;transition:background 0.15s}
+        .room-page__panel-row-name-wrap{flex:1;min-width:0}
+        .room-page__panel-row-name{font-size:13px;font-weight:700;color:var(--color-text-primary);display:flex;align-items:center;gap:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .room-page__panel-you-badge{font-size:9px;padding:1px 6px;border-radius:99px;background:rgba(255,255,255,0.12);color:var(--color-accent);font-weight:600}
+        .room-page__panel-status-row{display:flex;gap:10px;margin-top:3px}
+        .room-page__panel-btn-friend{padding:5px 10px;border-radius:99px;flex-shrink:0;background:rgba(255,255,255,0.08);color:#ffffff;border:1px solid rgba(255,255,255,0.15);cursor:pointer;font-size:10px;font-weight:700;font-family:inherit;display:flex;align-items:center;gap:3px;transition:all 0.15s}
+        .room-page__panel-btn-friend:hover{background:var(--color-danger-muted);color:var(--color-danger);border-color:rgba(239,68,68,0.2)}
+        .room-page__panel-btn-add{padding:5px 10px;border-radius:99px;flex-shrink:0;background:rgba(255,255,255,0.06);color:#ffffff;border:1px solid rgba(255,255,255,0.1);cursor:pointer;font-size:10px;font-weight:700;font-family:inherit;display:flex;align-items:center;gap:3px;transition:all 0.15s}
+        .room-page__panel-btn-add:hover{background:rgba(255,255,255,0.12)}
+        .room-page__panel-friends-section{padding:10px 16px;border-top:1px solid rgba(255,255,255,0.06);flex-shrink:0}
+        .room-page__panel-friends-title{font-size:10px;font-weight:700;color:var(--color-text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em}
+        .room-page__panel-friends-row{display:flex;flex-wrap:wrap;gap:4px}
+        .room-page__panel-friend-tag{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:99px;background:rgba(255,255,255,0.06);color:#ffffff;font-size:10px;font-weight:600;border:1px solid rgba(255,255,255,0.1)}
+        .meet-controls__emoji-btn:hover{background:rgba(255,255,255,0.1);transform:scale(1.3)}
+        .room-page__left-return-btn:hover{transform:translateY(-2px);filter:brightness(1.1)}
+        .room-page__panel-close-btn:hover{color:var(--color-danger);background:rgba(239,68,68,0.2)}
+        .room-page__panel-row:hover{background:rgba(255,255,255,0.04)}
+        .room-page__panel-avatar{width:38px;height:38px;border-radius:50%;flex-shrink:0;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;position:relative}
+        .room-page__panel-dot{position:absolute;bottom:-1px;right:-1px;width:12px;height:12px;border-radius:50%;border:2px solid var(--color-bg-elevated)}
+        .room-page__panel-status-item{font-size:10px;display:flex;align-items:center;gap:3px}
+        .room-page__panel-status-dot{width:6px;height:6px;border-radius:50%}
+        .room-page__panel-friend-avatar{width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:800;color:#fff}
+        .room-page__left-message strong{color:var(--color-text-secondary)}
+.room-page__left-stat{text-align:center}
+        .room-page__livekit{width:100%;height:100%}
+
+        /* === Room Settings Panel === */
+        .room-settings__body{display:flex;flex-direction:column;gap:16px;padding:16px}
+        .room-settings__group{display:flex;flex-direction:column;gap:6px}
+        .room-settings__label{font-size:11px;font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.04em}
+        .room-settings__input{width:100%;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:var(--color-text-primary);font-size:13px;font-family:inherit;outline:none;transition:border-color 0.15s;box-sizing:border-box}
+        .room-settings__input:focus{border-color:var(--color-accent)}
+        .room-settings__chips{display:flex;flex-wrap:wrap;gap:4px}
+        .room-settings__chip{padding:6px 12px;border-radius:99px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:var(--color-text-muted);font-size:11px;font-weight:600;font-family:inherit;cursor:pointer;transition:all 0.12s}
+        .room-settings__chip:hover{border-color:rgba(255,255,255,0.2);color:var(--color-text-primary)}
+        .room-settings__chip.active{background:var(--color-accent);color:#fff;border-color:var(--color-accent)}
+        .room-settings__agent-options{display:flex;flex-direction:column;gap:4px}
+        .room-settings__agent-card{padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.08);background:transparent;cursor:pointer;transition:all 0.12s;text-align:left;font-family:inherit}
+        .room-settings__agent-card:hover{border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.03)}
+        .room-settings__agent-card.active{border-color:var(--color-accent);background:rgba(99,102,241,0.08)}
+        .room-settings__agent-name{font-size:13px;font-weight:700;color:var(--color-text-primary)}
+        .room-settings__agent-desc{font-size:10px;color:var(--color-text-muted);margin-top:2px}
+        .room-page__panel-footer{padding:12px 16px;border-top:1px solid rgba(255,255,255,0.06);flex-shrink:0}
+        .room-settings__footer{display:flex;gap:8px}
+        .room-settings__btn{padding:10px 16px;border-radius:99px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;transition:all 0.12s;flex:1;text-align:center}
+        .room-settings__btn--cancel{background:rgba(255,255,255,0.06);color:var(--color-text-primary);border:1px solid rgba(255,255,255,0.1)}
+        .room-settings__btn--cancel:hover{background:rgba(255,255,255,0.12)}
+        .room-settings__btn--save{background:var(--color-accent-gradient);color:#fff;border:none;box-shadow:0 4px 16px var(--color-accent-glow)}
+        .room-settings__btn--save:hover{filter:brightness(1.1)}
+        .room-settings__btn--save:disabled{opacity:0.5;cursor:not-allowed}
+        .room-settings__divider{height:1px;background:rgba(255,255,255,0.06);margin:4px 0}
+        .room-settings__toggle-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;cursor:pointer;border-radius:8px;transition:background 0.1s}
+        .room-settings__toggle-row:hover{background:rgba(255,255,255,0.03)}
+        .room-settings__toggle-label{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+        .room-settings__toggle{width:36px;height:20px;border-radius:99px;background:rgba(255,255,255,0.12);position:relative;transition:background 0.15s;flex-shrink:0}
+        .room-settings__toggle.active{background:var(--color-accent)}
+        .room-settings__toggle-knob{width:16px;height:16px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:transform 0.15s}
+        .room-settings__toggle.active .room-settings__toggle-knob{transform:translateX(16px)}
+        .room-settings__error{padding:8px 12px;margin:0 12px 8px;border-radius:8px;background:rgba(239,68,68,0.12);color:var(--color-danger);font-size:12px;font-weight:600;text-align:center}

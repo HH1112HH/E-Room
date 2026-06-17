@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Card } from '../../components/ui/Card';
 import { createRoomSocket } from '../../lib/websocket';
+import '../../styles/DevTools.css';
 
 export function RealtimeRoomPanel() {
   const [roomId, setRoomId] = useState('demo-room');
@@ -20,7 +21,7 @@ export function RealtimeRoomPanel() {
 
   return (
     <Card title="Realtime events" subtitle="Room WebSocket event feed">
-      <div className="form-row" style={{ marginBottom: 12 }}>
+      <div className="form-row devtools-mb12">
         <input value={roomId} onChange={(event) => setRoomId(event.target.value)} placeholder="Room id" />
       </div>
       {events.length === 0 ? <p className="empty-state">Waiting for room events...</p> : null}

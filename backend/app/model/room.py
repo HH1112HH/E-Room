@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from sqlmodel import Field, JSON, Column, SQLModel
+from sqlmodel import JSON, Column, Field, SQLModel
 
 from app.model.common import AgentLevel, EnglishLevel, RoomStatus, TimestampedModel
 
@@ -21,6 +21,9 @@ class RoomBase(SQLModel):
     is_private: bool = False
     is_public: bool = True
     creator_user_id: UUID | None = Field(default=None, foreign_key="users.id")
+    enable_heartbeat: bool = True
+    enable_pronunciation_correction: bool = True
+    enable_voice_recognition: bool = True
 
 
 class Room(TimestampedModel, RoomBase, table=True):

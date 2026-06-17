@@ -1,0 +1,5 @@
+.tag-badge-remove {
+  cursor: pointer;
+  opacity: 0.7;
+  flex-shrink: 0;
+}

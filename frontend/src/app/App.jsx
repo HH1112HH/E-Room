@@ -25,10 +25,7 @@ const ContactPage = lazy(() => import('./pages/ContactPage').then(m => ({ defaul
 
 function PageLoader() {
   return (
-    <div style={{
-      minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'var(--color-bg)', color: 'var(--color-text-muted)',
-    }}>
+    <div className="page-loader">
       Loading...
     </div>
   );

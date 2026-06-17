@@ -7,7 +7,8 @@ from sqlmodel import Session
 
 from app.api.dependencies import get_current_user, get_db_session, get_pagination_params
 from app.infrastructure.livekit import LiveKitService
-from app.model import Room, RoomParticipant, RoomStatus, Session as RoomSession
+from app.model import Room, RoomParticipant, RoomStatus
+from app.model import Session as RoomSession
 from app.schemas import (
     RoomCreateRequest,
     RoomDetailResponse,
@@ -15,6 +16,7 @@ from app.schemas import (
     RoomMatchRequest,
     RoomResponse,
     RoomTokenResponse,
+    RoomUpdateRequest,
 )
 from app.service.conversation import SessionService
 from app.service.message import MessageService
@@ -23,7 +25,8 @@ from app.service.room import RoomParticipantService, RoomService
 router = APIRouter()
 livekit = LiveKitService()
 
-def _room_to_response(room: Room) -> RoomResponse:
+
+def room_to_response(room: Room) -> RoomResponse:
     return RoomResponse(
         id=str(room.id),
         livekit_room_name=room.livekit_room_name,
@@ -35,27 +38,33 @@ def _room_to_response(room: Room) -> RoomResponse:
         max_participants=room.max_participants,
         current_participants=room.current_participants,
         is_public=room.is_public,
+        session_duration_seconds=room.session_duration_seconds,
+        enable_heartbeat=room.enable_heartbeat,
+        enable_pronunciation_correction=room.enable_pronunciation_correction,
+        enable_voice_recognition=room.enable_voice_recognition,
     )
 
-def _get_room_or_404(room_service: RoomService, room_id: UUID) -> Room:
+
+def get_room_or_404(room_service: RoomService, room_id: UUID) -> Room:
     room = room_service.get_by_id(room_id)
     if room is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Room not found")
     return room
 
-def _check_room_not_full(room: Room) -> None:
-    if room.current_participants >= room.max_participants:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Room is full"
-        )
 
-def _add_participant_and_count(
+def check_room_not_full(room: Room) -> None:
+    if room.current_participants >= room.max_participants:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Room is full")
+
+
+def add_participant_and_count(
     participant_service: RoomParticipantService,
     room: Room,
     participant: RoomParticipant,
 ) -> None:
     participant_service.add_participant(participant)
     room.current_participants += 1
+
 
 @router.get("", response_model=list[RoomResponse])
 @router.get("/", response_model=list[RoomResponse])
@@ -65,8 +74,9 @@ async def list_rooms(
 ) -> list[RoomResponse]:
     room_service = RoomService(session)
     skip, limit = pagination
-    rooms = room_service.list_all()[skip : skip + limit]
-    return [_room_to_response(room) for room in rooms]
+    rooms = room_service.list_all(skip=skip, limit=limit)
+    return [room_to_response(room) for room in rooms]
+
 
 @router.post("", response_model=RoomResponse, status_code=status.HTTP_201_CREATED)
 @router.post("/", response_model=RoomResponse, status_code=status.HTTP_201_CREATED)
@@ -87,27 +97,26 @@ async def create_room(
     )
     saved_room = room_service.save(room)
 
-    _add_participant_and_count(
+    add_participant_and_count(
         RoomParticipantService(session),
         saved_room,
         RoomParticipant(room_id=saved_room.id, user_id=UUID(current_user["id"])),
     )
     room_service.save(saved_room)
 
-    return _room_to_response(saved_room)
+    return room_to_response(saved_room)
+
 
 @router.get("/{room_id}", response_model=RoomDetailResponse)
-async def get_room(
-    room_id: UUID, session: Session = Depends(get_db_session)
-) -> RoomDetailResponse:
+async def get_room(room_id: UUID, session: Session = Depends(get_db_session)) -> RoomDetailResponse:
     room_service = RoomService(session)
-    room = _get_room_or_404(room_service, room_id)
+    room = get_room_or_404(room_service, room_id)
 
     participant_service = RoomParticipantService(session)
     message_service = MessageService(session)
 
     participants = participant_service.list_room_participants(room_id)
-    room_messages = message_service.list_room_messages(room_id)
+    room_messages = message_service.list_room_messages(room_id, limit=20)
 
     return RoomDetailResponse(
         id=str(room.id),
@@ -120,12 +129,33 @@ async def get_room(
         max_participants=room.max_participants,
         current_participants=room.current_participants,
         is_public=room.is_public,
+        session_duration_seconds=room.session_duration_seconds,
+        enable_heartbeat=room.enable_heartbeat,
+        enable_pronunciation_correction=room.enable_pronunciation_correction,
+        enable_voice_recognition=room.enable_voice_recognition,
         participants=[str(p.user_id) for p in participants],
-        messages=[
-            {"id": str(m.id), "content": m.content, "type": m.message_type}
-            for m in room_messages[-20:]
-        ],
+        messages=[{"id": str(m.id), "content": m.content, "type": m.message_type} for m in room_messages],
     )
+
+
+@router.patch("/{room_id}", response_model=RoomResponse)
+async def update_room(
+    room_id: UUID,
+    payload: RoomUpdateRequest,
+    session: Session = Depends(get_db_session),
+    current_user: dict = Depends(get_current_user),
+) -> RoomResponse:
+    room_service = RoomService(session)
+    room = get_room_or_404(room_service, room_id)
+
+    update_data = payload.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        if value is not None:
+            setattr(room, field, value)
+
+    room_service.save(room)
+    return room_to_response(room)
+
 
 @router.post("/{room_id}/join", response_model=dict)
 async def join_room(
@@ -139,13 +169,14 @@ async def join_room(
     participant_service = RoomParticipantService(session)
     session_service = SessionService(session)
 
-    room = _get_room_or_404(room_service, room_id)
-    _check_room_not_full(room)
+    room = get_room_or_404(room_service, room_id)
+    check_room_not_full(room)
 
     existing = participant_service.get_room_participant(room_id, user_id)
     if existing is None:
-        _add_participant_and_count(
-            participant_service, room,
+        add_participant_and_count(
+            participant_service,
+            room,
             RoomParticipant(room_id=room_id, user_id=user_id),
         )
 
@@ -170,6 +201,7 @@ async def join_room(
 
     return {"status": "joined", "roomId": str(room_id), "sessionId": str(user_session.id)}
 
+
 @router.post("/{room_id}/leave", response_model=dict)
 async def leave_room(
     room_id: UUID,
@@ -180,12 +212,11 @@ async def leave_room(
     user_id = UUID(current_user["id"])
     room_service = RoomService(session)
     participant_service = RoomParticipantService(session)
-    room = _get_room_or_404(room_service, room_id)
+    room = get_room_or_404(room_service, room_id)
 
     participant = participant_service.get_room_participant(room_id, user_id)
     if participant:
-        participant_service.session.delete(participant)
-        participant_service.session.commit()
+        participant_service.remove_participant(participant)
         room.current_participants = max(0, room.current_participants - 1)
 
     if room.current_participants == 0:
@@ -194,6 +225,7 @@ async def leave_room(
 
     return {"status": "left", "roomId": str(room_id)}
 
+
 @router.post("/{room_id}/token", response_model=RoomTokenResponse)
 async def get_room_token(
     room_id: UUID,
@@ -201,7 +233,7 @@ async def get_room_token(
     current_user: dict = Depends(get_current_user),
 ) -> RoomTokenResponse:
     room_service = RoomService(session)
-    room = _get_room_or_404(room_service, room_id)
+    room = get_room_or_404(room_service, room_id)
 
     token = livekit.generate_token(
         room_name=room.livekit_room_name,
@@ -216,13 +248,13 @@ async def get_room_token(
         livekit_url=livekit.server_url,
     )
 
+
 @router.post("/match", response_model=dict)
 async def match_room(
     payload: RoomMatchRequest,
     session: Session = Depends(get_db_session),
     current_user: dict = Depends(get_current_user),
 ) -> dict:
-    _ = current_user  # auth check
     room_service = RoomService(session)
     rooms = room_service.list_all()
     open_rooms = [r for r in rooms if r.status in {RoomStatus.MATCHING, RoomStatus.IDLE}]

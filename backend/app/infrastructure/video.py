@@ -37,13 +37,8 @@ class LiveKitRoomConfig:
 
 class VideoRoomService:
     def __init__(self) -> None:
-        self._server_url = settings.livekit_url
-        self._api_key = settings.livekit_api_key
-        self._room_config = VideoRoomConfig()
-
-    @property
-    def server_url(self) -> str:
-        return self._server_url
+        self.server_url = settings.livekit_url
+        self.room_config = VideoRoomConfig()
 
     def build_room_config(
         self,
@@ -74,10 +69,10 @@ class VideoRoomService:
         return {
             "roomName": room_name,
             "maxParticipants": max_participants,
-            "videoServer": self._server_url,
+            "videoServer": self.server_url,
             "turnServer": settings.turn_server_url,
             "topic": topic,
-            "emptyTimeout": self._room_config.empty_timeout_minutes * 60,
+            "emptyTimeout": self.room_config.empty_timeout_minutes * 60,
         }
 
     def build_turn_config(self) -> TurnServerConfig:

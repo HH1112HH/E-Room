@@ -15,7 +15,7 @@ class ChunkResult:
     end_char: int
 
 
-_HEADING_PATTERN = re.compile(r"^(#{1,6}\s+.+)$", re.MULTILINE)
+HEADING_PATTERN = re.compile(r"^(#{1,6}\s+.+)$", re.MULTILINE)
 
 
 class TextChunker:
@@ -27,19 +27,29 @@ class TextChunker:
     ) -> None:
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
-        self._separators = separators
-        self._splitter = RecursiveCharacterTextSplitter(
+        self.separators = separators
+        self.splitter = RecursiveCharacterTextSplitter(
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
-            separators=separators or [
-                "\n\n", "\n", ". ", "? ", "! ", "。", "？", "！", " ", "",
+            separators=separators
+            or [
+                "\n\n",
+                "\n",
+                ". ",
+                "? ",
+                "! ",
+                "。",
+                "？",
+                "！",
+                " ",
+                "",
             ],
         )
 
     def chunk_text(self, text: str) -> list[str]:
         if not text or not text.strip():
             return []
-        return self._splitter.split_text(text.strip())
+        return self.splitter.split_text(text.strip())
 
     def chunk_documents(self, documents: list[dict[str, Any]]) -> list[ChunkResult]:
         results: list[ChunkResult] = []
@@ -50,12 +60,14 @@ class TextChunker:
                 start = text.find(chunk)
                 if start == -1:
                     start = 0
-                results.append(ChunkResult(
-                    text=chunk,
-                    chunk_index=i,
-                    start_char=start,
-                    end_char=start + len(chunk),
-                ))
+                results.append(
+                    ChunkResult(
+                        text=chunk,
+                        chunk_index=i,
+                        start_char=start,
+                        end_char=start + len(chunk),
+                    )
+                )
         return results
 
 

@@ -3,14 +3,12 @@ from __future__ import annotations
 import hashlib
 import os
 import re
-from datetime import datetime, timezone
 from io import BytesIO
-from typing import Any, BinaryIO
+from typing import Any
 from urllib.parse import urlparse
 
 import httpx
 
-from app.config import settings
 from app.log import get_logger
 
 logger = get_logger(__name__)
@@ -44,13 +42,12 @@ async def read_file_from_url(url: str) -> bytes:
 
 
 class FileHandler:
-
     def __init__(self) -> None:
-        self._supported = SUPPORTED_EXTENSIONS
+        self.supported = SUPPORTED_EXTENSIONS
 
     def is_supported(self, filename: str) -> bool:
         ext = os.path.splitext(filename)[1].lower()
-        return ext in self._supported
+        return ext in self.supported
 
     def parse_bytes(self, filename: str, content: bytes) -> list[str]:
         ext = os.path.splitext(filename)[1].lower()
@@ -58,19 +55,19 @@ class FileHandler:
         if ext == ".txt":
             return [content.decode("utf-8", errors="ignore")]
         elif ext == ".md":
-            return self._parse_markdown(content.decode("utf-8", errors="ignore"))
+            return self.parse_markdown(content.decode("utf-8", errors="ignore"))
         elif ext == ".pdf":
-            return self._parse_pdf(content)
+            return self.parse_pdf(content)
         elif ext == ".docx":
-            return self._parse_docx(content)
+            return self.parse_docx(content)
 
         return []
 
-    def _parse_markdown(self, text: str) -> list[str]:
+    def parse_markdown(self, text: str) -> list[str]:
         sections = re.split(r"\n(?=#{1,4}\s)", text)
         return [s.strip() for s in sections if s.strip()]
 
-    def _parse_pdf(self, content: bytes) -> list[str]:
+    def parse_pdf(self, content: bytes) -> list[str]:
         try:
             from PyPDF2 import PdfReader
 
@@ -80,7 +77,7 @@ class FileHandler:
             for i, page in enumerate(reader.pages):
                 text = page.extract_text()
                 if text and text.strip():
-                    pages.append(f"[Page {i+1}]\n{text.strip()}")
+                    pages.append(f"[Page {i + 1}]\n{text.strip()}")
 
             return pages
         except ImportError:
@@ -90,7 +87,7 @@ class FileHandler:
             logger.warning("pdf_parse_failed", extra={"error": str(e)})
             return []
 
-    def _parse_docx(self, content: bytes) -> list[str]:
+    def parse_docx(self, content: bytes) -> list[str]:
         try:
             from docx import Document
 

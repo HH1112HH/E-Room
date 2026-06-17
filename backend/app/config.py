@@ -36,18 +36,16 @@ class Settings(BaseSettings):
     # ─── Auth / JWT ─────────────────────────────────
     secret_key: str = ""
     algorithm: str = "HS256"
-    access_token_expires_minutes: int = 15
+    access_token_expires_days: int = 7
     refresh_token_expires_days: int = 7
 
     # ─── AI / LLM ──────────────────────────────────
     llm_base_url: str = "http://127.0.0.1:1234/v1"
     llm_model: str = "google/gemma-4-e2b"
-    llm_api_key: str = "sk-lm-tdSctD3c:eRRhBKL0vRtCMq14EeUr"
-    nomic_api_key: str = ""
+    llm_api_key: str = ""
+    embedding_base_url: str = ""
+    embedding_model: str = ""
     brave_search_api_key: str = ""
-
-    # ─── TTS (ElevenLabs) ──────────────────────────
-    elevenlabs_api_key: str = ""
 
     # ─── Stripe (Subscription) ─────────────────────
     stripe_secret_key: str = ""
@@ -65,7 +63,7 @@ class Settings(BaseSettings):
     minio_endpoint: str = "localhost:9000"
     minio_access_key: str = ""
     minio_secret_key: str = ""
-    minio_bucket: str = "ERoom"
+    minio_bucket: str = "eroom"
     minio_secure: bool = False
 
     # ─── Heartbeat ──────────────────────────────────
@@ -83,10 +81,7 @@ class Settings(BaseSettings):
         if not self.db_host:
             return ""
         pw = quote_plus(self.db_password) if self.db_password else ""
-        return (
-            f"mysql+pymysql://{self.db_user}:{pw}"
-            f"@{self.db_host}:{self.db_port}/{self.db_name}"
-        )
+        return f"mysql+pymysql://{self.db_user}:{pw}@{self.db_host}:{self.db_port}/{self.db_name}"
 
     @property
     def db_url_sync(self) -> str:
@@ -102,6 +97,7 @@ class Settings(BaseSettings):
         if self.db_host in ("localhost", "127.0.0.1", "::1"):
             return {}
         import ssl
+
         ctx = ssl.create_default_context()
         ctx.check_hostname = False
         ctx.verify_mode = ssl.CERT_NONE

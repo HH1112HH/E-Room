@@ -30,7 +30,7 @@ class RetryConfig:
         self.retryable_exceptions = retryable_exceptions
 
 
-def _compute_delay(attempt: int, config: RetryConfig) -> float:
+def compute_delay(attempt: int, config: RetryConfig) -> float:
     delay = config.base_delay_seconds * (config.backoff_multiplier ** (attempt - 1))
     delay = min(delay, config.max_delay_seconds)
     if config.jitter:
@@ -67,7 +67,7 @@ def sync_retry(
                             attempt,
                         )
                         raise
-                    delay = _compute_delay(attempt, config)
+                    delay = compute_delay(attempt, config)
                     logger.warning(
                         "Sync retry attempt %d/%d function=%s delay=%0.2fs error=%s",
                         attempt,
@@ -113,7 +113,7 @@ def async_retry(
                             attempt,
                         )
                         raise
-                    delay = _compute_delay(attempt, config)
+                    delay = compute_delay(attempt, config)
                     logger.warning(
                         "Async retry attempt %d/%d function=%s delay=%0.2fs error=%s",
                         attempt,

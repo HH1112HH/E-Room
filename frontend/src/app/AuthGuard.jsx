@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
+import '../styles/AppShell.css';
 
 export function AuthGuard({ children, requireOnboarding = false }) {
   const { isAuthenticated, loading, user } = useAuth();
@@ -7,10 +8,7 @@ export function AuthGuard({ children, requireOnboarding = false }) {
 
   if (loading) {
     return (
-      <div style={{
-        minHeight: '100vh', display: 'flex', alignItems: 'center',
-        justifyContent: 'center', background: 'var(--color-bg)', color: 'var(--color-text-muted)',
-      }}>
+      <div className="authguard-loading">
         Loading...
       </div>
     );

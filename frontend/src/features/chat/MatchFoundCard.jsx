@@ -1,4 +1,5 @@
 import { TagBadge } from '../../components/tags/TagBadge';
+import './MatchFoundCard.css';
 
 export function MatchFoundCard({ room, participants = [], onJoin, onDecline }) {
   if (!room) return null;
@@ -6,32 +7,14 @@ export function MatchFoundCard({ room, participants = [], onJoin, onDecline }) {
   const commonTags = room.tags || [];
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 1050,
-      background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: 16,
-    }}>
-      <div style={{
-        maxWidth: 420, width: '100%',
-        background: 'var(--color-bg-elevated)',
-        border: '1px solid var(--color-border-strong)',
-        borderRadius: 20, padding: '28px 24px',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.45)',
-        animation: 'scaleIn 0.25s ease',
-        textAlign: 'center',
-      }}>
+    <div className="match-found-overlay">
+      <div className="match-found-card">
         {/* Party icon */}
-        <div style={{
-          width: 56, height: 56, borderRadius: '50%',
-          background: 'var(--color-success-muted)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          margin: '0 auto 12px',
-        }}>
-          <span style={{ fontSize: '1.5rem' }}>🎉</span>
+        <div className="match-found-icon">
+          <span className="match-found-icon-emoji">🎉</span>
         </div>
 
-        <h4 className="fw-extrabold mb-1" style={{ fontFamily: 'Nunito, sans-serif' }}>
+        <h4 className="fw-extrabold mb-1 match-found-heading">
           Match Found!
         </h4>
         <p className="text-muted small mb-3">
@@ -40,14 +23,11 @@ export function MatchFoundCard({ room, participants = [], onJoin, onDecline }) {
 
         {/* Common tags */}
         {commonTags.length > 0 && (
-          <div style={{
-            padding: '12px 14px', borderRadius: 12,
-            background: 'var(--color-accent-muted)', marginBottom: 16,
-          }}>
-            <div className="text-muted fw-semibold small mb-2" style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <div className="match-found-common-tags">
+            <div className="text-muted fw-semibold small mb-2 match-found-common-label">
               Common Interests
             </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center' }}>
+            <div className="match-found-tags-flex">
               {commonTags.map((tag) => (
                 <TagBadge key={typeof tag === 'string' ? tag : tag.id} label={typeof tag === 'string' ? tag : tag.name} />
               ))}
@@ -56,14 +36,10 @@ export function MatchFoundCard({ room, participants = [], onJoin, onDecline }) {
         )}
 
         {/* Participants */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: -8, marginBottom: 16 }}>
+        <div className="match-found-participants">
           {participants.slice(0, 5).map((p, i) => (
-            <div key={p.id || i} style={{
-              width: 36, height: 36, borderRadius: '50%',
+            <div key={p.id || i} className="match-found-participant" style={{
               background: `hsl(${i * 72}, 70%, 55%)`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#fff', fontWeight: 700, fontSize: '0.75rem',
-              border: '2px solid var(--color-bg-elevated)',
               marginLeft: i > 0 ? -10 : 0,
               zIndex: participants.length - i,
             }}>
@@ -71,41 +47,24 @@ export function MatchFoundCard({ room, participants = [], onJoin, onDecline }) {
             </div>
           ))}
           {participants.length > 5 && (
-            <div style={{
-              width: 36, height: 36, borderRadius: '50%',
-              background: 'var(--color-bg-surface)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: 'var(--color-text-muted)', fontWeight: 600, fontSize: '0.7rem',
-              border: '2px solid var(--color-bg-elevated)',
-              marginLeft: -10,
-            }}>
+            <div className="match-found-participant-more">
               +{participants.length - 5}
             </div>
           )}
         </div>
 
         {/* Room info */}
-        <div style={{
-          padding: '10px 14px', borderRadius: 12,
-          background: 'var(--color-bg-surface)', marginBottom: 20,
-        }}>
-          <div className="fw-bold" style={{ fontSize: '0.92rem' }}>{room.topic || room.name}</div>
-          <div className="text-muted" style={{ fontSize: '0.78rem' }}>{room.description || 'Start your conversation'}</div>
+        <div className="match-found-room-info">
+          <div className="fw-bold match-found-room-topic">{room.topic || room.name}</div>
+          <div className="text-muted match-found-room-desc">{room.description || 'Start your conversation'}</div>
         </div>
 
         {/* Actions */}
-        <div style={{ display: 'flex', gap: 10 }}>
+        <div className="match-found-actions">
           {onDecline && (
             <button
               onClick={onDecline}
-              style={{
-                flex: 1, padding: '10px', borderRadius: 99,
-                background: 'var(--color-bg-surface)',
-                border: '1px solid var(--color-border)',
-                color: 'var(--color-text-secondary)', cursor: 'pointer',
-                fontWeight: 600, fontSize: '0.85rem', fontFamily: 'inherit',
-                transition: 'all 0.12s',
-              }}
+              className="match-found-btn-skip"
               onMouseOver={(e) => { e.currentTarget.style.background = 'var(--color-bg-hover)'; }}
               onMouseOut={(e) => { e.currentTarget.style.background = 'var(--color-bg-surface)'; }}
             >
@@ -114,14 +73,7 @@ export function MatchFoundCard({ room, participants = [], onJoin, onDecline }) {
           )}
           <button
             onClick={onJoin}
-            style={{
-              flex: 1, padding: '10px', borderRadius: 99,
-              background: 'var(--color-accent-gradient)',
-              border: 'none', color: '#fff', cursor: 'pointer',
-              fontWeight: 700, fontSize: '0.85rem', fontFamily: 'inherit',
-              transition: 'all 0.12s',
-              boxShadow: '0 4px 16px var(--color-accent-glow)',
-            }}
+            className="match-found-btn-join"
           >
             Join Room
           </button>

@@ -4,6 +4,7 @@ from uuid import UUID
 
 from sqlmodel import Session
 
+from app.log import db_log
 from app.model import AgentLevel, Room, RoomParticipant, RoomStatus, SubscriptionTier
 from app.service.base import CRUDRepository
 
@@ -16,8 +17,8 @@ class RoomService(CRUDRepository):
     def get_by_id(self, id: UUID) -> Room | None:
         return self.get_one(self.session, id=id)
 
-    def list_all(self) -> list[Room]:
-        return self.get_many(self.session)
+    def list_all(self, skip: int = 0, limit: int | None = None) -> list[Room]:
+        return self.get_many(self.session, skip=skip, limit=limit)
 
     def list_active_rooms(self) -> list[Room]:
         return self.get_many(self.session, status=RoomStatus.ACTIVE)
@@ -43,6 +44,7 @@ class RoomService(CRUDRepository):
         self.session.add(obj)
         self.session.commit()
         self.session.refresh(obj)
+        db_log("rooms", "UPDATE", f"id={obj.id} status={obj.status} topic={obj.topic}")
         return obj
 
 
@@ -60,10 +62,12 @@ class RoomParticipantService(CRUDRepository):
     def get_room_participant(self, room_id: UUID, user_id: UUID) -> RoomParticipant | None:
         return self.get_one(self.session, room_id=room_id, user_id=user_id)
 
-    def add_participant(
-        self, participant: RoomParticipant
-    ) -> RoomParticipant:
+    def add_participant(self, participant: RoomParticipant) -> RoomParticipant:
         self.session.add(participant)
         self.session.commit()
         self.session.refresh(participant)
         return participant
+
+    def remove_participant(self, participant: RoomParticipant) -> None:
+        self.session.delete(participant)
+        self.session.commit()

@@ -1,4 +1,5 @@
 import { TagBadge } from './TagBadge';
+import '../../styles/TagCloud.css';
 
 export function TagCloud({ tags = [], selected = [], onToggle }) {
 
@@ -10,13 +11,13 @@ export function TagCloud({ tags = [], selected = [], onToggle }) {
   });
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="tag-cloud-grouped">
       {Object.entries(grouped).map(([category, categoryTags]) => (
         <div key={category}>
-          <div className="text-muted fw-semibold small mb-2" style={{ textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.7rem' }}>
+          <div className="text-muted fw-semibold small mb-2 tag-cloud-category">
             {category}
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          <div className="tag-cloud-list">
             {categoryTags.map((tag) => {
               const id = tag.id || tag.name || tag;
               const name = tag.name || tag;

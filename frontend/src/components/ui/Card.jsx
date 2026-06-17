@@ -1,24 +1,18 @@
+import '../../styles/Card.css';
+
 export function Card({ title, subtitle, children, action, className = '' }) {
   return (
-    <div className={`card shadow-sm border-0 ${className}`} style={{
-      background: 'var(--color-bg-elevated)',
-      border: '1px solid var(--color-border)',
-      borderRadius: 16, overflow: 'hidden',
-    }}>
+    <div className={`card shadow-sm border-0 card-custom ${className}`}>
       {(title || subtitle) && (
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '16px 20px', borderBottom: '1px solid var(--color-border)',
-          flexWrap: 'wrap', gap: 8,
-        }}>
+        <div className="card-custom-header">
           <div>
-            {title && <h5 style={{ margin: 0, fontWeight: 700, fontSize: '0.95rem', color: 'var(--color-text-primary)' }}>{title}</h5>}
-            {subtitle && <p style={{ margin: '2px 0 0', fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>{subtitle}</p>}
+            {title && <h5 className="card-custom-title">{title}</h5>}
+            {subtitle && <p className="card-custom-subtitle">{subtitle}</p>}
           </div>
           {action && <div>{action}</div>}
         </div>
       )}
-      <div style={{ padding: '16px 20px' }}>
+      <div className="card-custom-body">
         {children}
       </div>
     </div>

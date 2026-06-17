@@ -12,7 +12,7 @@ from app.rag.vector_store import init_vector_store
 logger = get_logger(__name__)
 
 
-def _keyword_score(text: str, query: str) -> float:
+def keyword_score(text: str, query: str) -> float:
     if not query.strip():
         return 0.0
     query_terms = re.findall(r"\w+", query.lower())
@@ -35,21 +35,21 @@ async def retrieve_relevant_documents(
     vs = init_vector_store()
     filter_dict = {"tag": tag} if tag is not None else None
     try:
-        docs: list[Document] = await run_in_executor(
-            None, vs.similarity_search, query, k, filter=filter_dict
-        )
+        docs: list[Document] = await run_in_executor(None, vs.similarity_search, query, k, filter=filter_dict)
     except Exception as e:
         logger.warning("retrieval_tidb_failed", extra={"error": str(e)})
         return []
     results = []
     for doc in docs:
         text = doc.page_content
-        kw = _keyword_score(text, query)
-        results.append({
-            "text": text,
-            "metadata": doc.metadata,
-            "combined_score": kw,
-        })
+        kw = keyword_score(text, query)
+        results.append(
+            {
+                "text": text,
+                "metadata": doc.metadata,
+                "combined_score": kw,
+            }
+        )
     results.sort(key=lambda x: x["combined_score"], reverse=True)
     seen: set[str] = set()
     deduped = []
@@ -63,30 +63,30 @@ async def retrieve_relevant_documents(
 
 class RetrievalService:
     def __init__(self) -> None:
-        self._vs = None
+        self.vs = None
 
-    def _get_vs(self):
-        if self._vs is None:
-            self._vs = init_vector_store()
-        return self._vs
+    def get_vs(self):
+        if self.vs is None:
+            self.vs = init_vector_store()
+        return self.vs
 
     async def retrieve(self, query: str, top_k: int = 5) -> list[dict[str, Any]]:
         try:
-            vs = self._get_vs()
-            docs: list[Document] = await run_in_executor(
-                None, vs.similarity_search, query, top_k
-            )
+            vs = self.get_vs()
+            docs: list[Document] = await run_in_executor(None, vs.similarity_search, query, top_k)
         except Exception as e:
             logger.warning("retrieval_failed", extra={"error": str(e)})
             return []
         results = []
         for doc in docs:
             text = doc.page_content
-            kw = _keyword_score(text, query)
-            results.append({
-                "text": text,
-                "metadata": doc.metadata,
-                "combined_score": kw,
-            })
+            kw = keyword_score(text, query)
+            results.append(
+                {
+                    "text": text,
+                    "metadata": doc.metadata,
+                    "combined_score": kw,
+                }
+            )
         results.sort(key=lambda x: x["combined_score"], reverse=True)
         return results[:top_k]

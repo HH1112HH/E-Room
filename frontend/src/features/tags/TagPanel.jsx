@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { Card } from '../../components/ui/Card';
 import { useAsyncResource } from '../../hooks/useAsyncResource';
 import { fetchJson } from '../../lib/api';
+import '../../styles/DevTools.css';
 
 export function TagPanel() {
   const loader = useCallback(() => fetchJson('/tags/popular'), []);
@@ -19,7 +20,7 @@ export function TagPanel() {
       selected.length > 0 ? <span className="pill pill-active">{selected.length} selected</span> : null
     }>
       {isLoading ? <p className="empty-state">Loading tags...</p> : null}
-      {error ? <p className="empty-state" style={{ color: '#f87171' }}>{error}</p> : null}
+      {error ? <p className="empty-state empty-state-error">{error}</p> : null}
       {!isLoading && !error && data.length === 0 ? <p className="empty-state">No tags seeded yet</p> : null}
       <div className="tag-cloud">
         {data.map((tag) => (

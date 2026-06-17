@@ -10,13 +10,15 @@ import { queryClient } from '../../lib/queryClient';
 import { useSubscriptionStore } from '../../stores/subscriptionStore';
 import { UpgradePrompt } from '../subscription/UpgradePrompt';
 import { formatDate } from '../../lib/formatters';
-import { HiDocumentText, HiTrash, HiClock, HiBookOpen, HiArrowRight } from 'react-icons/hi2';
+import { HiDocumentText, HiTrash, HiClock, HiBookOpen, HiArrowRight, HiMagnifyingGlass, HiSparkles } from 'react-icons/hi2';
+import '../../styles/NotesPage.css';
 
 export function NotesPage() {
   const { t } = useTranslation();
   const { tier, features } = useSubscriptionStore();
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [deleting, setDeleting] = useState(null);
+  const [search, setSearch] = useState('');
 
   const { data: notes = [], isLoading } = useQuery({
     queryKey: ['notes'],
@@ -29,14 +31,24 @@ export function NotesPage() {
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['notes'] }); setDeleting(null); },
   });
 
+  const filtered = notes.filter((note) => {
+    const query = search.toLowerCase();
+    return !search
+      || (note.title || '').toLowerCase().includes(query)
+      || (note.content || '').toLowerCase().includes(query)
+      || (note.tags || []).join(' ').toLowerCase().includes(query);
+  });
+
   if (!features.notes) {
     return (
       <>
-        <Container className="py-5 text-center" style={{ maxWidth: 600 }}>
-          <HiDocumentText size={48} style={{ opacity: 0.3, color: 'var(--color-text-muted)', marginBottom: 12 }} />
-          <h3 className="fw-extrabold mb-2" style={{ fontFamily: 'Nunito, sans-serif' }}>{t('notes.upgrade_title')}</h3>
-          <p className="text-muted mb-3">{t('notes.upgrade_desc')}</p>
-          <Button variant="primary" className="rounded-pill" onClick={() => setShowUpgrade(true)}>{t('notes.upgrade_btn')}</Button>
+        <Container className="notes-page py-4 text-center">
+          <div className="notes-page__upgrade">
+            <HiSparkles size={24} />
+            <h3>Session notes are a Pro+ feature</h3>
+            <p>Upgrade to unlock AI-generated session summaries, corrections, and personalized learning notes.</p>
+            <Button variant="primary" className="px-3" onClick={() => setShowUpgrade(true)}>Upgrade to Pro+</Button>
+          </div>
         </Container>
         <UpgradePrompt feature="Session Notes" visible={showUpgrade} onClose={() => setShowUpgrade(false)} />
       </>
@@ -44,60 +56,63 @@ export function NotesPage() {
   }
 
   return (
-    <Container className="py-4" style={{ maxWidth: 720 }}>
-      <div className="d-flex align-items-center gap-3 mb-4">
-        <div style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--color-accent-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <HiBookOpen size={22} style={{ color: 'var(--color-accent)' }} />
-        </div>
-        <div>
-          <h2 className="fw-extrabold mb-0" style={{ fontFamily: 'Nunito, sans-serif' }}>{t('notes.title')}</h2>
-          <p className="text-muted small mb-0">{t('notes.description')}</p>
-        </div>
+    <Container className="notes-page py-4">
+      <div className="notes-page__header">
+        <h1>Notes</h1>
+        <p>Session summaries, key corrections, and reminders from every room you have joined.</p>
+      </div>
+
+      <div className="notes-page__search-wrap">
+        <HiMagnifyingGlass size={15} className="notes-page__search-icon" />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search notes by title, content, or tags..."
+          className="notes-page__search"
+        />
       </div>
 
       {isLoading ? (
-        <div className="text-center py-5"><Spinner animation="border" /></div>
-      ) : notes.length === 0 ? (
-        <div className="text-center py-5" style={{ color: 'var(--color-text-muted)' }}>
-          <HiDocumentText size={36} style={{ opacity: 0.3, marginBottom: 8 }} />
-          <h5 className="fw-bold" style={{ fontFamily: 'Nunito, sans-serif' }}>{t('notes.no_notes')}</h5>
-          <p className="small">{t('notes.no_notes_desc')}</p>
-          <Link to="/learning"><Button variant="outline-primary" size="sm" className="rounded-pill">{t('notes.start_session')}</Button></Link>
+        <div className="notes-page__loading">
+          <Spinner animation="border" variant="primary" />
+          <span>Loading notes...</span>
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="notes-page__empty">
+          <HiDocumentText size={24} />
+          <h3>{search ? 'No matching notes' : 'No notes yet'}</h3>
+          <p>{search ? 'Try a different search term.' : 'After a Pro+ session, your notes will appear here automatically.'}</p>
+          {!search && <Button as={Link} to="/learning" variant="outline-primary" className="px-3">Start a session</Button>}
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {notes.map((note) => (
-            <div key={note.id} style={{ padding: '16px', borderRadius: 14, background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)' }}>
-              <div className="d-flex justify-content-between align-items-start mb-2">
-                <div>
-                  <div className="fw-bold" style={{ fontSize: '0.9rem' }}>{note.title || 'Session Summary'}</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', display: 'flex', gap: 8, marginTop: 2 }}>
-                    <span><HiClock size={12} /> {formatDate(note.created_at)}</span>
-                    {note.session_topic && <span>• {note.session_topic}</span>}
-                  </div>
-                </div>
+        <div className="notes-page__list">
+          {filtered.map((note) => (
+            <div key={note.id} className="notes-page__row">
+              <div className="notes-page__row-top">
+                <h2 className="notes-page__row-title">{note.title || 'Session Summary'}</h2>
                 <button
                   onClick={() => { setDeleting(note.id); deleteMutation.mutate(note.id); }}
                   disabled={deleting === note.id}
-                  style={{ width: 28, height: 28, borderRadius: '50%', border: 'none', flexShrink: 0, background: 'transparent', color: 'var(--color-text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  className="notes-page__delete"
                 >
-                  <HiTrash size={14} />
+                  Delete
                 </button>
               </div>
-              <div style={{ fontSize: '0.82rem', lineHeight: 1.6, color: 'var(--color-text-secondary)', whiteSpace: 'pre-wrap', maxHeight: 120, overflow: 'hidden' }}>
-                {note.content?.slice(0, 300)}{note.content?.length > 300 ? '...' : ''}
+              <div className="notes-page__row-meta">
+                <span>{formatDate(note.created_at)}</span>
+                {note.session_topic && <><span className="notes-page__meta-sep"> &middot; </span><span>{note.session_topic}</span></>}
               </div>
-              {note.content?.length > 300 && (
-                <Link to={`/notes/${note.id}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 8, fontSize: '0.78rem', color: 'var(--color-accent)', textDecoration: 'none', fontWeight: 600 }}>
-                  {t('notes.read_more')} <HiArrowRight size={12} />
-                </Link>
+              <div className="notes-page__row-preview">
+                {(note.content || '').slice(0, 250)}{(note.content || '').length > 250 ? '...' : ''}
+              </div>
+              {(note.content || '').length > 250 && (
+                <Link to={`/notes/${note.id}`} className="notes-page__read-more">Read full note</Link>
               )}
-              {note.tags?.length > 0 && (
-                <div style={{ display: 'flex', gap: 4, marginTop: 8 }}>
+              {note.tags && note.tags.length > 0 && (
+                <div className="notes-page__tags">
                   {note.tags.map((tag) => (
-                    <span key={tag} style={{ padding: '2px 8px', borderRadius: 99, background: 'var(--color-accent-muted)', color: 'var(--color-accent)', fontSize: '0.65rem', fontWeight: 600 }}>
-                      {tag}
-                    </span>
+                    <span key={tag} className="notes-page__tag">{tag}</span>
                   ))}
                 </div>
               )}

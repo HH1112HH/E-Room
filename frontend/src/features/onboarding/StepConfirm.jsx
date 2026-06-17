@@ -1,5 +1,6 @@
 import { HiCheckCircle } from 'react-icons/hi2';
 import { TagBadge } from '../../components/tags/TagBadge';
+import '../../styles/OnboardingWizard.css';
 
 const ENGLISH_LEVELS = {
   A1: 'Beginner', A2: 'Elementary', B1: 'Intermediate',
@@ -22,31 +23,23 @@ export function StepConfirm({ form, updateField, error }) {
   return (
     <div>
       <div className="text-center mb-3">
-        <HiCheckCircle size={36} style={{ color: 'var(--color-success)' }} />
+        <HiCheckCircle size={36} className="onboarding-wizard__step-icon--success" />
         <h4 className="fw-bold mt-2 mb-1">Ready to start!</h4>
         <p className="text-muted small mb-0">Review your selections before we finish setting up.</p>
       </div>
 
       {error && (
-        <div style={{
-          padding: '10px 14px', borderRadius: 12, marginBottom: 16,
-          background: 'var(--color-danger-muted)',
-          color: 'var(--color-danger)', fontSize: '0.85rem', fontWeight: 600,
-        }}>
+        <div className="onboarding-wizard__error">
           ⚠️ {error}
         </div>
       )}
 
-      {/* Tags */}
       {form.tagIds.length > 0 && (
-        <div style={{
-          padding: '14px', borderRadius: 12,
-          background: 'var(--color-accent-muted)', marginBottom: 16,
-        }}>
-          <div className="fw-bold small text-muted mb-2" style={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <div className="onboarding-wizard__tags-section">
+          <div className="fw-bold small text-muted mb-2 onboarding-wizard__tags-header">
             Your Interests ({form.tagIds.length})
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          <div className="onboarding-wizard__tags-list">
             {form.tagIds.map((tag) => (
               <TagBadge key={tag} label={tag} />
             ))}
@@ -54,26 +47,17 @@ export function StepConfirm({ form, updateField, error }) {
         </div>
       )}
 
-      {/* Other fields */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div className="onboarding-wizard__fields">
         {fields.map((f) => (
-          <div key={f.key} style={{
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            padding: '10px 14px', borderRadius: 12,
-            background: 'var(--color-bg-surface)',
-          }}>
+          <div key={f.key} className="onboarding-wizard__field">
             <span className="text-muted small fw-semibold">{f.label}</span>
-            <span className="fw-semibold" style={{ fontSize: '0.88rem' }}>{f.value}</span>
+            <span className="fw-semibold onboarding-wizard__field-value">{f.value}</span>
           </div>
         ))}
       </div>
 
       {form.tagIds.length === 0 && (
-        <div style={{
-          marginTop: 16, padding: '10px 14px', borderRadius: 12,
-          background: 'var(--color-warning-muted)',
-          color: 'var(--color-warning)', fontSize: '0.82rem',
-        }}>
+        <div className="onboarding-wizard__warning">
           ⚠️ You haven't selected any tags. Auto-matching will be disabled. You can always add tags later in Settings.
         </div>
       )}

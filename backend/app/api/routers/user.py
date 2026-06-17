@@ -6,7 +6,6 @@ from fastapi import APIRouter, Depends
 from sqlmodel import Session
 
 from app.api.dependencies import get_current_user, get_db_session
-from app.model import User
 from app.schemas import UserResponse
 from app.service.user import UserService
 
@@ -40,6 +39,8 @@ async def get_me(
     return UserResponse(
         id=str(user.id),
         email=user.email,
+        first_name=user.first_name,
+        last_name=user.last_name,
         display_name=user.display_name,
         english_level=user.english_level,
         learning_goal=user.learning_goal,

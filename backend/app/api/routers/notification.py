@@ -12,14 +12,12 @@ from app.service.notification import NotificationService
 router = APIRouter()
 
 
-def _notification_to_response(n) -> NotificationResponse:
+def notification_to_response(n) -> NotificationResponse:
     return NotificationResponse(
         id=str(n.id),
         title=n.title,
         body=n.body,
-        notification_type=n.notification_type.value
-        if hasattr(n.notification_type, "value")
-        else str(n.notification_type),
+        notification_type=n.notification_type.value if hasattr(n.notification_type, "value") else str(n.notification_type),
         action_url=n.action_url,
         is_read=n.is_read,
         created_at=n.created_at.isoformat() if n.created_at else "",
@@ -38,7 +36,7 @@ async def list_notifications(
     items = service.list_for_user(user_id, skip=skip, limit=limit)
     unread = service.count_unread(user_id)
     return NotificationListResponse(
-        items=[_notification_to_response(n) for n in items],
+        items=[notification_to_response(n) for n in items],
         unread_count=unread,
     )
 
@@ -62,4 +60,4 @@ async def mark_notification_read(
             detail="Not your notification",
         )
     updated = service.mark_read(notification)
-    return _notification_to_response(updated)
+    return notification_to_response(updated)

@@ -23,29 +23,7 @@ const FALLBACK_TAGS = [
   'Culture', 'Science', 'Startup', 'Music',
 ];
 
-const labelStyle = {
-  display: 'flex', alignItems: 'center', gap: 6,
-  fontSize: '0.78rem', fontWeight: 600,
-  color: 'var(--color-text-secondary)', marginBottom: 8,
-};
 
-const inputBase = {
-  width: '100%', padding: '10px 14px', fontSize: '0.88rem',
-  borderRadius: 12, border: '1px solid var(--color-border)',
-  background: 'var(--color-bg-surface)',
-  color: 'var(--color-text-primary)',
-  outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
-  transition: 'border-color 0.15s, box-shadow 0.15s',
-};
-
-function focusIn(e) {
-  e.currentTarget.style.borderColor = 'var(--color-accent)';
-  e.currentTarget.style.boxShadow = '0 0 0 3px var(--color-accent-muted)';
-}
-function focusOut(e) {
-  e.currentTarget.style.borderColor = 'var(--color-border)';
-  e.currentTarget.style.boxShadow = 'none';
-}
 
 export function CreateRoomModal({ onClose, onRoomCreated }) {
   const [topic, setTopic] = useState('');
@@ -108,49 +86,25 @@ export function CreateRoomModal({ onClose, onRoomCreated }) {
     <>
       <div
         onClick={onClose}
-        style={{
-          position: 'fixed', inset: 0, zIndex: 1050,
-          background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)',
-          display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
-          padding: '5vh 16px 16px', overflowY: 'auto',
-        }}
+        className="room-modal__overlay"
       >
         <div
           onClick={(e) => e.stopPropagation()}
-          style={{
-            background: 'var(--color-bg-elevated)',
-            border: '1px solid var(--color-border-strong)',
-            borderRadius: 20, maxWidth: 520, width: '100%',
-            padding: '28px 24px 24px',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.45)',
-            animation: 'scaleIn 0.22s ease both',
-            marginTop: 'auto', marginBottom: 'auto',
-          }}
+          className="room-modal__card"
         >
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+          <div className="room-modal__header">
             <div>
-              <h3 style={{
-                fontFamily: "'Nunito', sans-serif", fontWeight: 800,
-                fontSize: '1.2rem', margin: 0, color: 'var(--color-text-primary)',
-              }}>
+              <h3 className="room-modal__title">
                 Create a Room
               </h3>
-              <p style={{ margin: '4px 0 0', fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
+              <p className="room-modal__subtitle">
                 Fill in the details to start a new English-speaking session
               </p>
             </div>
             <button
               onClick={onClose}
-              style={{
-                width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
-                background: 'var(--color-bg-hover)', border: 'none',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', color: 'var(--color-text-muted)',
-                transition: 'all 0.15s',
-              }}
-              onMouseOver={(e) => { e.currentTarget.style.background = 'var(--color-border-strong)'; e.currentTarget.style.color = 'var(--color-text-primary)'; }}
-              onMouseOut={(e) => { e.currentTarget.style.background = 'var(--color-bg-hover)'; e.currentTarget.style.color = 'var(--color-text-muted)'; }}
+              className="room-modal__close-btn"
             >
               <HiXMark size={16} />
             </button>
@@ -158,8 +112,8 @@ export function CreateRoomModal({ onClose, onRoomCreated }) {
 
           <form onSubmit={handleSubmit}>
 
-            <label style={labelStyle}>
-              <HiTag size={14} style={{ color: 'var(--color-accent)' }} />
+            <label className="room-modal__label">
+              <HiTag size={14} className="room-modal__icon" />
               Room Topic *
             </label>
             <input
@@ -167,12 +121,11 @@ export function CreateRoomModal({ onClose, onRoomCreated }) {
               onChange={(e) => setTopic(e.target.value)}
               placeholder="e.g. AI Job Interview Practice"
               autoFocus
-              style={{ ...inputBase, marginBottom: 16 }}
-              onFocus={focusIn} onBlur={focusOut}
+              className="room-modal__input"
             />
 
-            <label style={labelStyle}>
-              <HiDocumentText size={14} style={{ color: 'var(--color-accent)' }} />
+            <label className="room-modal__label">
+              <HiDocumentText size={14} className="room-modal__icon" />
               Description
             </label>
             <textarea
@@ -180,94 +133,65 @@ export function CreateRoomModal({ onClose, onRoomCreated }) {
               onChange={(e) => setDescription(e.target.value)}
               placeholder="What will you discuss? Any special rules or topics?"
               rows={3}
-              style={{ ...inputBase, marginBottom: 16, resize: 'vertical', minHeight: 72 }}
-              onFocus={focusIn} onBlur={focusOut}
+              className="room-modal__input room-modal__textarea"
             />
 
-            <label style={labelStyle}>
-              <HiAcademicCap size={14} style={{ color: 'var(--color-accent)' }} />
+            <label className="room-modal__label">
+              <HiAcademicCap size={14} className="room-modal__icon" />
               English Level
             </label>
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
+            <div className="room-modal__btn-group">
               {ENGLISH_LEVELS.map((lvl) => (
                 <button
                   key={lvl.value}
                   type="button"
                   onClick={() => setLevel(prev => prev === lvl.value ? '' : lvl.value)}
                   title={lvl.desc}
-                  style={{
-                    padding: '7px 14px', borderRadius: 99,
-                    background: level === lvl.value
-                      ? 'var(--color-accent-gradient)'
-                      : 'var(--color-bg-surface)',
-                    color: level === lvl.value ? '#fff' : 'var(--color-text-secondary)',
-                    border: level === lvl.value ? 'none' : '1px solid var(--color-border)',
-                    cursor: 'pointer', fontWeight: 600, fontSize: '0.78rem',
-                    fontFamily: 'inherit', transition: 'all 0.15s',
-                    display: 'flex', flexDirection: 'column', alignItems: 'center',
-                    gap: 1, minWidth: 44,
-                  }}
+                  className={`room-modal__level-btn${level === lvl.value ? ' room-modal__level-btn--active' : ''}`}
                 >
-                  <span style={{ fontSize: '0.85rem' }}>{lvl.label}</span>
-                  <span style={{ fontSize: '0.58rem', fontWeight: 400, opacity: 0.8 }}>{lvl.desc}</span>
+                  <span className="room-modal__level-btn-label">{lvl.label}</span>
+                  <span className="room-modal__level-btn-desc">{lvl.desc}</span>
                 </button>
               ))}
             </div>
 
-            <label style={labelStyle}>
-              <HiUserGroup size={14} style={{ color: 'var(--color-accent)' }} />
+            <label className="room-modal__label">
+              <HiUserGroup size={14} className="room-modal__icon" />
               Max Participants
             </label>
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
+            <div className="room-modal__btn-group">
               {PARTICIPANT_OPTS.map((n) => (
                 <button
                   key={n}
                   type="button"
                   onClick={() => setMaxParticipants(n)}
-                  style={{
-                    width: 38, height: 38, borderRadius: '50%',
-                    background: maxParticipants === n
-                      ? 'var(--color-accent-gradient)'
-                      : 'var(--color-bg-surface)',
-                    color: maxParticipants === n ? '#fff' : 'var(--color-text-secondary)',
-                    border: maxParticipants === n ? 'none' : '1px solid var(--color-border)',
-                    cursor: 'pointer', fontWeight: 700, fontSize: '0.82rem',
-                    fontFamily: 'inherit', transition: 'all 0.15s',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}
+                  className={`room-modal__participant-btn${maxParticipants === n ? ' room-modal__participant-btn--active' : ''}`}
                 >
                   {n}
                 </button>
               ))}
             </div>
 
-            <label style={labelStyle}>
-              <HiTag size={14} style={{ color: 'var(--color-accent)' }} />
-              Tags * <span style={{ fontWeight: 400, fontSize: '0.7rem', color: 'var(--color-text-muted)' }}>(comma separated)</span>
+            <label className="room-modal__label">
+              <HiTag size={14} className="room-modal__icon" />
+              Tags * <span className="room-modal__tag-hint">(comma separated)</span>
             </label>
             <input
               value={tagIds}
               onChange={(e) => setTagIds(e.target.value)}
               placeholder="e.g. Business, Technology, Travel"
-              style={{ ...inputBase, marginBottom: 8 }}
-              onFocus={focusIn} onBlur={focusOut}
+              className="room-modal__input"
             />
-            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 20 }}>
+            <div className="room-modal__tag-list">
               {(popularTags.length > 0 ? popularTags : FALLBACK_TAGS).map((item) => {
                 const tagName = typeof item === 'string' ? item : item.name;
+                const isActive = tagIds.includes(tagName);
                 return (
                   <button
                     key={tagName}
                     type="button"
                     onClick={() => addTag(tagName)}
-                    style={{
-                      padding: '3px 10px', borderRadius: 99,
-                      background: tagIds.includes(tagName) ? 'var(--color-accent-muted)' : 'var(--color-bg-hover)',
-                      color: tagIds.includes(tagName) ? 'var(--color-accent)' : 'var(--color-text-muted)',
-                      border: tagIds.includes(tagName) ? '1px solid var(--color-accent)' : '1px solid transparent',
-                      cursor: 'pointer', fontSize: '0.68rem', fontWeight: 600,
-                      fontFamily: 'inherit', transition: 'all 0.15s',
-                    }}
+                    className={`room-modal__tag-btn${isActive ? ' room-modal__tag-btn--active' : ''}`}
                   >
                     + {tagName}
                   </button>
@@ -275,34 +199,18 @@ export function CreateRoomModal({ onClose, onRoomCreated }) {
               })}
             </div>
 
-            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', paddingTop: 4, borderTop: '1px solid var(--color-border)' }}>
+            <div className="room-modal__footer">
               <button
                 type="button"
                 onClick={onClose}
-                style={{
-                  padding: '10px 22px', borderRadius: 99,
-                  background: 'var(--color-bg-surface)', color: 'var(--color-text-secondary)',
-                  border: '1px solid var(--color-border)', cursor: 'pointer',
-                  fontWeight: 600, fontSize: '0.85rem', fontFamily: 'inherit',
-                  transition: 'all 0.15s',
-                }}
-                onMouseOver={(e) => { e.currentTarget.style.background = 'var(--color-bg-hover)'; }}
-                onMouseOut={(e) => { e.currentTarget.style.background = 'var(--color-bg-surface)'; }}
+                className="room-modal__cancel-btn"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={saving || !topic.trim()}
-                style={{
-                  padding: '10px 24px', borderRadius: 99,
-                  background: 'var(--color-accent-gradient)', color: '#fff',
-                  border: 'none', cursor: saving || !topic.trim() ? 'not-allowed' : 'pointer',
-                  fontWeight: 700, fontSize: '0.85rem', fontFamily: 'inherit',
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  opacity: saving || !topic.trim() ? 0.6 : 1,
-                  transition: 'all 0.15s', boxShadow: '0 4px 16px var(--color-accent-glow)',
-                }}
+                className="room-modal__submit-btn"
               >
                 <HiPlusCircle size={17} />
                 {saving ? 'Creating...' : 'Create Room'}

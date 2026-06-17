@@ -7,11 +7,17 @@ from sqlmodel import Session
 
 from app.api.dependencies import get_current_user, get_db_session
 from app.api.routers.infra import rate_limit_login
-from app.service.token_store import TokenStore
-from app.model import User
-from app.schemas import AuthTokenResponse, LoginRequest, RefreshTokenRequest, RegisterRequest, UserProfileUpdateRequest, UserResponse
+from app.schemas import (
+    AuthTokenResponse,
+    LoginRequest,
+    RefreshTokenRequest,
+    RegisterRequest,
+    UserProfileUpdateRequest,
+    UserResponse,
+)
 from app.security import hash_token
 from app.service.auth import AuthService
+from app.service.token_store import TokenStore
 from app.service.user import UserService
 
 router = APIRouter()
@@ -45,7 +51,7 @@ async def login(
     payload: LoginRequest,
     request: Request,
     session: Session = Depends(get_db_session),
-    _rate_limit: None = Depends(rate_limit_login),
+    rate_limit: None = Depends(rate_limit_login),
 ) -> AuthTokenResponse:
     auth_service = AuthService(session)
     user = auth_service.authenticate_user(str(payload.email), payload.password)
@@ -66,7 +72,9 @@ async def refresh_token(payload: RefreshTokenRequest, session: Session = Depends
 
 
 @router.post("/logout", response_model=dict[str, str])
-async def logout(payload: RefreshTokenRequest, response: Response, session: Session = Depends(get_db_session), access_token: str | None = Cookie(default=None)) -> dict[str, str]:
+async def logout(
+    payload: RefreshTokenRequest, response: Response, session: Session = Depends(get_db_session), access_token: str | None = Cookie(default=None)
+) -> dict[str, str]:
     auth_service = AuthService(session)
     token_store = TokenStore()
     auth_service.revoke_refresh_token(payload.refresh_token)
@@ -74,6 +82,7 @@ async def logout(payload: RefreshTokenRequest, response: Response, session: Sess
         token_store.blacklist_access_token(hash_token(access_token), 60 * 60)
     response.delete_cookie("access_token")
     return {"status": "logged_out"}
+
 
 @router.patch("/me", response_model=UserResponse)
 async def update_me(

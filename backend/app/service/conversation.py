@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from sqlmodel import Session as DBSession, select
+from sqlmodel import Session as DBSession
+from sqlmodel import select
 
 from app.model import Session, SessionNote
 from app.service.base import CRUDRepository
@@ -14,7 +15,7 @@ class SessionService(CRUDRepository):
         super().__init__(Session)
 
     def get_by_id(self, id: UUID) -> Session | None:
-        return self.session.get(self._model, id)
+        return self.session.get(self.model, id)
 
     def list_sessions_for_user(self, user_id: UUID) -> list[Session]:
         statement = select(Session).where(Session.user_id == user_id)
@@ -47,8 +48,8 @@ class SessionService(CRUDRepository):
         self.session.refresh(obj)
         return obj
 
-    def list_all(self) -> list[Session]:
-        return self.get_many(self.session)
+    def list_all(self, skip: int = 0, limit: int | None = None) -> list[Session]:
+        return self.get_many(self.session, skip=skip, limit=limit)
 
 
 class SessionNoteService(CRUDRepository):
@@ -56,12 +57,10 @@ class SessionNoteService(CRUDRepository):
         self.session = session
         super().__init__(SessionNote)
 
-    def list_for_user(self, user_id: UUID) -> list[SessionNote]:
-        statement = (
-            select(SessionNote)
-            .where(SessionNote.user_id == user_id)
-            .order_by(SessionNote.created_at.desc())
-        )
+    def list_for_user(self, user_id: UUID, skip: int = 0, limit: int | None = None) -> list[SessionNote]:
+        statement = select(SessionNote).where(SessionNote.user_id == user_id).order_by(SessionNote.created_at.desc()).offset(skip)
+        if limit is not None:
+            statement = statement.limit(limit)
         return list(self.session.exec(statement))
 
     def get_user_note(self, note_id: UUID, user_id: UUID) -> SessionNote | None:

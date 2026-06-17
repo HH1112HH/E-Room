@@ -1,0 +1,32 @@
+.lang-switch-compact {
+  padding: 4px 10px;
+  border-radius: 99px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.72rem;
+  font-family: inherit;
+  font-feature-settings: "calt" 1;
+}
+
+.lang-switch-full {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 99px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.82rem;
+  transition: all 0.12s;
+}
+
+.lang-switch-full:hover {
+  border-color: var(--color-accent);
+}

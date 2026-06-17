@@ -12,7 +12,7 @@ from app.config import settings
 from app.log import get_logger
 
 logger = get_logger(__name__)
-client = AsyncOpenAI(api_key=settings.llm_api_key, base_url=settings.llm_base_url, timeout=120)
+client = AsyncOpenAI(api_key=settings.llm_api_key, base_url=settings.llm_base_url, timeout=300)
 
 FALLBACK_QUESTIONS = [
     "What is one AI tool you use regularly and how does it help you?",
@@ -41,7 +41,7 @@ async def generate_heartbeat_question(room_id: str, context: str) -> dict[str, A
             ],
             temperature=0.7,
             max_tokens=128,
-            timeout=60,
+            timeout=300,
         )
         content = resp.choices[0].message.content or ""
         data = parse_heartbeat_response(content)

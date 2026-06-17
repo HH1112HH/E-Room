@@ -1,0 +1,65 @@
+.chat-transcript__loading {
+  font-size: 0.85rem;
+}
+
+.chat-transcript__empty {
+  color: var(--color-text-muted);
+}
+
+.chat-transcript__empty-emoji {
+  font-size: 2rem;
+  margin-bottom: 8px;
+}
+
+.chat-transcript__empty-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.chat-transcript__empty-subtitle {
+  font-size: 0.78rem;
+}
+
+.chat-transcript__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.chat-transcript__message {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.chat-transcript__message--interim {
+  opacity: 0.7;
+}
+
+.chat-transcript__speaker {
+  font-size: 0.75rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 2px;
+  min-width: 40px;
+  font-weight: 700;
+}
+
+.chat-transcript__text {
+  font-size: 0.88rem;
+  line-height: 1.5;
+  transition: all 0.2s;
+}
+
+.chat-transcript__text--interim {
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.chat-transcript__text--final {
+  color: var(--color-text-primary);
+}
+
+.chat-transcript__cursor {
+  margin-left: 2px;
+}

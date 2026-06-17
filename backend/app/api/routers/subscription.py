@@ -19,7 +19,7 @@ from app.service.subscription import SubscriptionService
 router = APIRouter()
 
 
-def _sub_to_response(sub) -> SubscriptionResponse:
+def sub_to_response(sub) -> SubscriptionResponse:
     return SubscriptionResponse(
         tier=sub.tier.value if hasattr(sub.tier, "value") else str(sub.tier),
         status=sub.status.value if hasattr(sub.status, "value") else str(sub.status),
@@ -37,7 +37,7 @@ async def get_my_subscription(
 ) -> SubscriptionResponse:
     service = SubscriptionService(session)
     sub = service.get_user_subscription(current_user["id"])
-    return _sub_to_response(sub)
+    return sub_to_response(sub)
 
 
 @router.post("/create-checkout", response_model=CheckoutResponse)

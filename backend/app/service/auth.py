@@ -5,9 +5,17 @@ from datetime import UTC, datetime, timedelta
 from jwt import InvalidTokenError
 from sqlmodel import Session, select
 
-from app.service.token_store import TokenStore
+from app.config import settings
 from app.model import RefreshToken, User
-from app.security import create_access_token, create_refresh_token, decode_token, hash_password, hash_token, verify_password
+from app.security import (
+    create_access_token,
+    create_refresh_token,
+    decode_token,
+    hash_password,
+    hash_token,
+    verify_password,
+)
+from app.service.token_store import TokenStore
 
 
 class AuthService:
@@ -37,7 +45,7 @@ class AuthService:
         refresh_record = RefreshToken(
             user_id=user.id,
             token_hash=hash_token(refresh_token),
-            expires_at=datetime.now(UTC) + timedelta(days=7),
+            expires_at=datetime.now(UTC) + timedelta(days=settings.access_token_expires_days),
         )
         self.session.add(refresh_record)
         self.session.commit()
@@ -56,7 +64,7 @@ class AuthService:
             return None
 
         token_hash = hash_token(refresh_token)
-        statement = select(RefreshToken).where(RefreshToken.token_hash == token_hash, RefreshToken.revoked == False)
+        statement = select(RefreshToken).where(RefreshToken.token_hash == token_hash, not RefreshToken.revoked)
         refresh_record = self.session.exec(statement).first()
         if refresh_record is None:
             return None
@@ -72,7 +80,7 @@ class AuthService:
 
     def revoke_refresh_token(self, refresh_token: str) -> bool:
         token_hash = hash_token(refresh_token)
-        statement = select(RefreshToken).where(RefreshToken.token_hash == token_hash, RefreshToken.revoked == False)
+        statement = select(RefreshToken).where(RefreshToken.token_hash == token_hash, not RefreshToken.revoked)
         refresh_record = self.session.exec(statement).first()
         if refresh_record is None:
             return False

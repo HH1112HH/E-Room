@@ -3,7 +3,15 @@ from app.schemas.auth import AuthTokenResponse, AuthUserPayload, LoginRequest, R
 from app.schemas.common import ApiMessage, PaginatedResponse, PaginationMeta
 from app.schemas.conversation import SessionNoteResponse, SessionResponse
 from app.schemas.message import MessageCreateRequest, MessageResponse, TranscriptCreateRequest
-from app.schemas.room import RoomCreateRequest, RoomDetailResponse, RoomJoinRequest, RoomMatchRequest, RoomResponse, RoomTokenResponse
+from app.schemas.room import (
+    RoomCreateRequest,
+    RoomDetailResponse,
+    RoomJoinRequest,
+    RoomMatchRequest,
+    RoomResponse,
+    RoomTokenResponse,
+    RoomUpdateRequest,
+)
 from app.schemas.series import (
     LeaderboardEntryResponse,
     LeaderboardResponse,
@@ -16,7 +24,13 @@ from app.schemas.series import (
     TopicRoomRegistrationRequest,
     TopicRoomResponse,
 )
-from app.schemas.subscription import CancelResponse, CheckoutResponse, InvoiceListResponse, InvoiceResponse, SubscriptionResponse
+from app.schemas.subscription import (
+    CancelResponse,
+    CheckoutResponse,
+    InvoiceListResponse,
+    InvoiceResponse,
+    SubscriptionResponse,
+)
 from app.schemas.tag import CustomTagCreateRequest, TagResponse, UserTagBulkAddRequest
 from app.schemas.user import UserProfileUpdateRequest, UserResponse
 
@@ -44,6 +58,7 @@ __all__ = [
     "RoomMatchRequest",
     "RoomResponse",
     "RoomTokenResponse",
+    "RoomUpdateRequest",
     "SeriesCreateRequest",
     "SeriesResponse",
     "SeriesUpdateRequest",
@@ -57,4 +72,4 @@ __all__ = [
     "UserProfileUpdateRequest",
     "UserResponse",
     "UserTagBulkAddRequest",
-] 
+]

@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import '../../styles/LanguageSwitch.css';
 
 export function LanguageSwitch({ compact = false }) {
   const { i18n } = useTranslation();
@@ -12,14 +13,7 @@ export function LanguageSwitch({ compact = false }) {
     return (
       <button
         onClick={toggle}
-        style={{
-          padding: '4px 10px', borderRadius: 99,
-          background: 'var(--color-bg-surface)',
-          border: '1px solid var(--color-border)',
-          color: 'var(--color-text-secondary)',
-          cursor: 'pointer', fontWeight: 700, fontSize: '0.72rem',
-          fontFamily: 'inherit', fontFeatureSettings: '"calt" 1',
-        }}
+        className="lang-switch-compact"
       >
         {i18n.language === 'vi' ? '🇻🇳 VI' : '🇬🇧 EN'}
       </button>
@@ -29,17 +23,7 @@ export function LanguageSwitch({ compact = false }) {
   return (
     <button
       onClick={toggle}
-      style={{
-        display: 'flex', alignItems: 'center', gap: 6,
-        padding: '8px 14px', borderRadius: 99,
-        background: 'var(--color-bg-surface)',
-        border: '1px solid var(--color-border)',
-        color: 'var(--color-text-secondary)', cursor: 'pointer',
-        fontFamily: 'inherit', fontWeight: 600, fontSize: '0.82rem',
-        transition: 'all 0.12s',
-      }}
-      onMouseOver={(e) => { e.currentTarget.style.borderColor = 'var(--color-accent)'; }}
-      onMouseOut={(e) => { e.currentTarget.style.borderColor = 'var(--color-border)'; }}
+      className="lang-switch-full"
     >
       {i18n.language === 'vi' ? '🇻🇳 Tiếng Việt' : '🇬🇧 English'}
     </button>

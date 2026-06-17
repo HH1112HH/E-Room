@@ -1,0 +1,27 @@
+.quota-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.quota-track {
+  flex: 1;
+  height: 6px;
+  border-radius: 99px;
+  background: var(--color-bg-surface);
+  overflow: hidden;
+  max-width: 80px;
+}
+
+.quota-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  font-size: 0.78rem;
+}
+
+.quota-row-label {
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
