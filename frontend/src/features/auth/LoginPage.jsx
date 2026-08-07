@@ -12,7 +12,7 @@ import {
 } from 'react-icons/hi2';
 import { FcGoogle } from 'react-icons/fc';
 import { FaGithub } from 'react-icons/fa';
-import { useAuth } from '../../app/AuthContext';
+import { useAuth, IS_DEMO_MODE } from '../../app/AuthContext';
 import { Logo } from '../../components/ui/Logo';
 
 import '../../styles/LoginPage.css';
@@ -104,7 +104,16 @@ export function LoginPage() {
         </div>
 
         <div className="login-divider"><span>or email</span></div>
-
+        {IS_DEMO_MODE && (
+          <button
+            type="button"
+            className="login-submit login-submit--demo"
+            style={{ background: 'var(--color-accent)', marginBottom: 12 }}
+            onClick={() => { setBusy(true); login('demo@e-room.local', 'demo').then(() => navigate('/', { replace: true })).finally(() => setBusy(false)); }}
+          >
+            Continue as Demo (skip login)
+          </button>
+        )}
         <Form onSubmit={handleSubmit}>
           {isRegister && (
             <div className="login-name-row">

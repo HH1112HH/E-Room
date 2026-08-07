@@ -66,10 +66,10 @@ services:
 
   livekit:
     image: livekit/livekit-server:latest
-    command: --config /etc/livekit.yaml --node-ip 192.168.1.9
+    command: --config /etc/livekit.yaml --node-ip 192.168.1.206
     restart: unless-stopped
     environment:
-      NODE_IP: 192.168.1.9
+      NODE_IP: 192.168.1.206
     ports:
       - "7880:7880"
       - "7881:7881"

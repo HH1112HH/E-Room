@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 import { HiCheckCircle } from 'react-icons/hi2';
@@ -7,46 +8,47 @@ import '../../styles/MarketingPages.css';
 const plans = [
   {
     key: 'free',
-    name: 'Starter',
+    nameKey: 'pricing_plan_free',
     price: '$0',
-    note: 'For getting used to live English rooms.',
-    features: ['Join public meeting rooms', 'Basic AI correction cards', 'Standard room discovery', 'Limited daily room creation'],
+    noteKey: 'pricing_plan_free_note',
+    featuresKey: 'pricing_feat_free',
   },
   {
     key: 'pro',
-    name: 'Pro',
+    nameKey: 'pricing_plan_pro',
     price: '$9.99',
-    period: '/month',
-    note: 'For learners who practice every week.',
-    badge: 'Most popular',
-    features: ['Unlimited speaking rooms', 'Advanced AI feedback', 'Priority matching', 'Session notes', 'More room heartbeats'],
+    periodKey: 'pricing_period_month',
+    noteKey: 'pricing_plan_pro_note',
+    badgeKey: 'pricing_badge_popular',
+    featuresKey: 'pricing_feat_pro',
   },
   {
     key: 'pro_plus',
-    name: 'Pro+',
+    nameKey: 'pricing_plan_proplus',
     price: '$19.99',
-    period: '/month',
-    note: 'For interview prep, cohorts, and serious study.',
-    badge: 'Full access',
-    features: ['Everything in Pro', 'TTS pronunciation feedback', 'Expert RAG insights', 'Leaderboard access', 'Up to 15 participants'],
+    periodKey: 'pricing_period_month',
+    noteKey: 'pricing_plan_proplus_note',
+    badgeKey: 'pricing_badge_full',
+    featuresKey: 'pricing_feat_proplus',
   },
 ];
 
 const faqItems = [
-  { q: 'Can I switch plans at any time?', a: 'Yes. You can upgrade or downgrade your plan at any time. If you upgrade, the new features are available immediately. Downgrades take effect at the end of your current billing cycle.' },
-  { q: 'Is there a free trial for paid plans?', a: 'We do not offer a free trial for paid plans, but the Starter plan gives you full access to join real speaking rooms with basic AI feedback. You can experience the core product before deciding to upgrade.' },
-  { q: 'What happens to my data if I cancel?', a: 'Your session history and AI feedback cards remain available even after cancellation, though access may be limited to features included in the Starter plan. You can re-subscribe anytime to regain full access.' },
-  { q: 'How does AI feedback differ between plans?', a: 'Starter includes basic correction cards. Pro unlocks advanced AI feedback with deeper grammar analysis. Pro+ adds TTS pronunciation feedback and expert RAG insights that reference your session history.' },
-  { q: 'Can I pay yearly for a discount?', a: 'Yearly billing is available for both Pro and Pro+ plans, offering a 20% discount compared to monthly billing. Contact support to switch to an annual plan.' },
+  { qKey: 'pricing_faq_1_q', aKey: 'pricing_faq_1_a' },
+  { qKey: 'pricing_faq_2_q', aKey: 'pricing_faq_2_a' },
+  { qKey: 'pricing_faq_3_q', aKey: 'pricing_faq_3_a' },
+  { qKey: 'pricing_faq_4_q', aKey: 'pricing_faq_4_a' },
+  { qKey: 'pricing_faq_5_q', aKey: 'pricing_faq_5_a' },
 ];
 
 export function PricingPage() {
+  const { t } = useTranslation();
   return (
     <main className="marketing-page fade-in">
       <Container className="marketing-page__container">
         <section className="pricing-hero">
-          <h1>Choose the plan that fits your practice rhythm.</h1>
-          <p>Start free, upgrade when you need deeper feedback, session notes, and advanced room tools.</p>
+          <h1>{t('marketing.pricing_hero_title')}</h1>
+          <p>{t('marketing.pricing_hero_sub')}</p>
         </section>
 
         <section className="pricing-grid" aria-label="Subscription plans">
@@ -54,27 +56,27 @@ export function PricingPage() {
             <article className="pricing-card" key={plan.key}>
               <div className="pricing-card__header">
                 <div>
-                  <h2>{plan.name}</h2>
-                  <p>{plan.note}</p>
+                  <h2>{t(`marketing.${plan.nameKey}`)}</h2>
+                  <p>{t(`marketing.${plan.noteKey}`)}</p>
                 </div>
-                {plan.badge && (
-                  <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--color-accent)', whiteSpace: 'nowrap' }}>{plan.badge}</span>
+                {plan.badgeKey && (
+                  <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--color-accent)', whiteSpace: 'nowrap' }}>{t(`marketing.${plan.badgeKey}`)}</span>
                 )}
               </div>
               <div className="pricing-card__price">
                 <strong>{plan.price}</strong>
-                {plan.period && <span>{plan.period}</span>}
+                {plan.periodKey && <span>{t(`marketing.${plan.periodKey}`)}</span>}
               </div>
               <ul>
-                {plan.features.map((feature) => (
+                {t(`marketing.${plan.featuresKey}`, { returnObjects: true }).map((feature) => (
                   <li key={feature}><HiCheckCircle size={14} />{feature}</li>
                 ))}
               </ul>
               {plan.key === 'free' ? (
-                <Button as={Link} to="/learning" variant="outline-primary" className="fw-semibold" style={{ alignSelf: 'flex-start' }}>Get started</Button>
+                <Button as={Link} to="/learning" variant="outline-primary" className="fw-semibold" style={{ alignSelf: 'flex-start' }}>{t('marketing.pricing_get_started')}</Button>
               ) : (
-                <Button as={Link} to={`/payment?plan=${plan.key}`} variant={plan.badge ? 'primary' : 'outline-primary'} className="fw-semibold" style={{ alignSelf: 'flex-start' }}>
-                  Choose {plan.name}
+                <Button as={Link} to={`/payment?plan=${plan.key}`} variant={plan.badgeKey ? 'primary' : 'outline-primary'} className="fw-semibold" style={{ alignSelf: 'flex-start' }}>
+                  {t('marketing.pricing_choose')} {t(`marketing.${plan.nameKey}`)}
                 </Button>
               )}
             </article>
@@ -82,17 +84,17 @@ export function PricingPage() {
         </section>
 
         <section className="pricing-proof">
-          <div><strong>No forced upgrade</strong><span>Free users still join real speaking rooms.</span></div>
-          <div><strong>AI depth scales</strong><span>Paid plans unlock stronger feedback and notes.</span></div>
-          <div><strong>Built for groups</strong><span>Pro+ supports larger rooms and rankings.</span></div>
+          <div><strong>{t('marketing.pricing_proof_1_t')}</strong><span>{t('marketing.pricing_proof_1_d')}</span></div>
+          <div><strong>{t('marketing.pricing_proof_2_t')}</strong><span>{t('marketing.pricing_proof_2_d')}</span></div>
+          <div><strong>{t('marketing.pricing_proof_3_t')}</strong><span>{t('marketing.pricing_proof_3_d')}</span></div>
         </section>
 
         <section className="pricing-faq">
-          <h2>Frequently asked questions</h2>
+          <h2>{t('marketing.pricing_faq_title')}</h2>
           {faqItems.map((item) => (
-            <details key={item.q} className="pricing-faq__item">
-              <summary>{item.q}</summary>
-              <p>{item.a}</p>
+            <details key={item.qKey} className="pricing-faq__item">
+              <summary>{t(`marketing.${item.qKey}`)}</summary>
+              <p>{t(`marketing.${item.aKey}`)}</p>
             </details>
           ))}
         </section>

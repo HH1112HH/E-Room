@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -23,11 +24,12 @@ import { CreateRoomModal } from '../../features/rooms/CreateRoomModal';
 
 import '../../styles/LearningPage.css';
 const STATUS_ICON = {
-  ACTIVE: { icon: HiPlayCircle, color: 'var(--color-success)', badge: 'success', label: 'Live' },
-  IDLE: { icon: HiClock, color: 'var(--color-text-muted)', badge: 'info', label: 'Waiting' },
+  ACTIVE: { icon: HiPlayCircle, color: 'var(--color-success)', badge: 'success', labelKey: 'learning.live' },
+  IDLE: { icon: HiClock, color: 'var(--color-text-muted)', badge: 'info', labelKey: 'learning.waiting' },
 };
 
 function RoomCard({ room }) {
+  const { t } = useTranslation();
   const status = STATUS_ICON[room.status] || STATUS_ICON.IDLE;
   const StatusIcon = status.icon;
   const level = room.english_level || 'any';
@@ -41,17 +43,17 @@ function RoomCard({ room }) {
 
         <div className="d-flex justify-content-between align-items-start gap-2">
           <Card.Title className="room-card-v2__title">
-            {room.topic || room.name || 'Untitled'}
+            {room.topic || room.name || t('learning.untitled')}
           </Card.Title>
           <Badge bg={status.badge} pill className="text-uppercase fw-semibold flex-shrink-0 badge-pill-sm">
             <span className="badge-inner-flex">
-              <StatusIcon size={12} /> {status.label}
+              <StatusIcon size={12} /> {t(status.labelKey)}
             </span>
           </Badge>
         </div>
 
         <Card.Text className="room-card-v2__desc">
-          {room.description || 'Join this room to practice English speaking skills.'}
+          {room.description || t('learning.join_desc')}
         </Card.Text>
 
         <span className="room-card-v2__level">
@@ -72,7 +74,7 @@ function RoomCard({ room }) {
             <HiUsers size={14} /> {current}/{max}
           </span>
           <Link to={`/rooms/${room.id}`} className="room-card-v2__join-btn">
-            Join <HiArrowRight size={13} />
+            {t('learning.join')} <HiArrowRight size={13} />
           </Link>
         </div>
       </Card.Body>
@@ -81,6 +83,7 @@ function RoomCard({ room }) {
 }
 
 function MatchResultCard({ room, onJoin, onRetry, onClose }) {
+  const { t } = useTranslation();
   const status = STATUS_ICON[room.status] || STATUS_ICON.IDLE;
   const StatusIcon = status.icon;
 
@@ -90,17 +93,17 @@ function MatchResultCard({ room, onJoin, onRetry, onClose }) {
         <div className="d-inline-flex align-items-center justify-content-center modal-badge modal-badge--success mb-2">
           <HiCheckCircle size={32} className="icon-success" />
         </div>
-        <h5 className="fw-extrabold mb-1">Match Found!</h5>
-        <p className="text-muted small mb-0">We found a great room for you</p>
+        <h5 className="fw-extrabold mb-1">{t('learning.match_found')}</h5>
+        <p className="text-muted small mb-0">{t('learning.match_found_sub')}</p>
       </div>
 
       <div className="match-card__detail mb-3">
         <div className="d-flex align-items-center gap-2 mb-2">
           <StatusIcon size={18} style={{ color: status.color }} />
-          <h6 className="fw-bold mb-0">{room.topic || room.name || 'Untitled'}</h6>
-          <Badge bg={status.badge} pill className="badge-tiny">{status.label}</Badge>
+          <h6 className="fw-bold mb-0">{room.topic || room.name || t('learning.untitled')}</h6>
+          <Badge bg={status.badge} pill className="badge-tiny">{t(status.labelKey)}</Badge>
         </div>
-        <p className="text-muted small mb-2">{room.description || 'Join this room to practice English.'}</p>
+        <p className="text-muted small mb-2">{room.description || t('learning.join_desc')}</p>
         <div className="d-flex flex-wrap gap-1 mb-2">
           {room.tags?.slice(0, 4).map(tag => (
             <span key={tag} className="match-card__tag">#{tag}</span>
@@ -115,13 +118,13 @@ function MatchResultCard({ room, onJoin, onRetry, onClose }) {
       <div className="d-flex gap-2">
         <Link to={`/rooms/${room.id}`} className="flex-grow-1" onClick={onJoin}>
           <Button variant="primary" className="w-100 fw-semibold rounded-pill d-flex align-items-center justify-content-center gap-2">
-            Join Room <HiArrowRight size={16} />
+            {t('learning.join_room')} <HiArrowRight size={16} />
           </Button>
         </Link>
-        <Button variant="outline-secondary" className="rounded-pill px-3" onClick={onRetry} title="Try another match">
+        <Button variant="outline-secondary" className="rounded-pill px-3" onClick={onRetry} title={t('learning.try_another_match')}>
           <FiRefreshCw size={16} />
         </Button>
-        <Button variant="outline-secondary" className="rounded-pill px-3" onClick={onClose} title="Close">
+        <Button variant="outline-secondary" className="rounded-pill px-3" onClick={onClose} title={t('learning.close')}>
           <HiXMark size={16} />
         </Button>
       </div>
@@ -129,17 +132,11 @@ function MatchResultCard({ room, onJoin, onRetry, onClose }) {
   );
 }
 
-const MATCH_STEPS = [
-  'Analyzing your profile...',
-  'Finding available rooms...',
-  'Checking skill compatibility...',
-  'Selecting best match...',
-];
-
 const MATCH_INTERESTS = ['casual', 'business', 'technology', 'travel', 'education', 'ielts', 'daily', 'pronunciation'];
 const MATCH_LEVELS = ['beginner', 'intermediate', 'advanced'];
 
 export function LearningPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -183,7 +180,7 @@ export function LearningPage() {
     setMatchStep(0);
 
     const config = { ...matchConfig };
-    const steps = [...MATCH_STEPS];
+    const steps = t('learning.match_steps', { returnObjects: true });
     let currentStep = 0;
 
     const interval = setInterval(() => {
@@ -207,13 +204,13 @@ export function LearningPage() {
                 const roomDetail = await fetchJson(`/rooms/${result.roomId}`);
                 setMatchResult(roomDetail);
               } catch {
-                setMatchError('Found a match but could not load room details.');
+                setMatchError(t('learning.match_details_error'));
               }
             } else {
-              setMatchError('No suitable rooms found. Try adjusting your preferences or browse manually.');
+              setMatchError(t('learning.match_no_result'));
             }
           } catch (err) {
-            setMatchError('Failed to find a match. Please try again.');
+            setMatchError(t('learning.match_failed'));
           }
         })();
       }
@@ -255,16 +252,16 @@ export function LearningPage() {
   }, [hasMore]);
 
   const filters = [
-    { key: 'all', label: 'All', icon: HiGlobeAlt },
-    { key: 'ACTIVE', label: 'Live', icon: HiPlayCircle },
-    { key: 'IDLE', label: 'Waiting', icon: HiClock },
+    { key: 'all', labelKey: 'learning.filter_all', icon: HiGlobeAlt },
+    { key: 'ACTIVE', labelKey: 'learning.filter_live', icon: HiPlayCircle },
+    { key: 'IDLE', labelKey: 'learning.filter_waiting', icon: HiClock },
   ];
 
   const stats = [
-    { label: 'Total Rooms', value: (rooms || []).length, icon: HiGlobeAlt, color: 'var(--color-accent)' },
-    { label: 'Live Now', value: (rooms || []).filter(r => r.status === 'ACTIVE').length, icon: HiPlayCircle, color: 'var(--color-success)' },
-    { label: 'Waiting', value: (rooms || []).filter(r => r.status === 'IDLE').length, icon: HiClock, color: 'var(--color-text-muted)' },
-    { label: 'Your Sessions', value: '0', icon: HiAcademicCap, color: 'var(--color-text-muted)' },
+    { labelKey: 'learning.total_rooms', value: (rooms || []).length, icon: HiGlobeAlt, color: 'var(--color-accent)' },
+    { labelKey: 'learning.live_now', value: (rooms || []).filter(r => r.status === 'ACTIVE').length, icon: HiPlayCircle, color: 'var(--color-success)' },
+    { labelKey: 'learning.waiting_label', value: (rooms || []).filter(r => r.status === 'IDLE').length, icon: HiClock, color: 'var(--color-text-muted)' },
+    { labelKey: 'learning.your_sessions', value: '0', icon: HiAcademicCap, color: 'var(--color-text-muted)' },
   ];
 
   return (
@@ -275,9 +272,9 @@ export function LearningPage() {
           <div className="page-header">
             <h2>
               <HiAcademicCap size={28} className="icon-accent" />
-              Learning Rooms
+              {t('learning.learning_rooms')}
             </h2>
-            <p className="text-muted mb-0">Find a room, join a conversation, improve your English</p>
+            <p className="text-muted mb-0">{t('learning.find_room_desc')}</p>
           </div>
           <div className="d-flex gap-2 flex-wrap">
 
@@ -294,15 +291,15 @@ export function LearningPage() {
               }}
               disabled={loading}
             >
-              <HiBolt size={16} /> Quick Match
+              <HiBolt size={16} /> {t('learning.quick_match')}
             </Button>
             <Button variant="outline-secondary" size="sm" className="rounded-pill d-flex align-items-center gap-1"
               onClick={loadRooms} disabled={loading}>
-              <FiRefreshCw size={14} className={loading ? 'spin' : ''} /> Refresh
+              <FiRefreshCw size={14} className={loading ? 'spin' : ''} /> {t('learning.refresh')}
             </Button>
             <Button variant="primary" size="sm" className="rounded-pill d-flex align-items-center gap-1 fw-semibold px-3 accent-gradient-btn"
               onClick={() => setShowCreateRoom(true)}>
-              <HiPlusCircle size={16} /> Create Room
+              <HiPlusCircle size={16} /> {t('learning.create_room')}
             </Button>
           </div>
         </div>
@@ -320,7 +317,7 @@ export function LearningPage() {
                     </div>
                     <div>
                       <div className="stat-card__value">{stat.value}</div>
-                      <small className="text-muted">{stat.label}</small>
+                      <small className="text-muted">{t(stat.labelKey)}</small>
                     </div>
                   </Card.Body>
                 </Card>
@@ -339,7 +336,7 @@ export function LearningPage() {
                   className={`rounded-pill px-3 d-flex align-items-center gap-1 ${active ? 'fw-semibold' : ''}`}
                   onClick={() => setFilter(f.key)}
                 >
-                  <Icon size={14} /> {f.label}
+                  <Icon size={14} /> {t(f.labelKey)}
                 </Button>
               );
             })}
@@ -347,7 +344,7 @@ export function LearningPage() {
           <div className="flex-grow-1 search-wrapper">
             <div className="position-relative">
               <FiSearch size={16} className="position-absolute top-50 translate-middle-y ms-3 search-icon" />
-              <Form.Control type="text" placeholder="Search rooms..."
+              <Form.Control type="text" placeholder={t('learning.search')}
                 value={search} onChange={e => setSearch(e.target.value)}
                 className="rounded-pill ps-5 search-input" />
             </div>
@@ -357,27 +354,27 @@ export function LearningPage() {
         {loading ? (
           <div className="text-center py-5">
             <Spinner animation="border" variant="primary" />
-            <p className="text-muted mt-2">Loading rooms...</p>
+            <p className="text-muted mt-2">{t('learning.loading_rooms')}</p>
           </div>
         ) : error ? (
           <div className="text-center py-5">
             <HiExclamationTriangle size={64} className="mb-3 icon-warning" />
-            <h5 className="fw-bold">Couldn't load rooms</h5>
+            <h5 className="fw-bold">{t('learning.could_not_load')}</h5>
             <p className="text-muted mb-3">{error}</p>
-            <Button variant="primary" className="rounded-pill px-4" onClick={loadRooms}>Try Again</Button>
+            <Button variant="primary" className="rounded-pill px-4" onClick={loadRooms}>{t('learning.try_again')}</Button>
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-5">
             <HiAcademicCap size={64} className="mb-3 icon-muted" />
-            <h5 className="fw-bold">{search || filter !== 'all' ? 'No matching rooms' : 'No rooms yet'}</h5>
+            <h5 className="fw-bold">{search || filter !== 'all' ? t('learning.no_matching_rooms') : t('learning.no_rooms_yet')}</h5>
             <p className="text-muted mb-3">
               {search || filter !== 'all'
-                ? 'Try a different search or filter.'
-                : 'Be the first to create a learning room!'}
+                ? t('learning.try_other_search')
+                : t('learning.create_first')}
             </p>
             {!search && filter === 'all' && (
               <Button variant="primary" className="rounded-pill px-4 d-flex align-items-center gap-1 mx-auto">
-                <HiPlusCircle size={18} /> Create First Room
+                <HiPlusCircle size={18} /> {t('learning.create_first_room')}
               </Button>
             )}
           </div>
@@ -394,7 +391,7 @@ export function LearningPage() {
             {hasMore && (
               <div className="text-center py-3">
                 <Spinner animation="border" size="sm" variant="primary" />
-                <span className="ms-2 text-muted">Loading more rooms...</span>
+                <span className="ms-2 text-muted">{t('learning.load_more')}</span>
               </div>
             )}
             <div ref={loadMoreRef} className="sentinel" />
@@ -408,13 +405,13 @@ export function LearningPage() {
               <div className="d-inline-flex align-items-center justify-content-center modal-badge modal-badge--accent mb-2">
               <HiBolt size={28} className="icon-accent" />
             </div>
-            <h5 className="fw-extrabold mb-1">Quick Match</h5>
-            <p className="text-muted small mb-0">Tell us your preferences and we'll find the perfect room</p>
+            <h5 className="fw-extrabold mb-1">{t('learning.match_config_title')}</h5>
+            <p className="text-muted small mb-0">{t('learning.match_config_sub')}</p>
           </div>
 
           <Form.Group className="mb-3">
             <Form.Label className="fw-semibold small text-secondary">
-              Your English Level
+              {t('learning.level_label')}
             </Form.Label>
             <div className="d-flex gap-2 flex-wrap">
               {MATCH_LEVELS.map(lvl => (
@@ -431,7 +428,7 @@ export function LearningPage() {
 
           <Form.Group className="mb-4">
             <Form.Label className="fw-semibold small text-secondary">
-              Topics You're Interested In
+              {t('learning.topics_label')}
             </Form.Label>
             <div className="d-flex gap-2 flex-wrap">
               {MATCH_INTERESTS.map(interest => (
@@ -454,7 +451,7 @@ export function LearningPage() {
           <div className="d-flex gap-2">
             <Button variant="primary" className="flex-grow-1 rounded-pill fw-semibold d-flex align-items-center justify-content-center gap-2"
               onClick={() => { setShowConfig(false); startQuickMatch(); }}>
-              <HiBolt size={16} /> Find My Room
+              <HiBolt size={16} /> {t('learning.find_my_room')}
             </Button>
             <Button variant="outline-secondary" className="rounded-pill px-3" onClick={() => setShowConfig(false)}>
               <HiXMark size={16} />
@@ -464,7 +461,7 @@ export function LearningPage() {
           <div className="text-center mt-3">
             <Button variant="link" size="sm" className="text-decoration-none skip-link"
               onClick={() => { setShowConfig(false); startQuickMatch(); }}>
-              Skip & try with defaults
+              {t('learning.skip_defaults')}
             </Button>
           </div>
         </div>
@@ -478,9 +475,9 @@ export function LearningPage() {
           </div>
           <ProgressBar now={(matchStep + 1) * 25} className="mb-3 match-progress" />
           <p className="fw-semibold mb-0 text-secondary match-step-text">
-            {MATCH_STEPS[matchStep]}
+            {t('learning.match_steps', { returnObjects: true })[matchStep]}
           </p>
-          <small className="text-muted">Please wait a moment...</small>
+          <small className="text-muted">{t('learning.match_loading_sub')}</small>
         </div>
       </Modal>
 
@@ -499,16 +496,16 @@ export function LearningPage() {
                 <div className="d-inline-flex align-items-center justify-content-center modal-badge modal-badge--warning mb-2">
                   <HiExclamationTriangle size={32} className="icon-warning" />
               </div>
-              <h5 className="fw-extrabold mb-1">No Match</h5>
+              <h5 className="fw-extrabold mb-1">{t('learning.no_match')}</h5>
               <p className="text-muted small mb-0">{matchError}</p>
             </div>
             <div className="d-flex gap-2">
               <Button variant="outline-secondary" className="flex-grow-1 rounded-pill" onClick={resetMatch}>
-                Browse Manually
+                {t('learning.browse_manually')}
               </Button>
               <Button variant="primary" className="flex-grow-1 rounded-pill fw-semibold"
                 onClick={() => { setMatchResult(null); setMatchError(null); setMatchStep(0); startQuickMatch(); }}>
-                Try Again
+                {t('learning.try_again')}
               </Button>
             </div>
           </div>

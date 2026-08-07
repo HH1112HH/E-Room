@@ -68,14 +68,14 @@
 }
 
 .hp-btn-ghost {
-  background: transparent;
-  color: #555555;
-  border: 1px solid #e2e8f0;
+  background: #FFCC00;
+  color: #1e293b;
+  border: 1px solid #FFCC00;
 }
 
 .hp-btn-ghost:hover {
-  background: #f8f9fa;
-  border-color: #cbd5e1;
+  background: #e6b800;
+  border-color: #e6b800;
   color: #111111;
   transform: translateY(-1px);
 }
@@ -118,7 +118,7 @@
   display: inline-flex;
   padding: 6px 14px;
   border-radius: 999px;
-  background: #f1f5f9;
+  background: #CCFFFF;
   color: #475569;
   font-size: 0.72rem;
   font-weight: 600;
@@ -295,7 +295,7 @@
 
 .hp-glass-bubble--out {
   align-self: flex-end;
-  background: #1e293b;
+  background: #000033;
   color: #ffffff;
   border-bottom-right-radius: 4px;
 }
@@ -328,7 +328,7 @@
 .hp-glass-footer {
   display: flex; align-items: center; justify-content: center;
   padding: 10px 16px; border-radius: 12px;
-  background: rgba(30, 41, 59, 0.04);
+  background: linear-gradient(90deg, #006699, #33FFCC);
 }
 
 .hp-glass-chip {
@@ -822,7 +822,7 @@
   position: relative;
   padding: 80px 40px;
   border-radius: 32px;
-  background: #1e293b;
+  background: #66CC99;
   text-align: center;
   overflow: hidden;
 }
@@ -832,7 +832,7 @@
   width: 500px;
   height: 500px;
   border-radius: 50%;
-  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.04), transparent 60%);
+  background: radial-gradient(circle at 50% 50%, rgba(0, 0, 51, 0.06), transparent 60%);
   top: -20%;
   left: 50%;
   transform: translateX(-50%);
@@ -845,13 +845,13 @@
   letter-spacing: -0.035em;
   line-height: 1.05;
   margin: 0 0 12px;
-  color: #ffffff;
+  color: #000033;
   position: relative;
 }
 
 .hp-cta-card p {
   font-size: 1rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: #334155;
   max-width: 420px;
   margin: 0 auto 36px;
   line-height: 1.6;
@@ -996,4 +996,52 @@
   .hp-hero-actions .hp-btn { width: 100%; justify-content: center; }
   .hp-trust-row { gap: 20px; }
   .hp-footer-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Bold Text Color ── */
+.hp-eyebrow,
+.hp-section-title,
+.hp-hero-title,
+.hp-glass-header-label,
+.hp-glass-chip,
+.hp-trust-item,
+.hp-stat-item strong,
+.hp-step-num,
+.hp-step h3,
+.hp-feature h3,
+.hp-category h3,
+.hp-category-count,
+.hp-room-card-level,
+.hp-room-card h4,
+.hp-testimonial-byline strong,
+.pricing-faq__item summary,
+.hp-cta-card h2,
+.hp-footer-brand strong,
+.hp-footer-col h4,
+.hp-footer-logo {
+  color: #000033;
+}
+
+.hp-step-num {
+  color: #33CC99;
+}
+
+.hp-stat-item:first-child strong {
+  color: #009999;
+}
+
+.hp-cta-eyebrow {
+  color: rgba(0, 0, 51, 0.6);
+}
+
+.hp-stat-item:nth-child(2) strong {
+  color: #FF9900;
+}
+
+.hp-stat-item:nth-child(3) strong {
+  color: #33CC99;
+}
+
+.hp-stat-item:nth-child(4) strong {
+  color: #FFCC33;
 }

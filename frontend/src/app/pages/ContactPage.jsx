@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
@@ -7,22 +8,23 @@ import { HiArrowRight, HiChatBubbleLeftRight, HiCheckCircle, HiEnvelope, HiExcla
 import '../../styles/MarketingPages.css';
 
 const channels = [
-  { icon: HiChatBubbleLeftRight, title: 'Learner support', text: 'Questions about rooms, notes, feedback, or account access.' },
-  { icon: HiUserGroup, title: 'Schools and teams', text: 'Run speaking practice for classes, clubs, onboarding, or interview groups.' },
-  { icon: HiEnvelope, title: 'Partnerships', text: 'Discuss integrations, content programs, and long-term learning workflows.' },
+  { icon: HiChatBubbleLeftRight, titleKey: 'contact_ch1_title', textKey: 'contact_ch1_text' },
+  { icon: HiUserGroup, titleKey: 'contact_ch2_title', textKey: 'contact_ch2_text' },
+  { icon: HiEnvelope, titleKey: 'contact_ch3_title', textKey: 'contact_ch3_text' },
 ];
 
 export function ContactPage() {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({ name: '', email: '', subject: 'support', message: '' });
   const [status, setStatus] = useState('idle');
   const [errors, setErrors] = useState({});
 
   const validate = () => {
     const errs = {};
-    if (!formData.name.trim()) errs.name = 'Name is required';
-    if (!formData.email.trim()) errs.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) errs.email = 'Invalid email address';
-    if (!formData.message.trim()) errs.message = 'Message is required';
+    if (!formData.name.trim()) errs.name = t('marketing.contact_err_name');
+    if (!formData.email.trim()) errs.email = t('marketing.contact_err_email');
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) errs.email = t('marketing.contact_err_email_invalid');
+    if (!formData.message.trim()) errs.message = t('marketing.contact_err_message');
     return errs;
   };
 
@@ -47,11 +49,11 @@ export function ContactPage() {
     <main className="marketing-page contact-page fade-in">
       <Container className="marketing-page__container contact-page__container">
         <section className="contact-hero">
-          <h1>Get the right support for your speaking program.</h1>
-          <p>Tell us whether you are learning alone, hosting rooms, or bringing E-Room to a group. We will route the conversation to the right team.</p>
+          <h1>{t('marketing.contact_hero_title')}</h1>
+          <p>{t('marketing.contact_hero_sub')}</p>
           <div className="contact-hero__meta">
-            <span><HiMapPin size={14} /> Remote-first support</span>
-            <span><HiEnvelope size={14} /> Product and learning help</span>
+            <span><HiMapPin size={14} /> {t('marketing.contact_meta_1')}</span>
+            <span><HiEnvelope size={14} /> {t('marketing.contact_meta_2')}</span>
           </div>
         </section>
 
@@ -60,9 +62,9 @@ export function ContactPage() {
             {channels.map((channel) => {
               const Icon = channel.icon;
               return (
-                <article key={channel.title}>
+                <article key={channel.titleKey}>
                   <Icon size={20} />
-                  <div><h2>{channel.title}</h2><p>{channel.text}</p></div>
+                  <div><h2>{t(`marketing.${channel.titleKey}`)}</h2><p>{t(`marketing.${channel.textKey}`)}</p></div>
                 </article>
               );
             })}
@@ -70,28 +72,28 @@ export function ContactPage() {
 
           <Form className="contact-form" onSubmit={handleSubmit}>
             <div>
-              <h2>Send a message</h2>
-              <p>Tell us about your goal, room format, or issue and we will get back to you.</p>
+              <h2>{t('marketing.contact_form_title')}</h2>
+              <p>{t('marketing.contact_form_sub')}</p>
             </div>
 
             {status === 'success' && (
               <div className="contact-form__alert contact-form__alert--success">
                 <HiCheckCircle size={16} />
-                <span>Message sent successfully. We will get back to you soon.</span>
+                <span>{t('marketing.contact_success')}</span>
               </div>
             )}
 
             {status === 'error' && (
               <div className="contact-form__alert contact-form__alert--error">
                 <HiExclamationTriangle size={16} />
-                <span>Something went wrong. Please try again later.</span>
+                <span>{t('marketing.contact_error')}</span>
               </div>
             )}
 
             <Form.Group>
-              <Form.Label>Name <span className="contact-form__required">*</span></Form.Label>
+              <Form.Label>{t('marketing.contact_name')} <span className="contact-form__required">*</span></Form.Label>
               <Form.Control
-                placeholder="Your name"
+                placeholder={t('marketing.contact_name_ph')}
                 value={formData.name}
                 onChange={handleChange('name')}
                 isInvalid={!!errors.name}
@@ -99,10 +101,10 @@ export function ContactPage() {
               {errors.name && <Form.Control.Feedback type="invalid">{errors.name}</Form.Control.Feedback>}
             </Form.Group>
             <Form.Group>
-              <Form.Label>Email <span className="contact-form__required">*</span></Form.Label>
+              <Form.Label>{t('marketing.contact_email')} <span className="contact-form__required">*</span></Form.Label>
               <Form.Control
                 type="email"
-                placeholder="you@example.com"
+                placeholder={t('marketing.contact_email_ph')}
                 value={formData.email}
                 onChange={handleChange('email')}
                 isInvalid={!!errors.email}
@@ -110,20 +112,20 @@ export function ContactPage() {
               {errors.email && <Form.Control.Feedback type="invalid">{errors.email}</Form.Control.Feedback>}
             </Form.Group>
             <Form.Group>
-              <Form.Label>What do you need?</Form.Label>
+              <Form.Label>{t('marketing.contact_subject')}</Form.Label>
               <Form.Select value={formData.subject} onChange={handleChange('subject')}>
-                <option value="support">Learner support</option>
-                <option value="team">School or team plan</option>
-                <option value="billing">Billing question</option>
-                <option value="partnership">Partnership</option>
+                <option value="support">{t('marketing.contact_sub_support')}</option>
+                <option value="team">{t('marketing.contact_sub_team')}</option>
+                <option value="billing">{t('marketing.contact_sub_billing')}</option>
+                <option value="partnership">{t('marketing.contact_sub_partnership')}</option>
               </Form.Select>
             </Form.Group>
             <Form.Group>
-              <Form.Label>Message <span className="contact-form__required">*</span></Form.Label>
+              <Form.Label>{t('marketing.contact_message')} <span className="contact-form__required">*</span></Form.Label>
               <Form.Control
                 as="textarea"
                 rows={5}
-                placeholder="Describe your goal, question, or feedback."
+                placeholder={t('marketing.contact_message_ph')}
                 value={formData.message}
                 onChange={handleChange('message')}
                 isInvalid={!!errors.message}
@@ -137,14 +139,14 @@ export function ContactPage() {
               style={{ alignSelf: 'flex-start' }}
               disabled={status === 'submitting'}
             >
-              {status === 'submitting' ? 'Sending...' : 'Send message'} <HiArrowRight size={15} />
+              {status === 'submitting' ? t('marketing.contact_sending') : t('marketing.contact_send')} <HiArrowRight size={15} />
             </Button>
           </Form>
         </section>
 
         <section className="contact-bottom">
-          <div><span>Prefer action now?</span><h2>Open a meeting room and continue learning while we help.</h2></div>
-          <Button as={Link} to="/learning" variant="outline-primary" className="fw-semibold px-4">Go to meeting</Button>
+          <div><span>{t('marketing.contact_bottom_label')}</span><h2>{t('marketing.contact_bottom_title')}</h2></div>
+          <Button as={Link} to="/learning" variant="outline-primary" className="fw-semibold px-4">{t('marketing.contact_go_meeting')}</Button>
         </section>
       </Container>
     </main>

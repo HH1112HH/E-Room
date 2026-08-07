@@ -34,9 +34,9 @@ export function LeaderboardPage() {
       <>
         <Container className="leaderboard-page py-4 text-center">
           <div className="leaderboard-page__upgrade">
-            <h3>Leaderboard is a Pro+ feature</h3>
-            <p>Compete with other learners, track your ranking, and stay motivated by seeing your progress in real time.</p>
-            <Button variant="primary" onClick={() => setShowUpgrade(true)}>Upgrade to Pro+</Button>
+            <h3>{t('marketing.leaderboard_upgrade_title')}</h3>
+            <p>{t('marketing.leaderboard_upgrade_sub')}</p>
+            <Button variant="primary" onClick={() => setShowUpgrade(true)}>{t('marketing.leaderboard_upgrade_btn')}</Button>
           </div>
         </Container>
         <UpgradePrompt feature="Leaderboard" visible={showUpgrade} onClose={() => setShowUpgrade(false)} />
@@ -48,8 +48,8 @@ export function LeaderboardPage() {
     <Container className="leaderboard-page py-4 fade-in">
       <div className="leaderboard-page__top">
         <div>
-          <h1>Leaderboard</h1>
-          <p className="leaderboard-page__subtitle">See where you rank among other learners. Practice more to climb the board.</p>
+          <h1>{t('marketing.leaderboard_title')}</h1>
+          <p className="leaderboard-page__subtitle">{t('marketing.leaderboard_subtitle')}</p>
         </div>
       </div>
 
@@ -60,7 +60,7 @@ export function LeaderboardPage() {
             onClick={() => setPeriod(p)}
             className={`leaderboard-page__filter${period === p ? ' is-active' : ''}`}
           >
-            {p === 'weekly' ? 'This week' : p === 'monthly' ? 'This month' : 'All time'}
+            {p === 'weekly' ? t('marketing.leaderboard_this_week') : p === 'monthly' ? t('marketing.leaderboard_this_month') : t('marketing.leaderboard_all_time')}
           </button>
         ))}
       </div>
@@ -73,15 +73,15 @@ export function LeaderboardPage() {
               {(userEntry.display_name || '?')[0].toUpperCase()}
             </div>
             <div className="leaderboard-page__info">
-              <div className="leaderboard-page__name">{userEntry.display_name || 'Anonymous'} <span className="leaderboard-page__you-tag">You</span></div>
+              <div className="leaderboard-page__name">{userEntry.display_name || t('marketing.leaderboard_anonymous')} <span className="leaderboard-page__you-tag">{t('marketing.leaderboard_you')}</span></div>
               <div className="leaderboard-page__stats">
                 <span className="leaderboard-page__stat-badge"><HiClock size={11} />{Math.round((userEntry.speaking_time_seconds || 0) / 60)}m</span>
-                <span className="leaderboard-page__stat-badge"><HiChartBar size={11} />{userEntry.sessions_count || 0} sessions</span>
+                <span className="leaderboard-page__stat-badge"><HiChartBar size={11} />{userEntry.sessions_count || 0} {t('marketing.leaderboard_sessions')}</span>
               </div>
             </div>
             <div className="leaderboard-page__score">
               <span className="leaderboard-page__score-val">{userEntry.avg_score != null ? Math.round(userEntry.avg_score) : 0}</span>
-              <span className="leaderboard-page__score-lbl">pts</span>
+              <span className="leaderboard-page__score-lbl">{t('marketing.leaderboard_pts')}</span>
             </div>
           </div>
         </div>
@@ -90,20 +90,20 @@ export function LeaderboardPage() {
       {!userEntry && leaderboard.length > 0 && (
         <div className="leaderboard-page__compete">
           <HiUser size={16} />
-          <span><strong>{leaderboard.length}</strong> participants this period</span>
-          <span>Complete sessions to earn points and appear on the board.</span>
+          <span><strong>{leaderboard.length}</strong> {t('marketing.leaderboard_participants')}</span>
+          <span>{t('marketing.leaderboard_compete_sub')}</span>
         </div>
       )}
 
       {isLoading ? (
         <div className="leaderboard-page__loading">
           <Spinner animation="border" variant="primary" />
-          <span>Loading rankings...</span>
+          <span>{t('marketing.leaderboard_loading')}</span>
         </div>
       ) : leaderboard.length === 0 ? (
         <div className="leaderboard-page__empty">
-          <h3>No rankings yet</h3>
-          <p>Complete a few sessions to earn points and appear on the leaderboard.</p>
+          <h3>{t('marketing.leaderboard_empty_title')}</h3>
+          <p>{t('marketing.leaderboard_empty_sub')}</p>
         </div>
       ) : (
         <>
@@ -117,15 +117,15 @@ export function LeaderboardPage() {
                     {(entry.display_name || '?')[0].toUpperCase()}
                   </div>
                   <div className="leaderboard-page__info">
-                    <div className="leaderboard-page__name">{entry.display_name || 'Anonymous'}</div>
+                    <div className="leaderboard-page__name">{entry.display_name || t('marketing.leaderboard_anonymous')}</div>
                     <div className="leaderboard-page__stats">
                       <span className="leaderboard-page__stat-badge"><HiClock size={11} />{Math.round((entry.speaking_time_seconds || 0) / 60)}m</span>
-                      <span className="leaderboard-page__stat-badge"><HiChartBar size={11} />{entry.sessions_count || 0} sessions</span>
+                      <span className="leaderboard-page__stat-badge"><HiChartBar size={11} />{entry.sessions_count || 0} {t('marketing.leaderboard_sessions')}</span>
                     </div>
                   </div>
                   <div className="leaderboard-page__score">
                     <span className="leaderboard-page__score-val">{entry.avg_score != null ? Math.round(entry.avg_score) : 0}</span>
-                    <span className="leaderboard-page__score-lbl">pts</span>
+                    <span className="leaderboard-page__score-lbl">{t('marketing.leaderboard_pts')}</span>
                   </div>
                 </div>
               );

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -14,12 +15,12 @@ import { queryClient } from '../../lib/queryClient';
 
 const PLANS = {
   pro: {
-    name: 'Pro', price: 9.99, period: 'month',
-    features: ['Unlimited AI corrections', 'Advanced AI feedback', 'Priority matching', '3 heartbeats per room', 'Web Search Expert'],
+    nameKey: 'subscription.pro', price: 9.99,
+    featuresKey: 'marketing.pricing_feat_pro',
   },
   pro_plus: {
-    name: 'Pro+', price: 19.99, period: 'month',
-    features: ['Everything in Pro', 'TTS pronunciation', 'Full RAG + Web Expert', 'Auto session notes', 'Room series', 'Leaderboard', 'Up to 15 participants'],
+    nameKey: 'subscription.pro_plus', price: 19.99,
+    featuresKey: 'marketing.pricing_feat_proplus',
   },
 };
 
@@ -35,10 +36,16 @@ function formatExpiry(value) {
 }
 
 export function PaymentPage() {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const selectedPlan = searchParams.get('plan') || 'pro';
   const plan = PLANS[selectedPlan] || PLANS.pro;
+  const planName = t(plan.nameKey);
+  const planFeatures = (() => {
+    const features = t(plan.featuresKey, { returnObjects: true });
+    return Array.isArray(features) ? features : [];
+  })();
 
   const [form, setForm] = useState({
     name: '',
@@ -59,7 +66,7 @@ export function PaymentPage() {
       setDone(true);
     },
     onError: (err) => {
-      setError(err?.message || 'Payment failed. Please try again.');
+      setError(err?.message || t('subscription.payment_failed'));
     },
   });
 
@@ -72,10 +79,10 @@ export function PaymentPage() {
     setError('');
 
     const cardClean = form.cardNumber.replace(/\s/g, '');
-    if (cardClean.length < 13) { setError('Invalid card number'); return; }
-    if (form.expiry.length < 5) { setError('Invalid expiry date'); return; }
-    if (form.cvc.length < 3) { setError('Invalid CVC'); return; }
-    if (!form.name.trim()) { setError('Cardholder name is required'); return; }
+    if (cardClean.length < 13) { setError(t('subscription.invalid_card')); return; }
+    if (form.expiry.length < 5) { setError(t('subscription.invalid_expiry')); return; }
+    if (form.cvc.length < 3) { setError(t('subscription.invalid_cvc')); return; }
+    if (!form.name.trim()) { setError(t('subscription.cardholder_required')); return; }
 
     paymentMutation.mutate({
       plan: selectedPlan,
@@ -93,16 +100,16 @@ export function PaymentPage() {
           <div style={{ marginBottom: 8 }}>
             <HiCheckCircle size={36} style={{ color: 'var(--color-success)' }} />
           </div>
-          <h3 style={{ fontWeight: 700, margin: '0 0 8px', color: 'var(--color-text-primary)', fontSize: '1.15rem' }}>Payment successful!</h3>
+          <h3 style={{ fontWeight: 700, margin: '0 0 8px', color: 'var(--color-text-primary)', fontSize: '1.15rem' }}>{t('subscription.payment_successful')}</h3>
           <p className="text-muted mb-4" style={{ fontSize: '0.85rem' }}>
-            You are now on the <strong>{plan.name}</strong> plan.
+            {t('subscription.welcome_plan', { plan: planName })}
           </p>
           <div className="d-flex gap-2 justify-content-center">
             <Link to="/profile">
-              <Button variant="outline-primary" className="px-4">Manage subscription</Button>
+              <Button variant="outline-primary" className="px-4">{t('subscription.manage_subscription')}</Button>
             </Link>
             <Link to="/">
-              <Button variant="primary" className="px-4 fw-semibold">Go to dashboard</Button>
+              <Button variant="primary" className="px-4 fw-semibold">{t('subscription.go_to_dashboard')}</Button>
             </Link>
           </div>
         </div>
@@ -115,9 +122,9 @@ export function PaymentPage() {
       <Container className="py-4">
         <div style={{ maxWidth: 960, margin: '0 auto' }}>
           <div style={{ marginBottom: 32 }}>
-            <h2 style={{ fontWeight: 800, margin: '0 0 4px', color: 'var(--color-text-primary)', fontSize: '1.35rem' }}>Complete your subscription</h2>
+            <h2 style={{ fontWeight: 800, margin: '0 0 4px', color: 'var(--color-text-primary)', fontSize: '1.35rem' }}>{t('subscription.complete_payment')}</h2>
             <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', margin: 0 }}>
-              Upgrading to <strong style={{ color: 'var(--color-accent)' }}>{plan.name}</strong>
+              {t('subscription.upgrading_to')} <strong style={{ color: 'var(--color-accent)' }}>{planName}</strong>
             </p>
           </div>
 
@@ -131,22 +138,22 @@ export function PaymentPage() {
                     color: selectedPlan === 'pro_plus' ? 'var(--color-success)' : 'var(--color-accent)',
                     fontSize: '0.72rem', fontWeight: 700,
                   }}>
-                    {plan.name}
+                    {planName}
                   </span>
                   {selectedPlan === 'pro_plus' && (
                     <span style={{
                       display: 'inline-flex', padding: '2px 8px',
                       fontSize: '0.65rem', fontWeight: 700,
                       background: 'var(--color-warning-muted)', color: 'var(--color-warning)',
-                    }}>BEST VALUE</span>
+                    }}>{t('subscription.best_value')}</span>
                   )}
                 </div>
                 <div className="mb-3">
                   <strong style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--color-text-primary)', lineHeight: 1 }}>${plan.price}</strong>
-                  <span style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)', marginLeft: 4 }}>/{plan.period}</span>
+                  <span style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)', marginLeft: 4 }}>{t('marketing.pricing_period_month')}</span>
                 </div>
                 <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 16px', fontSize: '0.85rem' }}>
-                  {plan.features.map((f) => (
+                  {planFeatures.map((f) => (
                     <li key={f} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, color: 'var(--color-text-secondary)' }}>
                       <HiCheckCircle size={14} style={{ color: 'var(--color-success)', flexShrink: 0 }} />
                       <span>{f}</span>
@@ -154,7 +161,7 @@ export function PaymentPage() {
                   ))}
                 </ul>
                 <Link to="/pricing" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: 'var(--color-text-muted)', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none' }}>
-                  <HiArrowLeft size={12} /> Change plan
+                  <HiArrowLeft size={12} /> {t('subscription.change_plan')}
                 </Link>
               </div>
             </Col>
@@ -162,14 +169,14 @@ export function PaymentPage() {
             <Col lg={7}>
               <div>
                 <h5 style={{ fontWeight: 700, marginBottom: 20, color: 'var(--color-text-primary)', fontSize: '0.95rem' }}>
-                  Payment details
+                  {t('subscription.payment_details')}
                 </h5>
 
                 <Form onSubmit={handleSubmit}>
                   {error && <Alert variant="danger" className="py-2 small">{error}</Alert>}
 
                   <Form.Group className="mb-3">
-                    <Form.Label className="fw-semibold small text-muted" style={{ fontSize: '0.78rem' }}>Cardholder name</Form.Label>
+                    <Form.Label className="fw-semibold small text-muted" style={{ fontSize: '0.78rem' }}>{t('subscription.cardholder_name')}</Form.Label>
                     <Form.Control
                       type="text" placeholder="John Doe" required
                       value={form.name}
@@ -178,7 +185,7 @@ export function PaymentPage() {
                   </Form.Group>
 
                   <Form.Group className="mb-3">
-                    <Form.Label className="fw-semibold small text-muted" style={{ fontSize: '0.78rem' }}>Card number</Form.Label>
+                    <Form.Label className="fw-semibold small text-muted" style={{ fontSize: '0.78rem' }}>{t('subscription.card_number')}</Form.Label>
                     <Form.Control
                       type="text" placeholder="4242 4242 4242 4242"
                       value={form.cardNumber}
@@ -189,7 +196,7 @@ export function PaymentPage() {
 
                   <Row>
                     <Col md={6} className="mb-3">
-                      <Form.Label className="fw-semibold small text-muted" style={{ fontSize: '0.78rem' }}>Expiry</Form.Label>
+                      <Form.Label className="fw-semibold small text-muted" style={{ fontSize: '0.78rem' }}>{t('subscription.expiry')}</Form.Label>
                       <Form.Control
                         type="text" placeholder="MM/YY"
                         value={form.expiry}
@@ -198,7 +205,7 @@ export function PaymentPage() {
                       />
                     </Col>
                     <Col md={6} className="mb-3">
-                      <Form.Label className="fw-semibold small text-muted" style={{ fontSize: '0.78rem' }}>CVC</Form.Label>
+                      <Form.Label className="fw-semibold small text-muted" style={{ fontSize: '0.78rem' }}>{t('subscription.cvc')}</Form.Label>
                       <Form.Control
                         type="text" placeholder="123"
                         value={form.cvc}
@@ -210,8 +217,8 @@ export function PaymentPage() {
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', marginTop: 8, borderTop: '1px solid var(--color-border)' }}>
                     <div>
-                      <div style={{ color: 'var(--color-text-primary)', fontWeight: 700, fontSize: '0.9rem' }}>Total</div>
-                      <small style={{ color: 'var(--color-text-muted)', fontSize: '0.78rem' }}>Billed monthly, cancel anytime</small>
+                      <div style={{ color: 'var(--color-text-primary)', fontWeight: 700, fontSize: '0.9rem' }}>{t('subscription.total')}</div>
+                      <small style={{ color: 'var(--color-text-muted)', fontSize: '0.78rem' }}>{t('subscription.billing_monthly')}</small>
                     </div>
                     <div style={{ color: 'var(--color-text-primary)', fontSize: '1.4rem', fontWeight: 800 }}>${plan.price}</div>
                   </div>
@@ -225,12 +232,12 @@ export function PaymentPage() {
                     disabled={paymentMutation.isPending}
                   >
                     {paymentMutation.isPending ? (
-                      <><Spinner animation="border" size="sm" className="me-2" /> Processing...</>
-                    ) : `Pay $${plan.price}`}
+                      <><Spinner animation="border" size="sm" className="me-2" /> {t('subscription.processing')}</>
+                    ) : t('subscription.pay', { price: plan.price })}
                   </Button>
 
                   <p style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 14, color: 'var(--color-text-muted)', fontSize: '0.78rem', fontWeight: 600 }}>
-                    <HiLockClosed size={14} /> Secured by Stripe
+                    <HiLockClosed size={14} /> {t('subscription.secured_by_stripe')}
                   </p>
                 </Form>
               </div>

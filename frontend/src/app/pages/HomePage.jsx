@@ -56,49 +56,49 @@ function useMatchMutation() {
 }
 
 const FEATURES = [
-  { icon: HiMicrophone, title: 'AI Speech Coach', desc: 'Real-time pronunciation and fluency feedback as you speak.', color: '#1e293b' },
-  { icon: HiChatBubbleLeftRight, title: 'Structured Conversations', desc: 'Guided rooms with warm-up, discussion, and wrap-up phases.', color: '#475569' },
-  { icon: HiGlobeAlt, title: 'Global Community', desc: 'Practice with learners from 120+ countries. Real accents, real growth.', color: '#64748b' },
-  { icon: HiArrowTrendingUp, title: 'Track Your Progress', desc: 'Detailed analytics and fluency scores across every session.', color: '#334155' },
-  { icon: HiUserGroup, title: 'Small Group Rooms', desc: 'Practice in pairs or small groups for maximum speaking time.', color: '#1e293b' },
-  { icon: HiSpeakerWave, title: 'Pronunciation Drills', desc: 'Targeted exercises for tricky sounds and intonation patterns.', color: '#475569' },
+  { icon: HiMicrophone, titleKey: 'feat_1_title', descKey: 'feat_1_desc', color: '#33CC99', iconColor: '#ffffff' },
+  { icon: HiChatBubbleLeftRight, titleKey: 'feat_2_title', descKey: 'feat_2_desc', color: '#6699FF', iconColor: '#ffffff' },
+  { icon: HiGlobeAlt, titleKey: 'feat_3_title', descKey: 'feat_3_desc', color: '#6666FF', iconColor: '#ffffff' },
+  { icon: HiArrowTrendingUp, titleKey: 'feat_4_title', descKey: 'feat_4_desc', color: '#FF9966', iconColor: '#ffffff' },
+  { icon: HiUserGroup, titleKey: 'feat_5_title', descKey: 'feat_5_desc', color: '#FFCC66', iconColor: '#ffffff' },
+  { icon: HiSpeakerWave, titleKey: 'feat_6_title', descKey: 'feat_6_desc', color: '#FF9999', iconColor: '#ffffff' },
 ];
 
 const STEPS = [
-  { num: '01', title: 'Choose your room', desc: 'Browse by topic, level, or goal. From business English to casual conversation.' },
-  { num: '02', title: 'Speak naturally', desc: 'Join a video room with guided phases. AI listens and analyzes in real time.' },
-  { num: '03', title: 'Get AI feedback', desc: 'Instant analysis on pronunciation, grammar, fluency. Know exactly what to improve.' },
+  { num: '01', titleKey: 'step_1_title', descKey: 'step_1_desc' },
+  { num: '02', titleKey: 'step_2_title', descKey: 'step_2_desc' },
+  { num: '03', titleKey: 'step_3_title', descKey: 'step_3_desc' },
 ];
 
 const TESTIMONIALS = [
-  { quote: 'My speaking confidence has grown more in 3 months than in 3 years of self-study. The AI feedback is incredibly detailed.', name: 'Linh Nguyen', role: 'Intermediate Learner', initial: 'L' },
-  { quote: 'I used to freeze when speaking English. Now I lead meetings at work. This completely changed my trajectory.', name: 'Carlos Mendez', role: 'Advanced Learner', initial: 'C' },
-  { quote: 'I\'ve tried every app. Nothing comes close to real-time pronunciation feedback during a live conversation.', name: 'Yuki Tanaka', role: 'Beginner Learner', initial: 'Y' },
+  { quoteKey: 'testi_1_quote', nameKey: 'testi_1_name', roleKey: 'testi_1_role', initial: 'L' },
+  { quoteKey: 'testi_2_quote', nameKey: 'testi_2_name', roleKey: 'testi_2_role', initial: 'C' },
+  { quoteKey: 'testi_3_quote', nameKey: 'testi_3_name', roleKey: 'testi_3_role', initial: 'Y' },
 ];
 
 const STATS = [
-  { value: '50K+', label: 'Active Learners' },
-  { value: '120+', label: 'Countries' },
-  { value: '15K+', label: 'Rooms Created' },
-  { value: '4.8', label: 'Average Rating' },
+  { value: '50K+', labelKey: 'stat_1' },
+  { value: '120+', labelKey: 'stat_2' },
+  { value: '15K+', labelKey: 'stat_3' },
+  { value: '4.8', labelKey: 'stat_4' },
 ];
 
 const FAQS = [
-  { q: 'How does the AI feedback work?', a: 'Our AI analyzes your speech in real time — pronunciation, grammar, fluency, and vocabulary. After each session, you get a detailed report with specific areas to improve.' },
-  { q: 'Do I need to be fluent to join?', a: 'Not at all. Rooms are organized by level — beginner, intermediate, and advanced. You\'ll be matched with learners at a similar level.' },
-  { q: 'How long is each session?', a: 'Most rooms run 20-30 minutes, with structured phases: warm-up, guided discussion, and wrap-up. You can join as many as you like.' },
-  { q: 'Is there a free plan?', a: 'Yes, free tier includes 5 sessions per week. Premium gives unlimited access, detailed analytics, and priority matching.' },
+  { qKey: 'faq_1_q', aKey: 'faq_1_a' },
+  { qKey: 'faq_2_q', aKey: 'faq_2_a' },
+  { qKey: 'faq_3_q', aKey: 'faq_3_a' },
+  { qKey: 'faq_4_q', aKey: 'faq_4_a' },
 ];
 
 const ROOM_CATEGORIES = [
-  { icon: HiChatBubbleOvalLeft, title: 'Casual Chat', desc: 'Free-flowing conversation on daily topics', color: '#f1f5f9', count: '12 rooms' },
-  { icon: HiBriefcase, title: 'Business English', desc: 'Meetings, presentations, negotiations', color: '#f8fafc', count: '8 rooms' },
-  { icon: HiSpeakerWave, title: 'Pronunciation', desc: 'Drills and exercises for clear speech', color: '#f1f5f9', count: '6 rooms' },
-  { icon: HiBookOpen, title: 'Reading & Discussion', desc: 'Read articles, discuss ideas together', color: '#f8fafc', count: '10 rooms' },
+  { icon: HiChatBubbleOvalLeft, titleKey: 'cat_1_title', descKey: 'cat_1_desc', color: '#f1f5f9', iconColor: '#6699FF', count: '12 rooms' },
+  { icon: HiBriefcase, titleKey: 'cat_2_title', descKey: 'cat_2_desc', color: '#f8fafc', iconColor: '#336699', count: '8 rooms' },
+  { icon: HiSpeakerWave, titleKey: 'cat_3_title', descKey: 'cat_3_desc', color: '#f1f5f9', iconColor: '#FF9966', count: '6 rooms' },
+  { icon: HiBookOpen, titleKey: 'cat_4_title', descKey: 'cat_4_desc', color: '#f8fafc', iconColor: '#33CC99', count: '10 rooms' },
 ];
 
 const TRUST_LOGOS = [
-  'Duolingo', 'Babbel', 'Cambridge', 'IELTS', 'TOEFL', 'British Council',
+  'Vstep', 'Cambridge', 'IELTS', 'TOEFL', 'TOEIC', 'APTIS', 'CEFR', 'BEC',
 ];
 
 export function HomePage() {
@@ -122,33 +122,33 @@ export function HomePage() {
       <section className="hp-hero">
         <div className="hp-ambient" />
         <div className="hp-hero-body">
-          <span className="hp-badge">Now in Beta</span>
+          <span className="hp-badge">{t('landing.badge')}</span>
           <h1 className="hp-hero-title">
-            Speak English<br />
-            <span className="hp-underline">with confidence</span>
+            {t('landing.hero_title')}<br />
+            <span className="hp-underline">{t('landing.hero_title_accent')}</span>
           </h1>
           <p className="hp-hero-sub">
-            Practice real conversations in AI-guided video rooms. Get instant feedback on your pronunciation, grammar, and fluency.
+            {t('landing.hero_sub')}
           </p>
           <div className="hp-hero-actions">
             <button className="hp-btn hp-btn-primary" onClick={() => user ? handleQuickJoin(user.tags?.map(t => t.id) || []) : navigate('/login')}>
-              Start speaking free
+              {t('landing.start_free')}
               <HiArrowRight size={18} />
             </button>
             <button className="hp-btn hp-btn-ghost" onClick={() => document.getElementById('hp-how')?.scrollIntoView({ behavior: 'smooth' })}>
               <HiPlay size={18} />
-              See how it works
+              {t('landing.see_how')}
             </button>
           </div>
           <div className="hp-hero-meta">
-            <HiShieldCheck size={14} /> No credit card required &middot; Free forever tier
+            <HiShieldCheck size={14} /> {t('landing.hero_meta')}
           </div>
         </div>
         <div className="hp-hero-visual">
           <div className="hp-orb hp-orb--1" />
           <div className="hp-orb hp-orb--2" />
           <div className="hp-orb hp-orb--3" />
-          <div className="hp-glass">
+            <div className="hp-glass">
             <div className="hp-glass-header">
               <div className="hp-glass-dots"><span /><span /><span /></div>
               <span className="hp-glass-header-label">Practice Room</span>
@@ -175,7 +175,7 @@ export function HomePage() {
       {/* ── Trust Bar ── */}
       <section className="hp-section hp-section--no-pad">
         <div className="hp-trust">
-          <span className="hp-trust-label">Trusted by learners preparing for</span>
+          <span className="hp-trust-label">{t('landing.trust_label')}</span>
           <div className="hp-trust-row">
             {TRUST_LOGOS.map((name, i) => (
               <span key={i} className="hp-trust-item">{name}</span>
@@ -189,7 +189,7 @@ export function HomePage() {
         {STATS.map((s, i) => (
           <div key={i} className="hp-stat-item">
             <strong>{s.value}</strong>
-            <span>{s.label}</span>
+            <span>{t(`landing.${s.labelKey}`)}</span>
           </div>
         ))}
       </section>
@@ -197,15 +197,15 @@ export function HomePage() {
       {/* ── How It Works ── */}
       <section className="hp-section" id="hp-how">
         <div className="hp-contained">
-          <span className="hp-eyebrow">How it works</span>
-          <h2 className="hp-section-title">Three steps to fluency</h2>
-          <p className="hp-section-sub">No textbooks, no boring drills. Just real conversations that build real skills.</p>
+          <span className="hp-eyebrow">{t('landing.how_eyebrow')}</span>
+          <h2 className="hp-section-title">{t('landing.how_title')}</h2>
+          <p className="hp-section-sub">{t('landing.how_sub')}</p>
           <div className="hp-steps">
             {STEPS.map((step, i) => (
               <div key={i} className="hp-step">
                 <span className="hp-step-num">{step.num}</span>
-                <h3>{step.title}</h3>
-                <p>{step.desc}</p>
+                <h3>{t(`landing.${step.titleKey}`)}</h3>
+                <p>{t(`landing.${step.descKey}`)}</p>
               </div>
             ))}
           </div>
@@ -215,20 +215,20 @@ export function HomePage() {
       {/* ── Features ── */}
       <section className="hp-section hp-section--alt">
         <div className="hp-contained">
-          <span className="hp-eyebrow">Features</span>
-          <h2 className="hp-section-title">Everything you need</h2>
-          <p className="hp-section-sub">AI-powered tools built to make you a better speaker, faster.</p>
+          <span className="hp-eyebrow">{t('landing.features_eyebrow')}</span>
+          <h2 className="hp-section-title">{t('landing.features_title')}</h2>
+          <p className="hp-section-sub">{t('landing.features_sub')}</p>
           <div className="hp-features">
             {FEATURES.map((feat, i) => {
               const Icon = feat.icon;
               return (
                 <div key={i} className="hp-feature">
                   <div className="hp-feature-icon" style={{ background: feat.color }}>
-                    <Icon size={20} color="#fff" />
+                    <Icon size={20} color={feat.iconColor || '#fff'} />
                   </div>
                   <div>
-                    <h3>{feat.title}</h3>
-                    <p>{feat.desc}</p>
+                    <h3>{t(`landing.${feat.titleKey}`)}</h3>
+                    <p>{t(`landing.${feat.descKey}`)}</p>
                   </div>
                 </div>
               );
@@ -240,15 +240,15 @@ export function HomePage() {
       {/* ── Room Categories ── */}
       <section className="hp-section">
         <div className="hp-contained">
-          <span className="hp-eyebrow">Rooms</span>
-          <h2 className="hp-section-title">Find your room</h2>
-          <p className="hp-section-sub">Topics for every goal and interest. New rooms added daily.</p>
+          <span className="hp-eyebrow">{t('landing.rooms_eyebrow')}</span>
+          <h2 className="hp-section-title">{t('landing.rooms_title')}</h2>
+          <p className="hp-section-sub">{t('landing.rooms_sub')}</p>
           <div className="hp-categories">
             {ROOM_CATEGORIES.map((cat, i) => (
               <div key={i} className="hp-category" style={{ background: cat.color }}>
-                <span className="hp-category-icon"><cat.icon size={22} /></span>
-                <h3>{cat.title}</h3>
-                <p>{cat.desc}</p>
+                <span className="hp-category-icon" style={{ color: cat.iconColor }}><cat.icon size={22} /></span>
+                <h3>{t(`landing.${cat.titleKey}`)}</h3>
+                <p>{t(`landing.${cat.descKey}`)}</p>
                 <span className="hp-category-count">{cat.count}</span>
               </div>
             ))}
@@ -277,21 +277,21 @@ export function HomePage() {
       {/* ── Testimonials ── */}
       <section className="hp-section hp-section--alt">
         <div className="hp-contained">
-          <span className="hp-eyebrow">Testimonials</span>
-          <h2 className="hp-section-title">Real learners, real results</h2>
-          <p className="hp-section-sub">Join thousands who transformed their speaking skills.</p>
+          <span className="hp-eyebrow">{t('landing.testi_eyebrow')}</span>
+          <h2 className="hp-section-title">{t('landing.testi_title')}</h2>
+          <p className="hp-section-sub">{t('landing.testi_sub')}</p>
           <div className="hp-testimonials">
             {TESTIMONIALS.map((item, i) => (
               <div key={i} className="hp-testimonial">
                 <div className="hp-testimonial-stars">
                   {[...Array(5)].map((_, j) => <HiStar key={j} size={14} />)}
                 </div>
-                <p className="hp-testimonial-quote">&ldquo;{item.quote}&rdquo;</p>
+                <p className="hp-testimonial-quote">&ldquo;{t(`landing.${item.quoteKey}`)}&rdquo;</p>
                 <div className="hp-testimonial-byline">
                   <div className="hp-testimonial-avatar">{item.initial}</div>
                   <div>
-                    <strong>{item.name}</strong>
-                    <span>{item.role}</span>
+                    <strong>{t(`landing.${item.nameKey}`)}</strong>
+                    <span>{t(`landing.${item.roleKey}`)}</span>
                   </div>
                 </div>
               </div>
@@ -303,14 +303,14 @@ export function HomePage() {
       {/* ── FAQ ── */}
       <section className="hp-section">
         <div className="hp-contained" style={{ maxWidth: 700 }}>
-          <span className="hp-eyebrow">FAQ</span>
-          <h2 className="hp-section-title">Common questions</h2>
-          <p className="hp-section-sub">Everything you need to know before getting started.</p>
+          <span className="hp-eyebrow">{t('landing.faq_eyebrow')}</span>
+          <h2 className="hp-section-title">{t('landing.faq_title')}</h2>
+          <p className="hp-section-sub">{t('landing.faq_sub')}</p>
           <div className="pricing-faq">
             {FAQS.map((faq, i) => (
               <details key={i} className="pricing-faq__item">
-                <summary>{faq.q}</summary>
-                <p>{faq.a}</p>
+                <summary>{t(`landing.${faq.qKey}`)}</summary>
+                <p>{t(`landing.${faq.aKey}`)}</p>
               </details>
             ))}
           </div>
@@ -322,11 +322,11 @@ export function HomePage() {
         <div className="hp-contained">
           <div className="hp-cta-card">
             <div className="hp-cta-orb" />
-            <span className="hp-eyebrow hp-cta-eyebrow">Get started</span>
-            <h2>Ready to speak<br />with confidence?</h2>
-            <p>Join 50,000+ learners building real English conversation skills.</p>
+            <span className="hp-eyebrow hp-cta-eyebrow">{t('landing.cta_eyebrow')}</span>
+            <h2>{t('landing.cta_title')}<br />{t('landing.cta_title_accent')}</h2>
+            <p>{t('landing.cta_desc')}</p>
             <button className="hp-btn hp-btn-cta" onClick={() => navigate('/login')}>
-              Get started free
+              {t('landing.cta_btn')}
               <HiArrowRight size={20} />
             </button>
           </div>

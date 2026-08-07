@@ -38,12 +38,12 @@ export function AppShell({ children }) {
   };
 
   const navItems = [
-    { path: '/', label: 'Home', icon: HiHome },
-    { path: '/learning', label: 'Meeting', icon: HiAcademicCap },
-    { path: '/blog', label: 'Blog', icon: HiNewspaper },
-    { path: '/leaderboard', label: 'Rankings', icon: HiTrophy },
-    { path: '/pricing', label: 'Pricing', icon: HiCurrencyDollar },
-    { path: '/contact', label: 'Contact', icon: HiEnvelope },
+    { path: '/', labelKey: 'nav.home', icon: HiHome },
+    { path: '/learning', labelKey: 'nav.learning', icon: HiAcademicCap },
+    { path: '/blog', labelKey: 'nav.blog', icon: HiNewspaper },
+    { path: '/leaderboard', labelKey: 'nav.rankings', icon: HiTrophy },
+    { path: '/pricing', labelKey: 'nav.pricing', icon: HiCurrencyDollar },
+    { path: '/contact', labelKey: 'nav.contact', icon: HiEnvelope },
   ];
 
   return (
@@ -70,15 +70,15 @@ export function AppShell({ children }) {
                 <Nav.Link key={item.path} as={Link} to={item.path}
                   className={`rounded-pill px-3 d-flex align-items-center gap-1 ${isActive(item.path) ? 'active' : ''}`}
                   style={{
-                    color: isActive(item.path) ? 'var(--color-accent)' : 'var(--color-text-secondary)',
+                    color: isActive(item.path) ? '#0b3d2e !important' : 'var(--color-text-secondary)',
                     fontWeight: isActive(item.path) ? 600 : 500,
                     fontSize: '0.875rem',
-                    background: isActive(item.path) ? 'var(--color-accent-muted)' : 'transparent',
+                    background: isActive(item.path) ? '#99FFCC' : 'transparent',
                   }}
                   onClick={() => setExpanded(false)}
                 >
                   <item.icon size={16} />
-                  {item.label}
+                  {t(item.labelKey)}
                 </Nav.Link>
               ))}
             </Nav>
@@ -137,25 +137,25 @@ export function AppShell({ children }) {
               <p>{t('footer.tagline')}</p>
             </div>
             <div className="hp-footer-col">
-              <h4>Product</h4>
-              <Link to="/learning">Meeting</Link>
-              <Link to="/pricing">Pricing</Link>
-              <Link to="/leaderboard">Rankings</Link>
+              <h4>{t('footer.product')}</h4>
+              <Link to="/learning">{t('footer.meeting')}</Link>
+              <Link to="/pricing">{t('footer.pricing')}</Link>
+              <Link to="/leaderboard">{t('footer.rankings')}</Link>
             </div>
             <div className="hp-footer-col">
-              <h4>Resources</h4>
-              <Link to="/blog">Blog</Link>
-              <Link to="/contact">Contact</Link>
-              <Link to="/faq">FAQ</Link>
+              <h4>{t('footer.resources')}</h4>
+              <Link to="/blog">{t('footer.blog')}</Link>
+              <Link to="/contact">{t('footer.contact')}</Link>
+              <Link to="/faq">{t('footer.faq')}</Link>
             </div>
             <div className="hp-footer-col">
-              <h4>Legal</h4>
-              <a href="#privacy">Privacy Policy</a>
-              <a href="#terms">Terms of Service</a>
+              <h4>{t('footer.legal')}</h4>
+              <a href="#privacy">{t('footer.privacy')}</a>
+              <a href="#terms">{t('footer.terms')}</a>
             </div>
           </div>
           <div className="hp-footer-bottom">
-            <span>&copy; {new Date().getFullYear()} E-Room. All rights reserved.</span>
+            <span>&copy; {new Date().getFullYear()} E-Room. {t('footer.rights')}</span>
           </div>
         </div>
       </footer>

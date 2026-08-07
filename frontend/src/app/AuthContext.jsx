@@ -4,12 +4,30 @@ import { useSubscriptionStore } from '../stores/subscriptionStore';
 
 const AuthContext = createContext(null);
 
+export const DEMO_USER = {
+  id: 'demo-user',
+  email: 'demo@e-room.local',
+  first_name: 'Demo',
+  last_name: 'User',
+  display_name: 'Demo User',
+  profile_completed: true,
+  avatar_url: null,
+};
+
+export const IS_DEMO_MODE = process.env.REACT_APP_DEMO_MODE === 'true';
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const setSubscription = useSubscriptionStore((s) => s.setSubscription);
 
   useEffect(() => {
+    if (IS_DEMO_MODE && !getTokens().access) {
+      setUser(DEMO_USER);
+      setSubscription({ tier: 'free' });
+      setLoading(false);
+      return;
+    }
     const { access } = getTokens();
     if (access) {
       Promise.all([
@@ -32,6 +50,11 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = useCallback(async (email, password) => {
+    if (IS_DEMO_MODE) {
+      setUser(DEMO_USER);
+      setSubscription({ tier: 'free' });
+      return DEMO_USER;
+    }
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

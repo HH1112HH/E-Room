@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 import { HiArrowRight, HiMagnifyingGlass, HiCheckCircle } from 'react-icons/hi2';
@@ -7,12 +8,24 @@ import { blogPosts } from './blogContent';
 import '../../styles/MarketingPages.css';
 
 export function BlogPage() {
+  const { t } = useTranslation();
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const categories = ['All', ...new Set(blogPosts.map((p) => p.category))];
+  const posts = blogPosts.map((p) => ({
+    ...p,
+    category: t(p.categoryKey),
+    title: t(p.titleKey),
+    excerpt: t(p.excerptKey),
+    hero: t(p.heroKey),
+    author: t(p.authorKey),
+    readTime: t(p.readTimeKey),
+    content: t(p.contentKey, { returnObjects: true }),
+  }));
 
-  const filtered = blogPosts.filter((post) => {
+  const categories = ['All', ...new Set(posts.map((p) => p.category))];
+
+  const filtered = posts.filter((post) => {
     const matchCategory = activeCategory === 'All' || post.category === activeCategory;
     const q = searchQuery.toLowerCase();
     const matchSearch = !q || post.title.toLowerCase().includes(q) || post.excerpt.toLowerCase().includes(q);
@@ -25,8 +38,8 @@ export function BlogPage() {
     <main className="marketing-page blog-index fade-in">
       <Container className="marketing-page__container">
         <section className="blog-index__header">
-          <h1>Practical writing for people learning English by speaking.</h1>
-          <p>Room routines, feedback habits, and host guides written for learners who want visible progress after every conversation.</p>
+          <h1>{t('marketing.blog_header_title')}</h1>
+          <p>{t('marketing.blog_header_sub')}</p>
         </section>
 
         <div className="blog-controls">
@@ -45,7 +58,7 @@ export function BlogPage() {
             <HiMagnifyingGlass size={14} />
             <input
               type="text"
-              placeholder="Search articles..."
+              placeholder={t('marketing.blog_search_ph')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -54,7 +67,7 @@ export function BlogPage() {
 
         {filtered.length === 0 ? (
           <div className="blog-empty">
-            <p>No articles match your search. Try different keywords.</p>
+            <p>{t('marketing.blog_empty')}</p>
           </div>
         ) : (
           <section className="blog-layout" aria-label="Latest blog posts">
@@ -80,7 +93,7 @@ export function BlogPage() {
                   <p>{post.excerpt}</p>
                   <div className="blog-row__footer">
                     <span className="blog-meta">{post.author} · {post.date} · {post.readTime}</span>
-                    <Link to={`/blog/${post.slug}`} className="blog-read-link">Read article <HiArrowRight size={14} /></Link>
+                    <Link to={`/blog/${post.slug}`} className="blog-read-link">{t('marketing.blog_read_article')} <HiArrowRight size={14} /></Link>
                   </div>
                 </article>
               ))}
@@ -91,11 +104,11 @@ export function BlogPage() {
         <section className="blog-newsletter">
           <div className="blog-newsletter__body">
             <HiCheckCircle size={20} />
-            <h2>Get weekly speaking tips delivered to your inbox</h2>
-            <p>Short, practical advice from experienced English hosts — no spam, just signal.</p>
+            <h2>{t('marketing.blog_newsletter_title')}</h2>
+            <p>{t('marketing.blog_newsletter_sub')}</p>
             <form className="blog-newsletter__form" onSubmit={(e) => e.preventDefault()}>
-              <input type="email" placeholder="your@email.com" required />
-              <Button type="submit" variant="primary" size="sm" className="px-3 fw-semibold">Subscribe</Button>
+              <input type="email" placeholder={t('marketing.blog_newsletter_ph')} required />
+              <Button type="submit" variant="primary" size="sm" className="px-3 fw-semibold">{t('marketing.blog_subscribe')}</Button>
             </form>
           </div>
         </section>

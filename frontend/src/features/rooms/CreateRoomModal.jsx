@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { fetchJson } from '../../lib/api';
 import '../../styles/CreateRoomModal.css';
 import {
@@ -7,12 +8,12 @@ import {
 } from 'react-icons/hi2';
 
 const ENGLISH_LEVELS = [
-  { value: 'A1', label: 'A1', desc: 'Beginner' },
-  { value: 'A2', label: 'A2', desc: 'Elementary' },
-  { value: 'B1', label: 'B1', desc: 'Intermediate' },
-  { value: 'B2', label: 'B2', desc: 'Upper-Int' },
-  { value: 'C1', label: 'C1', desc: 'Advanced' },
-  { value: 'C2', label: 'C2', desc: 'Proficient' },
+  { value: 'A1', label: 'A1', descIndex: 0 },
+  { value: 'A2', label: 'A2', descIndex: 1 },
+  { value: 'B1', label: 'B1', descIndex: 2 },
+  { value: 'B2', label: 'B2', descIndex: 3 },
+  { value: 'C1', label: 'C1', descIndex: 4 },
+  { value: 'C2', label: 'C2', descIndex: 5 },
 ];
 
 const PARTICIPANT_OPTS = [2, 3, 4, 5, 6, 8, 10, 15];
@@ -26,6 +27,7 @@ const FALLBACK_TAGS = [
 
 
 export function CreateRoomModal({ onClose, onRoomCreated }) {
+  const { t } = useTranslation();
   const [topic, setTopic] = useState('');
   const [description, setDescription] = useState('');
   const [tagIds, setTagIds] = useState('');
@@ -33,6 +35,7 @@ export function CreateRoomModal({ onClose, onRoomCreated }) {
   const [maxParticipants, setMaxParticipants] = useState(5);
   const [popularTags, setPopularTags] = useState([]);
   const [saving, setSaving] = useState(false);
+  const levelDescs = t('learning.create_room_level_descs', { returnObjects: true });
 
   useEffect(() => {
     fetchJson('/tags/popular').then(t => {
@@ -56,7 +59,7 @@ export function CreateRoomModal({ onClose, onRoomCreated }) {
       .map((t) => t.trim())
       .filter(Boolean);
     if (tagList.length === 0) {
-      alert('Please enter at least one tag');
+      alert(t('learning.create_room_need_tag'));
       return;
     }
 
@@ -76,7 +79,7 @@ export function CreateRoomModal({ onClose, onRoomCreated }) {
       if (onRoomCreated) onRoomCreated(room);
       onClose();
     } catch (err) {
-      alert(err.message || 'Failed to create room');
+      alert(err.message || t('learning.create_room_failed'));
     } finally {
       setSaving(false);
     }
@@ -96,10 +99,10 @@ export function CreateRoomModal({ onClose, onRoomCreated }) {
           <div className="room-modal__header">
             <div>
               <h3 className="room-modal__title">
-                Create a Room
+                {t('learning.create_room_title')}
               </h3>
               <p className="room-modal__subtitle">
-                Fill in the details to start a new English-speaking session
+                {t('learning.create_room_subtitle')}
               </p>
             </div>
             <button
@@ -114,31 +117,31 @@ export function CreateRoomModal({ onClose, onRoomCreated }) {
 
             <label className="room-modal__label">
               <HiTag size={14} className="room-modal__icon" />
-              Room Topic *
+              {t('learning.create_room_topic')}
             </label>
             <input
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
-              placeholder="e.g. AI Job Interview Practice"
+              placeholder={t('learning.create_room_topic_ph')}
               autoFocus
               className="room-modal__input"
             />
 
             <label className="room-modal__label">
               <HiDocumentText size={14} className="room-modal__icon" />
-              Description
+              {t('learning.create_room_desc')}
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="What will you discuss? Any special rules or topics?"
+              placeholder={t('learning.create_room_desc_ph')}
               rows={3}
               className="room-modal__input room-modal__textarea"
             />
 
             <label className="room-modal__label">
               <HiAcademicCap size={14} className="room-modal__icon" />
-              English Level
+              {t('learning.create_room_level')}
             </label>
             <div className="room-modal__btn-group">
               {ENGLISH_LEVELS.map((lvl) => (
@@ -146,18 +149,18 @@ export function CreateRoomModal({ onClose, onRoomCreated }) {
                   key={lvl.value}
                   type="button"
                   onClick={() => setLevel(prev => prev === lvl.value ? '' : lvl.value)}
-                  title={lvl.desc}
+                  title={levelDescs[lvl.descIndex]}
                   className={`room-modal__level-btn${level === lvl.value ? ' room-modal__level-btn--active' : ''}`}
                 >
                   <span className="room-modal__level-btn-label">{lvl.label}</span>
-                  <span className="room-modal__level-btn-desc">{lvl.desc}</span>
+                  <span className="room-modal__level-btn-desc">{levelDescs[lvl.descIndex]}</span>
                 </button>
               ))}
             </div>
 
             <label className="room-modal__label">
               <HiUserGroup size={14} className="room-modal__icon" />
-              Max Participants
+              {t('learning.create_room_max')}
             </label>
             <div className="room-modal__btn-group">
               {PARTICIPANT_OPTS.map((n) => (
@@ -174,12 +177,12 @@ export function CreateRoomModal({ onClose, onRoomCreated }) {
 
             <label className="room-modal__label">
               <HiTag size={14} className="room-modal__icon" />
-              Tags * <span className="room-modal__tag-hint">(comma separated)</span>
+              {t('learning.create_room_tags')} <span className="room-modal__tag-hint">{t('learning.create_room_tags_hint')}</span>
             </label>
             <input
               value={tagIds}
               onChange={(e) => setTagIds(e.target.value)}
-              placeholder="e.g. Business, Technology, Travel"
+              placeholder={t('learning.create_room_tags_ph')}
               className="room-modal__input"
             />
             <div className="room-modal__tag-list">
@@ -205,7 +208,7 @@ export function CreateRoomModal({ onClose, onRoomCreated }) {
                 onClick={onClose}
                 className="room-modal__cancel-btn"
               >
-                Cancel
+                {t('learning.create_room_cancel')}
               </button>
               <button
                 type="submit"
@@ -213,7 +216,7 @@ export function CreateRoomModal({ onClose, onRoomCreated }) {
                 className="room-modal__submit-btn"
               >
                 <HiPlusCircle size={17} />
-                {saving ? 'Creating...' : 'Create Room'}
+                {saving ? t('learning.create_room_creating') : t('learning.create_room_submit')}
               </button>
             </div>
           </form>
