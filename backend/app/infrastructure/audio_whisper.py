@@ -22,30 +22,25 @@ whisper_model: object | None = None
 def get_whisper_model() -> WhisperModel:
     global whisper_model
     if whisper_model is None:
-        try:
-            import torch
-
-            has_cuda = torch.cuda.is_available()
-        except Exception:
-            has_cuda = False
-        if has_cuda:
+        use_cuda = os.environ.get("USE_CUDA", "").strip().lower() in ("1", "true", "yes")
+        if use_cuda:
             whisper_model = WhisperModel(
-                "small.en",
+                "tiny.en",
                 device="cuda",
                 compute_type="float16",
                 download_root=str(WHISPER_CACHE),
             )
-            logger.info("Đã tải model small.en float16 trên CUDA")
+            logger.info("Đã tải model tiny.en float16 trên CUDA")
         else:
             whisper_model = WhisperModel(
-                "small.en",
+                "tiny.en",
                 device="cpu",
-                compute_type="float32",
+                compute_type="int8",
                 download_root=str(WHISPER_CACHE),
-                cpu_threads=4,
+                cpu_threads=2,
                 num_workers=1,
             )
-            logger.info("Đã tải model small.en float32 trên CPU")
+            logger.info("Đã tải model tiny.en int8 trên CPU")
     return whisper_model
 
 
@@ -60,8 +55,8 @@ def transcribe_whisper(pcm_data: bytes, sample_rate: int) -> tuple[str, list[dic
     segments, info = model.transcribe(
         audio_array,
         language="en",
-        beam_size=5,
-        best_of=5,
+        beam_size=3,
+        best_of=3,
         temperature=0.0,
         vad_filter=False,
         condition_on_previous_text=False,
