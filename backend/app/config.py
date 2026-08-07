@@ -94,7 +94,10 @@ class Settings(BaseSettings):
         url = self.db_url_sync or self.db_url
         if not url.startswith("mysql"):
             return {}
-        if self.db_host in ("localhost", "127.0.0.1", "::1"):
+        from urllib.parse import urlparse
+
+        host = urlparse(url).hostname or ""
+        if host in ("localhost", "127.0.0.1", "::1"):
             return {}
         import ssl
 
