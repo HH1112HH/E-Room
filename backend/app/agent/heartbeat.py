@@ -12,7 +12,11 @@ from app.config import settings
 from app.log import get_logger
 
 logger = get_logger(__name__)
-client = AsyncOpenAI(api_key=settings.llm_api_key, base_url=settings.llm_base_url, timeout=300)
+
+def _get_client() -> AsyncOpenAI | None:
+    if not settings.llm_api_key:
+        return None
+    return AsyncOpenAI(api_key=settings.llm_api_key, base_url=settings.llm_base_url, timeout=300)
 
 FALLBACK_QUESTIONS = [
     "What is one AI tool you use regularly and how does it help you?",
@@ -33,6 +37,9 @@ async def generate_heartbeat_question(room_id: str, context: str) -> dict[str, A
     logger.info("Nhịp tim - bắt đầu tạo câu hỏi", extra={"room_id": room_id})
 
     try:
+        client = _get_client()
+        if client is None:
+            raise RuntimeError("LLM chưa được cấu hình (LLM_API_KEY trống)")
         resp = await client.chat.completions.create(
             model=settings.llm_model,
             messages=[
@@ -53,7 +60,11 @@ async def generate_heartbeat_question(room_id: str, context: str) -> dict[str, A
         return data
     except Exception as e:
         logger.error("Nhịp tim - tạo câu hỏi thất bại", exc_info=True, extra={"room_id": room_id, "error": str(e)})
-        return {}
+        return {
+            "question_id": "",
+            "question": random.choice(FALLBACK_QUESTIONS),
+            "answers": [],
+        }
 
 
 def parse_heartbeat_response(content: str) -> dict[str, Any]:

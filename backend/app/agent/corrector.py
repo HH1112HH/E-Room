@@ -12,7 +12,11 @@ from app.infrastructure.pronunciation_audio import generate_pronunciation_audio
 from app.log import get_logger
 
 logger = get_logger(__name__)
-client = AsyncOpenAI(api_key=settings.llm_api_key, base_url=settings.llm_base_url, timeout=300)
+
+def _get_client() -> AsyncOpenAI | None:
+    if not settings.llm_api_key:
+        return None
+    return AsyncOpenAI(api_key=settings.llm_api_key, base_url=settings.llm_base_url, timeout=300)
 
 
 async def correct_text(text: str, user_id: str, pipeline_result: dict[str, Any]) -> dict[str, Any]:
@@ -37,6 +41,9 @@ async def correct_text(text: str, user_id: str, pipeline_result: dict[str, Any])
     )
 
     try:
+        client = _get_client()
+        if client is None:
+            raise RuntimeError("LLM chưa được cấu hình (LLM_API_KEY trống)")
         resp = await client.chat.completions.create(
             model=settings.llm_model,
             messages=[

@@ -98,8 +98,9 @@ class TestCorrectText:
             0
         ].message.content = '{"corrected": "hello world", "errors": [], "score": 6, "pronunciation_feedback": "Good", "tts_text": "hello world"}'
 
-        with patch("app.agent.corrector.client") as mock_client:
-            mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
+        mock_client = AsyncMock()
+        mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
+        with patch("app.agent.corrector._get_client", return_value=mock_client):
             with patch("app.agent.corrector.generate_pronunciation_audio", AsyncMock(return_value=[])):
                 result = await correct_text("hello world", "user1", pipeline_result)
 
@@ -113,8 +114,9 @@ class TestCorrectText:
             "needs_remediation": True,
             "words": [],
         }
-        with patch("app.agent.corrector.client") as mock_client:
-            mock_client.chat.completions.create = AsyncMock(side_effect=Exception("LLM down"))
+        mock_client = AsyncMock()
+        mock_client.chat.completions.create = AsyncMock(side_effect=Exception("LLM down"))
+        with patch("app.agent.corrector._get_client", return_value=mock_client):
             result = await correct_text("hello", "user1", pipeline_result)
 
         assert result["corrected"] == "hello"
@@ -140,8 +142,9 @@ class TestCorrectText:
             '"tts_text": "think this"}'
         )
 
-        with patch("app.agent.corrector.client") as mock_client:
-            mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
+        mock_client = AsyncMock()
+        mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
+        with patch("app.agent.corrector._get_client", return_value=mock_client):
             with patch("app.agent.corrector.generate_pronunciation_audio", AsyncMock(return_value=[])):
                 result = await correct_text("think this", "user1", pipeline_result)
 

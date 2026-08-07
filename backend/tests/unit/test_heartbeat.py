@@ -73,9 +73,10 @@ class TestGenerateHeartbeatQuestion:
         mock_response = AsyncMock()
         mock_response.choices = [AsyncMock()]
         mock_response.choices[0].message.content = '{"question": "Will AI replace developers?", "question_id": "h1", "suggested_response": ["Maybe"]}'
+        mock_client = AsyncMock()
+        mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
 
-        with patch("app.agent.heartbeat.client") as mock_client:
-            mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
+        with patch("app.agent.heartbeat._get_client", return_value=mock_client):
             result = await generate_heartbeat_question("room1", "Context about room")
 
         assert result["question"] == "Will AI replace developers?"
@@ -86,18 +87,20 @@ class TestGenerateHeartbeatQuestion:
         mock_response.choices = [AsyncMock()]
         mock_response.choices[0].message.content = ""
 
-        with patch("app.agent.heartbeat.client") as mock_client:
-            mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
+        mock_client = AsyncMock()
+        mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
+        with patch("app.agent.heartbeat._get_client", return_value=mock_client):
             result = await generate_heartbeat_question("room1", "context")
 
         assert result["question"] in FALLBACK_QUESTIONS
 
     async def test_llm_exception_returns_vietnamese_fallback(self):
-        with patch("app.agent.heartbeat.client") as mock_client:
-            mock_client.chat.completions.create = AsyncMock(side_effect=Exception("LLM unavailable"))
+        mock_client = AsyncMock()
+        mock_client.chat.completions.create = AsyncMock(side_effect=Exception("LLM unavailable"))
+        with patch("app.agent.heartbeat._get_client", return_value=mock_client):
             result = await generate_heartbeat_question("room1", "context")
 
-        assert result["question"] == "Bạn nghĩ gì về tương lai của AI?"
+        assert result["question"] in FALLBACK_QUESTIONS
         assert result["question_id"] == ""
 
     async def test_passes_context_to_llm(self):
@@ -105,8 +108,9 @@ class TestGenerateHeartbeatQuestion:
         mock_response.choices = [AsyncMock()]
         mock_response.choices[0].message.content = '{"question": "test", "question_id": "x"}'
 
-        with patch("app.agent.heartbeat.client") as mock_client:
-            mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
+        mock_client = AsyncMock()
+        mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
+        with patch("app.agent.heartbeat._get_client", return_value=mock_client):
             await generate_heartbeat_question("room1", "Room context about AI")
             call_kwargs = mock_client.chat.completions.create.call_args[1]
             user_msg = call_kwargs["messages"][1]["content"]
@@ -117,8 +121,9 @@ class TestGenerateHeartbeatQuestion:
         mock_response.choices = [AsyncMock()]
         mock_response.choices[0].message.content = '{"question": "test", "question_id": "x"}'
 
-        with patch("app.agent.heartbeat.client") as mock_client:
-            mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
+        mock_client = AsyncMock()
+        mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
+        with patch("app.agent.heartbeat._get_client", return_value=mock_client):
             await generate_heartbeat_question("room1", "")
             call_kwargs = mock_client.chat.completions.create.call_args[1]
             user_msg = call_kwargs["messages"][1]["content"]
