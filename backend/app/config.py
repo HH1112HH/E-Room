@@ -41,7 +41,7 @@ class Settings(BaseSettings):
 
     # ─── AI / LLM ──────────────────────────────────
     llm_base_url: str = "http://127.0.0.1:1234/v1"
-    llm_model: str = "google/gemma-4-e2b"
+    llm_model: str = "nvidia/nemotron-3-ultra-550b-a55b:free"
     llm_api_key: str = ""
     embedding_base_url: str = ""
     embedding_model: str = ""
