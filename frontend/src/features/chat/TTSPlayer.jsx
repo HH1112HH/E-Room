@@ -51,7 +51,7 @@ export function TTSPlayer({ text, onPlay, audioUrl }) {
       onMouseOut={(e) => { e.currentTarget.style.background = playing ? 'var(--color-accent-muted)' : 'var(--color-bg-surface)'; }}
     >
       {playing ? <HiPause size={16} /> : <HiSpeakerWave size={16} />}
-      {playing ? 'Playing...' : 'Hear it'}
+      {playing ? 'Đang phát...' : 'Nghe thử'}
     </button>
   );
 }

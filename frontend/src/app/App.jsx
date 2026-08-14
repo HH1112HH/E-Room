@@ -26,7 +26,7 @@ const ContactPage = lazy(() => import('./pages/ContactPage').then(m => ({ defaul
 function PageLoader() {
   return (
     <div className="page-loader">
-      Loading...
+      Đang tải...
     </div>
   );
 }

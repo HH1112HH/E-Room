@@ -274,8 +274,8 @@ async def process_speech(pcm_data: bytes, user_id: str, room_id: str) -> None:
                     )
 
                     tts_display_text = (
-                        f"Maybe you didn't pronounce **\"{text}\"** correctly. "
-                        "Try listening to the correct pronunciation for this sentence."
+                        f"Bạn có thể đã phát âm chưa chính xác từ **\"{text}\"**. "
+                        "Hãy nghe cách phát âm chuẩn của câu này."
                     )
 
                     chat_msg: dict[str, object] = {
@@ -445,7 +445,7 @@ async def handle_room_ws(ws: WebSocket, room_id: str) -> None:
         welcome_msg = json.dumps(
             {
                 "type": "chat_message",
-                "content": "👋 Welcome to the room! Practice speaking and I'll help with pronunciation. Try saying something!",
+                "content": "👋 Chào mừng đến với phòng! Hãy luyện nói, mình sẽ giúp bạn cải thiện phát âm. Thử nói một câu nhé!",
                 "sender_id": "assistant",
                 "display_name": "assistant",
                 "timestamp": now(),

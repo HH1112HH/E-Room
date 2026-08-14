@@ -20,11 +20,11 @@ export function RealtimeRoomPanel() {
   }, [roomId]);
 
   return (
-    <Card title="Realtime events" subtitle="Room WebSocket event feed">
+    <Card title="Sự kiện thời gian thực" subtitle="Luồng sự kiện WebSocket của phòng">
       <div className="form-row devtools-mb12">
-        <input value={roomId} onChange={(event) => setRoomId(event.target.value)} placeholder="Room id" />
+        <input value={roomId} onChange={(event) => setRoomId(event.target.value)} placeholder="Mã phòng" />
       </div>
-      {events.length === 0 ? <p className="empty-state">Waiting for room events...</p> : null}
+      {events.length === 0 ? <p className="empty-state">Đang chờ sự kiện phòng...</p> : null}
       <ul className="list-simple">
         {events.map((event, index) => (
           <li key={`${event.type}-${index}`}>

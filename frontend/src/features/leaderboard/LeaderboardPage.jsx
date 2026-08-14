@@ -39,7 +39,7 @@ export function LeaderboardPage() {
             <Button variant="primary" onClick={() => setShowUpgrade(true)}>{t('marketing.leaderboard_upgrade_btn')}</Button>
           </div>
         </Container>
-        <UpgradePrompt feature="Leaderboard" visible={showUpgrade} onClose={() => setShowUpgrade(false)} />
+        <UpgradePrompt feature="Bảng xếp hạng" visible={showUpgrade} onClose={() => setShowUpgrade(false)} />
       </>
     );
   }

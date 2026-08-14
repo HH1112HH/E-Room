@@ -7,10 +7,10 @@ import { HiTag } from 'react-icons/hi2';
 import '../../styles/OnboardingWizard.css';
 
 const FALLBACK_TAGS = [
-  'Business', 'Technology', 'Travel', 'Education', 'IELTS',
-  'Daily Life', 'Pronunciation', 'Interview', 'Culture', 'Science',
-  'Food', 'Music', 'Gaming', 'Sports', 'Movies', 'Fashion',
-  'Health', 'Startup', 'Marketing', 'Finance',
+  'Kinh doanh', 'Công nghệ', 'Du lịch', 'Giáo dục', 'IELTS',
+  'Đời sống hằng ngày', 'Phát âm', 'Phỏng vấn', 'Văn hóa', 'Khoa học',
+  'Ẩm thực', 'Âm nhạc', 'Gaming', 'Thể thao', 'Phim ảnh', 'Thời trang',
+  'Sức khỏe', 'Khởi nghiệp', 'Marketing', 'Tài chính',
 ];
 
 export function StepTagPicker({ form, updateField }) {
@@ -51,13 +51,13 @@ export function StepTagPicker({ form, updateField }) {
     <div>
       <div className="text-center mb-3">
         <HiTag size={36} className="onboarding-wizard__step-icon" />
-        <h4 className="fw-bold mt-2 mb-1">What topics interest you?</h4>
+        <h4 className="fw-bold mt-2 mb-1">Bạn quan tâm chủ đề nào?</h4>
         <p className="text-muted small mb-0">
-          Pick at least one tag so we can match you with learners who share your interests.
+          Chọn ít nhất một thẻ để chúng tôi ghép bạn với những người học cùng sở thích.
         </p>
         {selected.length === 0 && (
           <p className="small mt-1 onboarding-wizard__step-warning">
-            ⚠️ You can skip, but auto-matching will be unavailable until you add tags.
+            ⚠️ Bạn có thể bỏ qua, nhưng tự động ghép cặp sẽ không khả dụng cho đến khi bạn thêm thẻ.
           </p>
         )}
       </div>
@@ -80,7 +80,7 @@ export function StepTagPicker({ form, updateField }) {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search tags..."
+          placeholder="Tìm kiếm thẻ..."
           className="onboarding-wizard__search-input"
         />
         {search.length > 1 && searchResults.length > 0 && (
@@ -132,7 +132,7 @@ export function StepTagPicker({ form, updateField }) {
           value={customTag}
           onChange={(e) => setCustomTag(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCustomTag(); } }}
-          placeholder="Or type a custom tag..."
+          placeholder="Hoặc nhập thẻ tùy chỉnh..."
           className="onboarding-wizard__custom-input"
         />
         <button
@@ -141,7 +141,7 @@ export function StepTagPicker({ form, updateField }) {
           disabled={!customTag.trim()}
           className={`onboarding-wizard__custom-btn${customTag.trim() ? ' onboarding-wizard__custom-btn--active' : ''}`}
         >
-          + Add
+          + Thêm
         </button>
       </div>
     </div>

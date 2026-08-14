@@ -33,11 +33,11 @@ function formatTime(seconds) {
 }
 
 function formatParticipantName(name, identity, isLocal) {
-  if (isLocal) return 'You';
+  if (isLocal) return 'Bạn';
   if (name && !/^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(name)) return name;
   if (name) return 'P' + name.replace(/-/g, '').slice(0, 5);
   if (identity && !/^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(identity)) return identity;
-  return 'Participant';
+  return 'Người tham gia';
 }
 
 function getInitials(name) {
@@ -127,7 +127,7 @@ function MeetControls({ onLeave, togglePanel, activePanel, handRaised, setHandRa
         const msg = JSON.parse(new TextDecoder().decode(payload));
         if (msg.type === 'hand_raise') {
           window.dispatchEvent(new CustomEvent('hand-raise-notif', {
-            detail: { identity: participant.identity, name: participant.name || 'Participant', state: msg.state, id: Date.now() + Math.random() }
+            detail: { identity: participant.identity, name: participant.name || 'Người tham gia', state: msg.state, id: Date.now() + Math.random() }
           }));
         }
       } catch {}
@@ -141,24 +141,24 @@ function MeetControls({ onLeave, togglePanel, activePanel, handRaised, setHandRa
       <div className="meet-controls-center">
         <ControlBtn icon={HiComputerDesktop} active={screenShareOn}
           onClick={toggleScreenShare}
-          label={screenShareOn ? 'Stop sharing' : 'Share screen'}
+          label={screenShareOn ? 'Dừng chia sẻ' : 'Chia sẻ màn hình'}
         />
         <ControlBtn icon={micOn ? HiMicrophone : HiMicOff} active={micOn}
           onClick={toggleMic}
-          label={micOn ? 'Mute microphone' : 'Unmute microphone'}
+          label={micOn ? 'Tắt mic' : 'Bật mic'}
         />
         <ControlBtn icon={camOn ? HiVideoCamera : HiVideoCameraSlash} active={camOn}
           onClick={toggleCam}
-          label={camOn ? 'Turn off camera' : 'Turn on camera'}
+          label={camOn ? 'Tắt cam' : 'Bật cam'}
         />
         <ControlBtn icon={HiHandRaised} active={handRaised}
           onClick={toggleHandRaise}
-          label={handRaised ? 'Lower hand' : 'Raise hand'}
+          label={handRaised ? 'Hạ tay' : 'Giơ tay'}
         />
         <div className="meet-controls__emoji-wrap">
           <ControlBtn icon={HiFaceSmile} active={showEmojiPicker}
             onClick={() => setShowEmojiPicker(prev => !prev)}
-            label="Send reaction"
+            label="Gửi cảm xúc"
           />
           {showEmojiPicker && (
             <div className="meet-controls__emoji-picker">
@@ -168,12 +168,12 @@ function MeetControls({ onLeave, togglePanel, activePanel, handRaised, setHandRa
             </div>
           )}
         </div>
-        <button className="ctrl-hangup" onClick={onLeave} title="Leave call">
+        <button className="ctrl-hangup" onClick={onLeave} title="Rời cuộc gọi">
           <HiPhoneXMark size={24} color="#fff" />
         </button>
         <ControlBtn icon={HiChatBubbleLeftRight} active={activePanel === 'chat'}
           onClick={() => togglePanel('chat')}
-          label={activePanel === 'chat' ? 'Hide chat' : 'Show chat'}
+          label={activePanel === 'chat' ? 'Ẩn trò chuyện' : 'Hiện trò chuyện'}
         />
       </div>
     </footer>
@@ -230,9 +230,9 @@ function SelfPreview() {
 
   return (
     <div className={`self-preview ${expanded ? 'is-expanded' : ''}`}>
-      <div className="self-preview-badge">You</div>
+      <div className="self-preview-badge">Bạn</div>
       <button className="self-preview-expand" onClick={() => setExpanded(prev => !prev)}>
-        {expanded ? 'Minimize' : 'Expand'}
+        {expanded ? 'Thu nhỏ' : 'Mở rộng'}
       </button>
       <div className="self-preview-feed">
         {localTrack ? <ParticipantTile trackRef={localTrack} /> : (
@@ -260,8 +260,8 @@ function WaitingForOthers() {
   return (
     <div className="waiting-card">
       <div className="waiting-icon"><HiUserGroup size={40} color={COLOR.muted} /></div>
-      <h3 className="waiting-title">Waiting for others to join</h3>
-      <p className="waiting-sub">Share the room link to invite participants. This room is live.</p>
+      <h3 className="waiting-title">Đang chờ người khác tham gia</h3>
+      <p className="waiting-sub">Chia sẻ liên kết phòng để mời người tham gia. Phòng này đang hoạt động.</p>
       
     </div>
   );
@@ -299,7 +299,7 @@ function VideoArea({ isSharing, isHandRaised }) {
         <div className="meet-focus-layout">
           <div className="meet-focus-main">
             {renderTile(pinnedTrack, true)}
-            <button className="meet-focus-clear" onClick={() => setPinnedKey(null)}>Back to grid</button>
+            <button className="meet-focus-clear" onClick={() => setPinnedKey(null)}>Quay lại lưới</button>
           </div>
           <div className="meet-focus-strip">
             {sideTracks.length > 0 ? sideTracks.map(track => renderTile(track)) : (!isSharing && <WaitingForOthers />)}
@@ -312,12 +312,12 @@ function VideoArea({ isSharing, isHandRaised }) {
       )}
       {isSharing && (
         <div className="meet-room-notice meet-room-notice--share">
-          <HiComputerDesktop size={16} /> Screen sharing is on
+          <HiComputerDesktop size={16} /> Đang chia sẻ màn hình
         </div>
       )}
       {isHandRaised && (
         <div className="meet-room-notice meet-room-notice--hand">
-          <HiHandRaised size={16} /> Hand raised
+          <HiHandRaised size={16} /> Đã giơ tay
         </div>
       )}
     </div>
@@ -328,7 +328,7 @@ function ConnectingGate() {
   return (
     <div className="room-page__connecting-wrap">
       <div className="room-page__connecting-spinner" />
-      <p className="room-page__connecting-text">Connecting to room...</p>
+      <p className="room-page__connecting-text">Đang kết nối phòng...</p>
       
     </div>
   );
@@ -346,10 +346,10 @@ function ParticipantsPanel({ participants, onClose }) {
       <header className="room-page__panel-header">
         <div className="room-page__panel-header-left">
           <span className="room-page__panel-header-icon"><HiUserGroup size={16} /></span>
-          <h3 className="room-page__panel-header-title">Participants</h3>
+          <h3 className="room-page__panel-header-title">Người tham gia</h3>
           <span className="room-page__panel-header-count">{participants?.length ?? 0}</span>
         </div>
-        <button onClick={onClose} aria-label="Close" className="room-page__panel-close-btn">
+        <button onClick={onClose} aria-label="Đóng" className="room-page__panel-close-btn">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
         </button>
       </header>
@@ -365,24 +365,24 @@ function ParticipantsPanel({ participants, onClose }) {
               <div className="room-page__panel-row-name-wrap">
                 <div className="room-page__panel-row-name">
                   {p.name}
-                  {p.isLocal && <span className="room-page__panel-you-badge">You</span>}
+                  {p.isLocal && <span className="room-page__panel-you-badge">Bạn</span>}
                 </div>
                 <div className="room-page__panel-status-row">
                   <span className="room-page__panel-status-item" style={{ color: p.micOn ? 'var(--color-success)' : 'var(--color-danger)' }}>
                     <span className="room-page__panel-status-dot" style={{ background: p.micOn ? 'var(--color-success)' : 'var(--color-danger)' }} />
-                    {p.micOn ? 'Mic on' : 'Muted'}
+                    {p.micOn ? 'Mic bật' : 'Đã tắt tiếng'}
                   </span>
                   <span className="room-page__panel-status-item" style={{ color: p.camOn ? 'var(--color-success)' : 'var(--color-danger)' }}>
                     <span className="room-page__panel-status-dot" style={{ background: p.camOn ? 'var(--color-success)' : 'var(--color-danger)' }} />
-                    {p.camOn ? 'Cam on' : 'Cam off'}
+                    {p.camOn ? 'Cam bật' : 'Cam tắt'}
                   </span>
                 </div>
               </div>
               {!p.isLocal && (
                 alreadyFriend ? (
-                  <button onClick={() => removeFriend(p.identity)} className="room-page__panel-btn-friend"><HiUser size={11} /> Friends</button>
+                  <button onClick={() => removeFriend(p.identity)} className="room-page__panel-btn-friend"><HiUser size={11} /> Bạn bè</button>
                 ) : (
-                  <button onClick={() => addFriend(p.identity, p.name)} className="room-page__panel-btn-add"><HiUserPlus size={11} /> Add Friend</button>
+                  <button onClick={() => addFriend(p.identity, p.name)} className="room-page__panel-btn-add"><HiUserPlus size={11} /> Thêm bạn</button>
                 ))}
             </div>
           );
@@ -390,7 +390,7 @@ function ParticipantsPanel({ participants, onClose }) {
       </div>
       {friends.length > 0 && (
         <div className="room-page__panel-friends-section">
-          <div className="room-page__panel-friends-title">Friends ({friends.length})</div>
+          <div className="room-page__panel-friends-title">Bạn bè ({friends.length})</div>
           <div className="room-page__panel-friends-row">
             {friends.map(f => (
               <span key={f.id} className="room-page__panel-friend-tag">
@@ -407,18 +407,18 @@ function ParticipantsPanel({ participants, onClose }) {
 
 const ENGLISH_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 const AGENT_LEVELS = [
-  { value: 'basic', label: 'Basic', desc: 'Basic pronunciation feedback' },
-  { value: 'advanced', label: 'Advanced', desc: 'Grammar + word choice tips' },
-  { value: 'full', label: 'Full', desc: 'Full AI conversation coach' },
+  { value: 'basic', label: 'Cơ bản', desc: 'Phản hồi phát âm cơ bản' },
+  { value: 'advanced', label: 'Nâng cao', desc: 'Mẹo ngữ pháp + chọn từ' },
+  { value: 'full', label: 'Đầy đủ', desc: 'Huấn luyện viên hội thoại AI toàn diện' },
 ];
 const DURATIONS = [
-  { value: 300, label: '5 min' },
-  { value: 600, label: '10 min' },
-  { value: 900, label: '15 min' },
-  { value: 1200, label: '20 min' },
-  { value: 1800, label: '30 min' },
-  { value: 2700, label: '45 min' },
-  { value: 3600, label: '60 min' },
+  { value: 300, label: '5 phút' },
+  { value: 600, label: '10 phút' },
+  { value: 900, label: '15 phút' },
+  { value: 1200, label: '20 phút' },
+  { value: 1800, label: '30 phút' },
+  { value: 2700, label: '45 phút' },
+  { value: 3600, label: '60 phút' },
 ];
 
 function ToggleSwitch({ label, value, onChange }) {
@@ -461,7 +461,7 @@ function RoomSettings({ roomId, current, onClose, onSave, api }) {
       if (onSave) await onSave();
       onClose();
     } catch (err) {
-      setSaveError(err?.message || 'Save failed');
+      setSaveError(err?.message || 'Lưu thất bại');
     } finally {
       setSaving(false);
     }
@@ -472,28 +472,28 @@ function RoomSettings({ roomId, current, onClose, onSave, api }) {
       <header className="room-page__panel-header">
         <div className="room-page__panel-header-left">
           <span className="room-page__panel-header-icon"><HiCog6Tooth size={16} /></span>
-          <h3 className="room-page__panel-header-title">Room Settings</h3>
+          <h3 className="room-page__panel-header-title">Cài đặt phòng</h3>
         </div>
-        <button onClick={onClose} aria-label="Close" className="room-page__panel-close-btn">
+        <button onClick={onClose} aria-label="Đóng" className="room-page__panel-close-btn">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
         </button>
       </header>
       <div className="room-page__panel-body room-settings__body">
         <div className="room-settings__group">
-          <label className="room-settings__label">Topic</label>
-          <input className="room-settings__input" value={topic} onChange={e => setTopic(e.target.value)} placeholder="Discussion topic" />
+          <label className="room-settings__label">Chủ đề</label>
+          <input className="room-settings__input" value={topic} onChange={e => setTopic(e.target.value)} placeholder="Chủ đề thảo luận" />
         </div>
         <div className="room-settings__group">
-          <label className="room-settings__label">English Level</label>
+          <label className="room-settings__label">Trình độ tiếng Anh</label>
           <div className="room-settings__chips">
-            <button className={`room-settings__chip ${!englishLevel ? 'active' : ''}`} onClick={() => setEnglishLevel('')}>Any</button>
+            <button className={`room-settings__chip ${!englishLevel ? 'active' : ''}`} onClick={() => setEnglishLevel('')}>Bất kỳ</button>
             {ENGLISH_LEVELS.map(lv => (
               <button key={lv} className={`room-settings__chip ${englishLevel === lv ? 'active' : ''}`} onClick={() => setEnglishLevel(lv)}>{lv}</button>
             ))}
           </div>
         </div>
         <div className="room-settings__group">
-          <label className="room-settings__label">AI Agent Level</label>
+          <label className="room-settings__label">Trình độ AI</label>
           <div className="room-settings__agent-options">
             {AGENT_LEVELS.map(al => (
               <button key={al.value} className={`room-settings__agent-card ${agentLevel === al.value ? 'active' : ''}`} onClick={() => setAgentLevel(al.value)}>
@@ -504,7 +504,7 @@ function RoomSettings({ roomId, current, onClose, onSave, api }) {
           </div>
         </div>
         <div className="room-settings__group">
-          <label className="room-settings__label">Max Participants: {maxParticipants}</label>
+          <label className="room-settings__label">Tối đa người tham gia: {maxParticipants}</label>
           <div className="room-settings__chips">
             {[2, 3, 4, 5].map(n => (
               <button key={n} className={`room-settings__chip ${maxParticipants === n ? 'active' : ''}`} onClick={() => setMaxParticipants(n)}>{n}</button>
@@ -512,7 +512,7 @@ function RoomSettings({ roomId, current, onClose, onSave, api }) {
           </div>
         </div>
         <div className="room-settings__group">
-          <label className="room-settings__label">Session Duration</label>
+          <label className="room-settings__label">Thời lượng buổi học</label>
           <div className="room-settings__chips">
             {DURATIONS.map(d => (
               <button key={d.value} className={`room-settings__chip ${duration === d.value ? 'active' : ''}`} onClick={() => setDuration(d.value)}>{d.label}</button>
@@ -521,17 +521,17 @@ function RoomSettings({ roomId, current, onClose, onSave, api }) {
         </div>
         <div className="room-settings__divider" />
         <div className="room-settings__group">
-          <label className="room-settings__label">Features</label>
-          <ToggleSwitch label="Heartbeat questions" value={enableHeartbeat} onChange={setEnableHeartbeat} />
-          <ToggleSwitch label="Pronunciation correction" value={enableCorrection} onChange={setEnableCorrection} />
-          <ToggleSwitch label="Voice recognition" value={enableVoice} onChange={setEnableVoice} />
+          <label className="room-settings__label">Tính năng</label>
+          <ToggleSwitch label="Câu hỏi gợi ý" value={enableHeartbeat} onChange={setEnableHeartbeat} />
+          <ToggleSwitch label="Sửa lỗi phát âm" value={enableCorrection} onChange={setEnableCorrection} />
+          <ToggleSwitch label="Nhận diện giọng nói" value={enableVoice} onChange={setEnableVoice} />
         </div>
       </div>
       {saveError && <div className="room-settings__error">{saveError}</div>}
       <div className="room-page__panel-footer room-settings__footer">
-        <button className="room-settings__btn room-settings__btn--cancel" onClick={onClose}>Cancel</button>
+        <button className="room-settings__btn room-settings__btn--cancel" onClick={onClose}>Hủy</button>
         <button className="room-settings__btn room-settings__btn--save" onClick={handleSave} disabled={saving}>
-          {saving ? 'Saving...' : 'Save Settings'}
+          {saving ? 'Đang lưu...' : 'Lưu cài đặt'}
         </button>
       </div>
     </aside>
@@ -571,7 +571,7 @@ export function RoomPage() {
   const handleDisconnected = useCallback(() => {
     if (!hasLeftRef.current) {
 
-      setError('Connection to room was lost. Please try again.');
+      setError('Mất kết nối phòng. Vui lòng thử lại.');
       setPhase('error');
     } else {
       setPhase('left');
@@ -586,7 +586,7 @@ export function RoomPage() {
     try {
       const data = await fetchJson(`/rooms/${roomId}`);
       setRoomData(data);
-      setRoomName(data?.topic || data?.name || data?.room_name || 'Room');
+      setRoomName(data?.topic || data?.name || data?.room_name || 'Phòng');
     } catch {}
   }, [roomId]);
 
@@ -644,7 +644,7 @@ export function RoomPage() {
       try {
         const roomData = await fetchJson(`/rooms/${roomId}`);
         if (cancelled) return;
-        setRoomName(roomData?.topic || roomData?.name || roomData?.room_name || 'Room');
+        setRoomName(roomData?.topic || roomData?.name || roomData?.room_name || 'Phòng');
         setRoomData(roomData);
         if (!joinedRef.current) {
           await api.post(`/rooms/${roomId}/join`, {});
@@ -764,11 +764,11 @@ export function RoomPage() {
     return (
       <div className="room-page__error-wrap">
         <HiShieldExclamation size={48} color={COLOR.danger} />
-        <h2 className="room-page__error-title">Failed to join room</h2>
+        <h2 className="room-page__error-title">Không thể vào phòng</h2>
         <p className="room-page__error-message">{error}</p>
         <div className="room-page__error-actions">
-          <button className="room-btn-sec" onClick={handleRetry}>Retry</button>
-          <button className="room-btn-pri" onClick={goBack}>Back to Learning</button>
+          <button className="room-btn-sec" onClick={handleRetry}>Thử lại</button>
+          <button className="room-btn-pri" onClick={goBack}>Quay lại Luyện tập</button>
         </div>
         
       </div>
@@ -782,21 +782,21 @@ export function RoomPage() {
           <div className="room-page__left-icon-wrap">
             <HiCheckCircle size={36} color={COLOR.success} />
           </div>
-          <h2 className="room-page__left-title">You left the room</h2>
+          <h2 className="room-page__left-title">Bạn đã rời phòng</h2>
           <p className="room-page__left-message">
-            Thanks for participating in <strong>{roomName || 'the session'}</strong>!
+            Cảm ơn bạn đã tham gia <strong>{roomName || 'buổi học'}</strong>!
           </p>
           <div className="room-page__left-stats">
             <div className="room-page__left-stat">
               <div className="room-page__left-stat-value">{formatTime(savedElapsed || elapsed)}</div>
-              <div className="room-page__left-stat-label">Duration</div>
+              <div className="room-page__left-stat-label">Thời lượng</div>
             </div>
             <div className="room-page__left-stat">
               <div className="room-page__left-stat-value">{participantsList.length || 1}</div>
-              <div className="room-page__left-stat-label">Participants</div>
+              <div className="room-page__left-stat-label">Người tham gia</div>
             </div>
           </div>
-          <button onClick={goBack} className="room-page__left-return-btn">Back to Learning <HiArrowRight size={16} /></button>
+          <button onClick={goBack} className="room-page__left-return-btn">Quay lại Luyện tập <HiArrowRight size={16} /></button>
         </div>
         
       </div>
@@ -811,29 +811,29 @@ export function RoomPage() {
 
       <header className="meet-topbar">
         <div className="meet-topbar-left">
-          <button className="meet-back" onClick={goBack} title="Back"><HiArrowLeft size={20} /></button>
+          <button className="meet-back" onClick={goBack} title="Quay lại"><HiArrowLeft size={20} /></button>
           <div className="meet-room-info">
-            <h1 className="meet-room-name">{roomName || 'Room'}</h1>
+            <h1 className="meet-room-name">{roomName || 'Phòng'}</h1>
             <div className="meet-room-meta">
-              <span className="meet-badge-live">● LIVE</span>
+              <span className="meet-badge-live">● TRỰC TIẾP</span>
               <span className="meet-timer"><HiClock size={13} />{formatTime(elapsed)}</span>
             </div>
           </div>
         </div>
         <div className="meet-topbar-right">
           {handRaised && (
-            <span className="room-page__hand-raised-badge">✋ Raised</span>
+            <span className="room-page__hand-raised-badge">✋ Đã giơ tay</span>
           )}
-          <button className={`meet-participant-count ${activePanel==='participants'?'active':''}`} onClick={openParticipants} title="View participants"
+          <button className={`meet-participant-count ${activePanel==='participants'?'active':''}`} onClick={openParticipants} title="Xem người tham gia"
             style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 99, background: activePanel==='participants'?'rgba(255,255,255,0.14)':'rgba(255,255,255,0.06)', border: 'none', cursor: 'pointer', fontSize: 12, color: '#ffffff', fontFamily: 'inherit', transition: 'all 0.15s' }}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
             <span>{participantCount}</span>
           </button>
-          <button className={`meet-chat-toggle ${activePanel==='settings'?'active':''}`} onClick={()=>togglePanel('settings')} title="Room settings" style={{ marginRight: 4 }}>
+          <button className={`meet-chat-toggle ${activePanel==='settings'?'active':''}`} onClick={()=>togglePanel('settings')} title="Cài đặt phòng" style={{ marginRight: 4 }}>
             <HiCog6Tooth size={18} />
           </button>
-          <button className={`meet-chat-toggle ${activePanel==='chat'?'active':''}`} onClick={()=>togglePanel('chat')} title={activePanel==='chat'?'Hide chat':'Show chat'}>
+          <button className={`meet-chat-toggle ${activePanel==='chat'?'active':''}`} onClick={()=>togglePanel('chat')} title={activePanel==='chat'?'Ẩn trò chuyện':'Hiện trò chuyện'}>
             <HiChatBubbleLeftRight size={18} />
           </button>
         </div>
@@ -882,7 +882,7 @@ export function RoomPage() {
           animation: 'slideIn 0.3s ease both, fadeOut 0.3s ease 5s forwards',
           pointerEvents: 'none',
         }}>
-          ✋ {n.name || 'Someone'} raised hand!
+          ✋ {n.name || 'Ai đó'} đã giơ tay!
         </div>
       ))}
 

@@ -9,21 +9,21 @@ import {
 import { RobotAvatar } from './icons';
 
 const PREVIEW_PARTICIPANTS = [
-  { name: 'You', label: 'Speaking', active: true, color: '#ffffff' },
-  { name: 'Mina', label: 'B2 · Product', active: false, color: '#e0e0e0' },
+  { name: 'Bạn', label: 'Đang nói', active: true, color: '#ffffff' },
+  { name: 'Mina', label: 'B2 · Sản phẩm', active: false, color: '#e0e0e0' },
   { name: 'Alex', label: 'C1 · AI/ML', active: false, color: '#f59e0b' },
-  { name: 'Linh', label: 'B1 · Design', active: false, color: '#ec4899' },
+  { name: 'Linh', label: 'B1 · Thiết kế', active: false, color: '#ec4899' },
 ];
 
 const HERO_TRUST_ITEMS = [
-  { icon: HiQueueList, label: 'Tag-based matching' },
-  { icon: HiUsers, label: '3-5 people rooms' },
+  { icon: HiQueueList, label: 'Ghép cặp theo thẻ' },
+  { icon: HiUsers, label: 'Phòng 3-5 người' },
   { icon: HiCpuChip, label: 'AI Agent 3-in-1' },
 ];
 
 function ProductPreview() {
   return (
-    <div className="home-preview" aria-label="E-Room desktop product preview">
+    <div className="home-preview" aria-label="Xem trước sản phẩm E-Room trên máy tính">
       <div className="home-preview__glow" />
       <div className="home-preview__browserbar">
         <div><i /><i /><i /></div>
@@ -33,8 +33,8 @@ function ProductPreview() {
       <div className="home-preview__screen">
         <div className="home-preview__topbar">
           <div>
-            <span className="home-preview__live">● ACTIVE · VIBE CODING</span>
-            <h3>Claude + Product Thinking Practice</h3>
+            <span className="home-preview__live">● ĐANG HOẠT ĐỘNG · VIBE CODING</span>
+            <h3>Luyện tập Tư duy Sản phẩm cùng Claude</h3>
           </div>
           <div className="home-preview__meta">
             <span><HiClock size={13} /> 12:48</span>
@@ -58,7 +58,7 @@ function ProductPreview() {
             </div>
             <div className="home-preview__timeline">
               <div><span>00:00</span><strong /><span>15:00</span></div>
-              <p>Transcript streams while the agent prepares corrections, expert prompts, and review notes.</p>
+              <p>Bản ghi chạy trực tiếp trong khi agent chuẩn bị phần sửa lỗi, gợi ý chuyên gia và ghi chú đánh giá.</p>
             </div>
             <div className="home-preview__controls">
               <span><HiMicrophone size={16} /></span>
@@ -73,26 +73,26 @@ function ProductPreview() {
               <RobotAvatar />
               <div>
                 <strong>AI Agent 3-in-1</strong>
-                <span>Corrector · Expert · Heartbeat</span>
+                <span>Sửa lỗi · Chuyên gia · Gợi ý hội thoại</span>
               </div>
             </div>
             <div className="home-preview__transcript">
-              <span>Live transcript</span>
-              <p>“I use Claude for build faster product prototype.”</p>
+              <span>Bản ghi trực tiếp</span>
+              <p>“Tôi dùng Claude để xây dựng prototype sản phẩm nhanh hơn.”</p>
             </div>
             <div className="home-preview__correction">
               <HiCheckCircle size={16} />
               <div>
-                <span>Corrector</span>
-                <strong>“I use Claude to build product prototypes faster.”</strong>
+                <span>Sửa lỗi</span>
+                <strong>“Tôi dùng Claude để xây dựng prototype sản phẩm nhanh hơn.”</strong>
               </div>
             </div>
             <div className="home-preview__transcript">
-              <span>Heartbeat prompt</span>
-              <p>What tradeoff did Claude help you make?</p>
+              <span>Gợi ý hội thoại</span>
+              <p>Claude đã giúp bạn cân nhắc đánh đổi gì?</p>
             </div>
             <div className="home-preview__score">
-              <span>Session review</span>
+              <span>Đánh giá buổi học</span>
               <strong>8.6</strong>
             </div>
           </aside>
@@ -110,28 +110,28 @@ export function HeroSection({ user, onQuickJoin, quickJoining }) {
         <div className="home-hero__copy fade-in-up">
           <div className="home-hero__eyebrow">
             <RobotAvatar />
-            <span>Tag-matched rooms · AI Agent 3-in-1</span>
+            <span>Phòng ghép theo thẻ · AI Agent 3-in-1</span>
           </div>
           <h1 className="home-hero__title">
-            Speak with people who share your topics. Improve with AI after every sentence.
+            Nói chuyện với những người cùng chủ đề với bạn. Cải thiện với AI sau từng câu nói.
           </h1>
           <p className="home-hero__subtitle">
-            E-Room matches 3-5 learners by tags and level, opens a focused speaking room, and gives live transcript, corrections, expert prompts, pronunciation audio, and session review.
+            E-Room ghép 3-5 người học theo thẻ và trình độ, mở phòng luyện nói tập trung, đồng thời cung cấp bản ghi trực tiếp, sửa lỗi, gợi ý chuyên gia, âm thanh phát âm và đánh giá buổi học.
           </p>
           <div className="home-hero__actions">
             {user ? (
               <Button variant="primary" size="lg" className="rounded-pill fw-semibold px-5"
                 onClick={onQuickJoin} disabled={quickJoining}
               >
-                {quickJoining ? 'Finding a room...' : 'Quick Join Room'}
+                {quickJoining ? 'Đang tìm phòng...' : 'Tham gia nhanh'}
               </Button>
             ) : (
               <Button variant="primary" size="lg" className="rounded-pill fw-semibold px-5" href="/login">
-                Start practicing free
+                Bắt đầu luyện tập miễn phí
               </Button>
             )}
             <Button variant="outline-secondary" size="lg" className="rounded-pill fw-semibold px-4" href="/learning">
-              View live rooms <HiArrowRight size={16} />
+              Xem phòng đang hoạt động <HiArrowRight size={16} />
             </Button>
           </div>
           <div className="home-hero__trust">
@@ -148,16 +148,16 @@ export function HeroSection({ user, onQuickJoin, quickJoining }) {
 
 export function ProblemSection() {
   const items = [
-    ['Random partners', 'Most speaking apps pair people without context, so conversations die quickly.'],
-    ['No feedback loop', 'You speak for 20 minutes but leave without knowing what to fix.'],
-    ['Solo AI practice', 'Bots are useful, but they do not build the pressure and rhythm of real conversation.'],
+    ['Ghép cặp ngẫu nhiên', 'Hầu hết ứng dụng luyện nói ghép người không theo ngữ cảnh, nên cuộc trò chuyện nhanh chóng chết.'],
+    ['Không có vòng phản hồi', 'Bạn nói 20 phút nhưng rời đi mà không biết cần sửa gì.'],
+    ['Luyện tập AI đơn lẻ', 'Bot hữu ích, nhưng không tạo được áp lực và nhịp điệu của cuộc trò chuyện thật.'],
   ];
 
   return (
     <section className="home-problem-section">
       <div className="home-section-heading">
-        <span>The problem</span>
-        <h2>Speaking practice fails when rooms have no context and feedback arrives too late.</h2>
+        <span>Vấn đề</span>
+        <h2>Luyện nói thất bại khi phòng không có ngữ cảnh và phản hồi đến quá muộn.</h2>
       </div>
       <div className="home-problem-grid">
         {items.map(([title, desc], index) => (
@@ -174,18 +174,18 @@ export function ProblemSection() {
 
 export function PremiumFlowSection() {
   const steps = [
-    { icon: HiQueueList, label: '01', title: 'Choose tags', desc: 'Pick interests like Vibe Coding, AI/ML, Prompt Engineering, or LLM topics.' },
-    { icon: HiUsers, label: '02', title: 'Match into a room', desc: 'A small 3-5 person room forms around shared tags and nearby English level.' },
-    { icon: HiMicrophone, label: '03', title: 'Speak in real time', desc: 'LiveKit handles the room while transcript appears in the side panel.' },
-    { icon: HiSparkles, label: '04', title: 'Review with AI', desc: 'Corrector, Expert, and Heartbeat turn the session into a repeatable lesson.' },
+    { icon: HiQueueList, label: '01', title: 'Chọn thẻ', desc: 'Chọn sở thích như Vibe Coding, AI/ML, Prompt Engineering hoặc các chủ đề LLM.' },
+    { icon: HiUsers, label: '02', title: 'Ghép vào phòng', desc: 'Phòng nhỏ 3-5 người được tạo dựa trên thẻ chung và trình độ tiếng Anh tương đương.' },
+    { icon: HiMicrophone, label: '03', title: 'Nói chuyện trực tiếp', desc: 'LiveKit xử lý phòng trong khi bản ghi hiển thị ở bảng bên cạnh.' },
+    { icon: HiSparkles, label: '04', title: 'Đánh giá với AI', desc: 'Sửa lỗi, Chuyên gia và Gợi ý hội thoại biến buổi học thành bài học có thể lặp lại.' },
   ];
 
   return (
     <section className="home-flow-section">
       <div className="home-section-heading home-section-heading--left">
-        <span>Solution</span>
-        <h2>Make every room purposeful before anyone turns on the mic.</h2>
-        <p>Tags define the topic, level keeps the room comfortable, and the AI agent turns live conversation into reviewable progress.</p>
+        <span>Giải pháp</span>
+        <h2>Biến mọi phòng có mục đích rõ ràng trước khi ai đó bật mic.</h2>
+        <p>Thẻ xác định chủ đề, trình độ giữ phòng thoải mái, và AI agent biến cuộc trò chuyện trực tiếp thành tiến bộ có thể xem lại.</p>
       </div>
       <div className="home-flow-grid">
         {steps.map((step) => (
@@ -202,23 +202,23 @@ export function PremiumFlowSection() {
 
 export function AgentSection() {
   const roles = [
-    { label: 'Corrector', metric: 'Grammar', desc: 'Turns rough spoken sentences into cleaner phrases without interrupting the room.' },
-    { label: 'Expert', metric: 'Context', desc: 'Adds topic-aware explanations when a room needs more depth or examples.' },
-    { label: 'Heartbeat', metric: 'Momentum', desc: 'Keeps quiet rooms moving with AI-themed prompts based on tags and recent conversation.' },
+    { label: 'Sửa lỗi', metric: 'Ngữ pháp', desc: 'Biến những câu nói chưa chuẩn thành câu gọn gàng hơn mà không làm gián đoạn phòng.' },
+    { label: 'Chuyên gia', metric: 'Ngữ cảnh', desc: 'Bổ sung giải thích theo chủ đề khi phòng cần thêm chiều sâu hoặc ví dụ.' },
+    { label: 'Gợi ý hội thoại', metric: 'Động lực', desc: 'Giữ phòng im lặng tiếp tục hoạt động bằng các gợi ý theo chủ đề AI dựa trên thẻ và cuộc trò chuyện gần đây.' },
   ];
 
   return (
     <section className="home-agent-section">
       <div className="home-agent-panel">
         <div className="home-agent-copy">
-          <span>Guidance layer</span>
-          <h2>Feedback appears beside the conversation, not on top of it.</h2>
-          <p>E-Room keeps the video room focused on people. The assistant works in the side panel: listening, correcting, answering, and nudging only when it helps.</p>
+          <span>Lớp hướng dẫn</span>
+          <h2>Phản hồi xuất hiện bên cạnh cuộc trò chuyện, không chồng lên trên.</h2>
+          <p>E-Room giữ phòng video tập trung vào con người. Trợ lý làm việc ở bảng bên cạnh: lắng nghe, sửa lỗi, trả lời và nhắc nhở chỉ khi cần thiết.</p>
         </div>
         <div className="home-agent-console">
           <div className="home-agent-console__top">
-            <span>Session intelligence</span>
-            <strong>Live</strong>
+            <span>Thông minh buổi học</span>
+            <strong>Trực tiếp</strong>
           </div>
           {roles.map(role => (
             <article key={role.label}>
@@ -237,17 +237,17 @@ export function AgentSection() {
 
 export function AudienceSection() {
   const audiences = [
-    { icon: HiBriefcase, title: 'Tech interviews', desc: 'Explain AI projects, model tradeoffs, system architecture, and technical decisions.' },
-    { icon: HiPresentationChartLine, title: 'Work meetings', desc: 'Practice standups, demos, client calls, and product discussions.' },
-    { icon: HiAcademicCap, title: 'AI discussion', desc: 'Discuss LLMs, prompt engineering, and AI trends with real-time correction.' },
-    { icon: HiGlobeAlt, title: 'Daily fluency', desc: 'Meet learners who care about the same topics and speak more often.' },
+    { icon: HiBriefcase, title: 'Phỏng vấn công nghệ', desc: 'Trình bày dự án AI, đánh đổi mô hình, kiến trúc hệ thống và quyết định kỹ thuật.' },
+    { icon: HiPresentationChartLine, title: 'Họp công việc', desc: 'Luyện tập họp đứng, demo, gọi khách hàng và thảo luận sản phẩm.' },
+    { icon: HiAcademicCap, title: 'Thảo luận AI', desc: 'Thảo luận LLM, prompt engineering và xu hướng AI với sửa lỗi theo thời gian thực.' },
+    { icon: HiGlobeAlt, title: 'Giao tiếp hàng ngày', desc: 'Gặp gỡ người học quan tâm cùng chủ đề và nói thường xuyên hơn.' },
   ];
 
   return (
     <section className="home-audience-section">
       <div className="home-section-heading">
-        <span>Use cases</span>
-        <h2>Practice for the situations where English actually matters.</h2>
+        <span>Trường hợp sử dụng</span>
+        <h2>Luyện tập cho những tình huống tiếng Anh thực sự quan trọng.</h2>
       </div>
       <div className="home-audience-grid">
         {audiences.map((item) => (
@@ -268,20 +268,20 @@ export function RoomsSection({ rooms = [], roomsLoading, navigate }) {
   return (
     <section className="home-rooms-section">
       <div className="home-section-heading">
-        <span>Live rooms</span>
-        <h2>Jump into active rooms or browse by topic.</h2>
+        <span>Phòng trực tiếp</span>
+        <h2>Vào phòng đang hoạt động hoặc duyệt theo chủ đề.</h2>
       </div>
       {roomsLoading ? (
         <div className="text-center py-4"><Spinner animation="border" size="sm" /></div>
       ) : rooms.length === 0 ? (
-        <p className="text-muted text-center py-4 small">No rooms available right now. Check back soon.</p>
+        <p className="text-muted text-center py-4 small">Hiện không có phòng nào. Hãy quay lại sau.</p>
       ) : (
         <div className="home-room-grid">
           {rooms.slice(0, 6).map((room) => (
             <button key={room.id} className="home-room-card" onClick={() => navigate(`/rooms/${room.id}`)}>
-              <span>{room.status === 'ACTIVE' ? 'LIVE' : 'Waiting'}</span>
+              <span>{room.status === 'ACTIVE' ? 'ĐANG HOẠT ĐỘNG' : 'Chờ'}</span>
               <h3>{room.topic || room.name}</h3>
-              <p>{room.current_participants || 0}/{room.max_participants || 5} participants</p>
+              <p>{room.current_participants || 0}/{room.max_participants || 5} người tham gia</p>
             </button>
           ))}
         </div>
@@ -292,10 +292,10 @@ export function RoomsSection({ rooms = [], roomsLoading, navigate }) {
 
 export function StatsSection() {
   const stats = [
-    { value: '3-5', label: 'learners per room' },
-    { value: '15m', label: 'focused sessions' },
-    { value: '3-in-1', label: 'AI agent roles' },
-    { value: '50+', label: 'tag categories' },
+    { value: '3-5', label: 'người học mỗi phòng' },
+    { value: '15m', label: 'buổi học tập trung' },
+    { value: '3-in-1', label: 'vai trò AI agent' },
+    { value: '50+', label: 'nhóm thẻ' },
   ];
 
   return (
@@ -312,20 +312,20 @@ export function StatsSection() {
 
 export function FinalShowcaseSection({ user, navigate }) {
   const quotes = [
-    { quote: 'The room topics feel closer to my real work than a normal speaking class.', name: 'Minh Anh', role: 'Product Designer' },
-    { quote: 'I can see the exact sentence I said, the better version, and what to repeat next.', name: 'Hoang Tran', role: 'Backend Engineer' },
-    { quote: 'The AI prompts keep the conversation moving when everyone gets quiet.', name: 'Linh Pham', role: 'IELTS Learner' },
+    { quote: 'Chủ đề phòng gần với công việc thật của tôi hơn một lớp luyện nói thông thường.', name: 'Minh Anh', role: 'Nhà thiết kế sản phẩm' },
+    { quote: 'Tôi thấy đúng câu mình đã nói, phiên bản tốt hơn và điều cần lặp lại tiếp theo.', name: 'Hoang Tran', role: 'Kỹ sư backend' },
+    { quote: 'Các gợi ý AI giữ cuộc trò chuyện tiếp tục khi mọi người im lặng.', name: 'Linh Pham', role: 'Người học IELTS' },
   ];
 
   return (
     <section className="home-final-section">
       <div className="home-final-header">
-        <span><HiChartBar size={16} /> What our users say</span>
-        <h2>Useful practice feels specific, not generic.</h2>
+        <span><HiChartBar size={16} /> Người dùng nói gì</span>
+        <h2>Luyện tập hữu ích mang tính cụ thể, không chung chung.</h2>
         <Button variant="primary" size="lg" className="rounded-pill fw-semibold px-5"
           onClick={() => navigate(user ? '/learning' : '/login')}
         >
-          {user ? 'Find a room' : 'Start practicing'} <HiArrowRight size={16} />
+          {user ? 'Tìm phòng' : 'Bắt đầu luyện tập'} <HiArrowRight size={16} />
         </Button>
       </div>
       <div className="home-testimonial-row">

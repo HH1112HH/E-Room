@@ -13,37 +13,37 @@ export function UpgradePrompt({ feature = 'this feature', visible, onClose }) {
   const plans = [
     {
       key: 'free', name: 'Free', price: '$0', features: [
-        '3 AI corrections per session',
-        '1 heartbeat per room',
-        'Basic matching',
-        'Up to 5 participants',
+        '3 lần sửa lỗi AI mỗi buổi',
+        '1 Heartbeat mỗi phòng',
+        'Ghép cặp cơ bản',
+        'Tối đa 5 người tham gia',
       ],
-      cta: 'Current plan',
+      cta: 'Gói hiện tại',
       disabled: true,
     },
     {
-      key: 'pro', name: 'Pro', price: '$9.99', period: '/month', features: [
-        'Unlimited corrections',
-        '3 heartbeats per room',
+      key: 'pro', name: 'Pro', price: '$9.99', period: '/tháng', features: [
+        'Sửa lỗi không giới hạn',
+        '3 Heartbeat mỗi phòng',
         'Web Search Expert',
-        'AI room practice',
-        'Up to 5 participants',
+        'Luyện tập phòng AI',
+        'Tối đa 5 người tham gia',
       ],
-      cta: 'Upgrade to Pro',
+      cta: 'Nâng cấp lên Pro',
       highlighted: true,
     },
     {
-      key: 'pro_plus', name: 'Pro+', price: '$19.99', period: '/month', features: [
-        'Everything in Pro',
-        '5 heartbeats per room',
-        'Full RAG + Web Expert',
-        'TTS pronunciation',
-        'Auto session notes',
-        'Room series',
-        'Leaderboard',
-        'Up to 15 participants',
+      key: 'pro_plus', name: 'Pro+', price: '$19.99', period: '/tháng', features: [
+        'Mọi tính năng của Pro',
+        '5 Heartbeat mỗi phòng',
+        'Đầy đủ RAG + Web Expert',
+        'Phát âm TTS',
+        'Ghi chú buổi học tự động',
+        'Chuỗi phòng',
+        'Bảng xếp hạng',
+        'Tối đa 15 người tham gia',
       ],
-      cta: 'Go Pro+',
+      cta: 'Chọn Pro+',
     },
   ];
 
@@ -57,10 +57,10 @@ export function UpgradePrompt({ feature = 'this feature', visible, onClose }) {
         <div className="text-center mb-4">
           <HiRocketLaunch size={36} className="upgrade-prompt__icon" />
           <h4 className="fw-extrabold mt-2 mb-1">
-            Unlock {feature}
+            Mở khóa {feature}
           </h4>
           <p className="text-muted small mb-0">
-            You've reached the limit for {feature}. Upgrade to continue.
+            Bạn đã đạt giới hạn cho {feature}. Nâng cấp để tiếp tục.
           </p>
         </div>
 
@@ -86,7 +86,7 @@ export function UpgradePrompt({ feature = 'this feature', visible, onClose }) {
               >
                 {plan.highlighted && (
                   <div className="upgrade-prompt__plan-badge">
-                    POPULAR
+                    PHỔ BIẾN
                   </div>
                 )}
                 <div className="fw-bold mb-2 upgrade-prompt__plan-name">{plan.name}</div>
@@ -113,7 +113,7 @@ export function UpgradePrompt({ feature = 'this feature', visible, onClose }) {
         </div>
 
         <p className="text-muted text-center mt-3 mb-0 upgrade-prompt__footer">
-          7-day free trial • Cancel anytime • Secure payment
+          7 ngày dùng thử miễn phí • Hủy bất cứ lúc nào • Thanh toán an toàn
         </p>
       </div>
     </div>

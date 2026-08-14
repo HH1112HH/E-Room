@@ -2,11 +2,11 @@ import { HiRocketLaunch, HiBriefcase, HiMicrophone, HiAcademicCap, HiGlobeAlt } 
 import '../../styles/OnboardingWizard.css';
 
 const GOALS = [
-  { key: 'work', label: 'Career', desc: 'Improve English for work and professional growth', icon: HiBriefcase },
-  { key: 'interview', label: 'Interview', desc: 'Prepare for job interviews in English', icon: HiMicrophone },
-  { key: 'fluency', label: 'Fluency', desc: 'Speak more naturally and confidently', icon: HiRocketLaunch },
-  { key: 'business', label: 'Business', desc: 'Master business English and negotiations', icon: HiGlobeAlt },
-  { key: 'academic', label: 'Academic', desc: 'Prepare for studies, exams, or research', icon: HiAcademicCap },
+  { key: 'work', label: 'Sự nghiệp', desc: 'Cải thiện tiếng Anh cho công việc và phát triển nghề nghiệp', icon: HiBriefcase },
+  { key: 'interview', label: 'Phỏng vấn', desc: 'Chuẩn bị phỏng vấn xin việc bằng tiếng Anh', icon: HiMicrophone },
+  { key: 'fluency', label: 'Lưu loát', desc: 'Nói tự nhiên và tự tin hơn', icon: HiRocketLaunch },
+  { key: 'business', label: 'Kinh doanh', desc: 'Thành thạo tiếng Anh thương mại và đàm phán', icon: HiGlobeAlt },
+  { key: 'academic', label: 'Học thuật', desc: 'Chuẩn bị cho việc học, thi cử hoặc nghiên cứu', icon: HiAcademicCap },
 ];
 
 export function StepLearningGoal({ form, updateField }) {
@@ -14,8 +14,8 @@ export function StepLearningGoal({ form, updateField }) {
     <div>
       <div className="text-center mb-3">
         <HiRocketLaunch size={36} className="onboarding-wizard__step-icon" />
-        <h4 className="fw-bold mt-2 mb-1">What's your learning goal?</h4>
-        <p className="text-muted small mb-0">Choose your primary reason for practicing English.</p>
+        <h4 className="fw-bold mt-2 mb-1">Mục tiêu học tập của bạn là gì?</h4>
+        <p className="text-muted small mb-0">Chọn lý do chính để luyện tiếng Anh.</p>
       </div>
 
       <div className="onboarding-wizard__goal-list">

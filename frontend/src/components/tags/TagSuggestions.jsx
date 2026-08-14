@@ -26,7 +26,7 @@ export function TagSuggestions({ careerField, jobTitle, selected = [], onToggle 
   return (
     <div>
       <div className="text-muted fw-semibold small mb-2 tag-suggestions-label">
-        {suggestedTags.length > 0 ? `Suggested for ${careerField || 'you'}` : 'Popular tags'}
+        {suggestedTags.length > 0 ? `Gợi ý cho ${careerField || 'bạn'}` : 'Thẻ phổ biến'}
       </div>
       <div className="tag-suggestions-list">
         {displayTags.map((tag) => (
@@ -52,7 +52,7 @@ export function TagSuggestions({ careerField, jobTitle, selected = [], onToggle 
             onClick={() => setShowAll(true)}
             className="tag-suggestions-more"
           >
-            +{suggestedTags.length - 12} more
+            +{suggestedTags.length - 12} thêm
           </button>
         )}
       </div>

@@ -3,29 +3,29 @@ import { TagBadge } from '../../components/tags/TagBadge';
 import '../../styles/OnboardingWizard.css';
 
 const ENGLISH_LEVELS = {
-  A1: 'Beginner', A2: 'Elementary', B1: 'Intermediate',
-  B2: 'Upper-Intermediate', C1: 'Advanced', C2: 'Proficient',
+  A1: 'Người mới bắt đầu', A2: 'Sơ cấp', B1: 'Trung cấp',
+  B2: 'Trung cấp khá', C1: 'Nâng cao', C2: 'Thành thạo',
 };
 
 const GOAL_LABELS = {
-  work: '💼 Career', interview: '🎤 Interview', fluency: '🚀 Fluency',
-  business: '🌍 Business', academic: '🎓 Academic',
+  work: '💼 Sự nghiệp', interview: '🎤 Phỏng vấn', fluency: '🚀 Lưu loát',
+  business: '🌍 Kinh doanh', academic: '🎓 Học thuật',
 };
 
 export function StepConfirm({ form, updateField, error }) {
   const fields = [
-    { label: 'English Level', value: form.english_level ? `${form.english_level} — ${ENGLISH_LEVELS[form.english_level] || form.english_level}` : 'Not set (can be set later)', key: 'level' },
-    { label: 'Career Field', value: form.career_field || 'Not set', key: 'career' },
-    { label: 'Job Title', value: form.job_title || 'Not set', key: 'job' },
-    { label: 'Learning Goal', value: GOAL_LABELS[form.learning_goal] || form.learning_goal || 'Not set', key: 'goal' },
+    { label: 'Trình độ tiếng Anh', value: form.english_level ? `${form.english_level} — ${ENGLISH_LEVELS[form.english_level] || form.english_level}` : 'Chưa thiết lập (có thể đặt sau)', key: 'level' },
+    { label: 'Lĩnh vực nghề nghiệp', value: form.career_field || 'Chưa thiết lập', key: 'career' },
+    { label: 'Chức danh', value: form.job_title || 'Chưa thiết lập', key: 'job' },
+    { label: 'Mục tiêu học tập', value: GOAL_LABELS[form.learning_goal] || form.learning_goal || 'Chưa thiết lập', key: 'goal' },
   ];
 
   return (
     <div>
       <div className="text-center mb-3">
         <HiCheckCircle size={36} className="onboarding-wizard__step-icon--success" />
-        <h4 className="fw-bold mt-2 mb-1">Ready to start!</h4>
-        <p className="text-muted small mb-0">Review your selections before we finish setting up.</p>
+        <h4 className="fw-bold mt-2 mb-1">Sẵn sàng bắt đầu!</h4>
+        <p className="text-muted small mb-0">Xem lại lựa chọn trước khi hoàn tất thiết lập.</p>
       </div>
 
       {error && (
@@ -37,7 +37,7 @@ export function StepConfirm({ form, updateField, error }) {
       {form.tagIds.length > 0 && (
         <div className="onboarding-wizard__tags-section">
           <div className="fw-bold small text-muted mb-2 onboarding-wizard__tags-header">
-            Your Interests ({form.tagIds.length})
+            Sở thích của bạn ({form.tagIds.length})
           </div>
           <div className="onboarding-wizard__tags-list">
             {form.tagIds.map((tag) => (
@@ -58,7 +58,7 @@ export function StepConfirm({ form, updateField, error }) {
 
       {form.tagIds.length === 0 && (
         <div className="onboarding-wizard__warning">
-          ⚠️ You haven't selected any tags. Auto-matching will be disabled. You can always add tags later in Settings.
+          ⚠️ Bạn chưa chọn thẻ nào. Ghép cặp tự động sẽ bị tắt. Bạn có thể thêm thẻ bất cứ lúc nào trong Cài đặt.
         </div>
       )}
     </div>

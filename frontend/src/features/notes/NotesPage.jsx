@@ -45,12 +45,12 @@ export function NotesPage() {
         <Container className="notes-page py-4 text-center">
           <div className="notes-page__upgrade">
             <HiSparkles size={24} />
-            <h3>Session notes are a Pro+ feature</h3>
-            <p>Upgrade to unlock AI-generated session summaries, corrections, and personalized learning notes.</p>
-            <Button variant="primary" className="px-3" onClick={() => setShowUpgrade(true)}>Upgrade to Pro+</Button>
+            <h3>Ghi chú buổi học là tính năng Pro+</h3>
+            <p>Nâng cấp để mở khóa tóm tắt buổi học do AI tạo, sửa lỗi và ghi chú học tập cá nhân hóa.</p>
+            <Button variant="primary" className="px-3" onClick={() => setShowUpgrade(true)}>Nâng cấp lên Pro+</Button>
           </div>
         </Container>
-        <UpgradePrompt feature="Session Notes" visible={showUpgrade} onClose={() => setShowUpgrade(false)} />
+        <UpgradePrompt feature="Ghi chú buổi học" visible={showUpgrade} onClose={() => setShowUpgrade(false)} />
       </>
     );
   }
@@ -58,8 +58,8 @@ export function NotesPage() {
   return (
     <Container className="notes-page py-4">
       <div className="notes-page__header">
-        <h1>Notes</h1>
-        <p>Session summaries, key corrections, and reminders from every room you have joined.</p>
+        <h1>Ghi chú</h1>
+        <p>Tóm tắt buổi học, các lỗi chính và nhắc nhở từ mọi phòng bạn đã tham gia.</p>
       </div>
 
       <div className="notes-page__search-wrap">
@@ -68,7 +68,7 @@ export function NotesPage() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search notes by title, content, or tags..."
+          placeholder="Tìm ghi chú theo tiêu đề, nội dung hoặc thẻ..."
           className="notes-page__search"
         />
       </div>
@@ -76,27 +76,27 @@ export function NotesPage() {
       {isLoading ? (
         <div className="notes-page__loading">
           <Spinner animation="border" variant="primary" />
-          <span>Loading notes...</span>
+          <span>Đang tải ghi chú...</span>
         </div>
       ) : filtered.length === 0 ? (
         <div className="notes-page__empty">
           <HiDocumentText size={24} />
-          <h3>{search ? 'No matching notes' : 'No notes yet'}</h3>
-          <p>{search ? 'Try a different search term.' : 'After a Pro+ session, your notes will appear here automatically.'}</p>
-          {!search && <Button as={Link} to="/learning" variant="outline-primary" className="px-3">Start a session</Button>}
+          <h3>{search ? 'Không tìm thấy ghi chú phù hợp' : 'Chưa có ghi chú nào'}</h3>
+          <p>{search ? 'Hãy thử từ khóa tìm kiếm khác.' : 'Sau buổi học Pro+, ghi chú của bạn sẽ tự động xuất hiện tại đây.'}</p>
+          {!search && <Button as={Link} to="/learning" variant="outline-primary" className="px-3">Bắt đầu buổi học</Button>}
         </div>
       ) : (
         <div className="notes-page__list">
           {filtered.map((note) => (
             <div key={note.id} className="notes-page__row">
               <div className="notes-page__row-top">
-                <h2 className="notes-page__row-title">{note.title || 'Session Summary'}</h2>
+                <h2 className="notes-page__row-title">{note.title || 'Tóm tắt buổi học'}</h2>
                 <button
                   onClick={() => { setDeleting(note.id); deleteMutation.mutate(note.id); }}
                   disabled={deleting === note.id}
                   className="notes-page__delete"
                 >
-                  Delete
+                  Xóa
                 </button>
               </div>
               <div className="notes-page__row-meta">
@@ -107,7 +107,7 @@ export function NotesPage() {
                 {(note.content || '').slice(0, 250)}{(note.content || '').length > 250 ? '...' : ''}
               </div>
               {(note.content || '').length > 250 && (
-                <Link to={`/notes/${note.id}`} className="notes-page__read-more">Read full note</Link>
+                <Link to={`/notes/${note.id}`} className="notes-page__read-more">Đọc ghi chú đầy đủ</Link>
               )}
               {note.tags && note.tags.length > 0 && (
                 <div className="notes-page__tags">

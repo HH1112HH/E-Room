@@ -9,15 +9,15 @@ export function ChatTranscript({ messages = [], loading }) {
   }, [messages]);
 
   if (loading) {
-    return <div className="text-muted text-center py-4 chat-transcript-loading">Loading transcript...</div>;
+    return <div className="text-muted text-center py-4 chat-transcript-loading">Đang tải lời thoại...</div>;
   }
 
   if (messages.length === 0) {
     return (
       <div className="text-center py-5 chat-transcript-empty">
         <div className="chat-transcript-empty-emoji">🎙️</div>
-        <div className="chat-transcript-empty-title">No speech yet</div>
-        <div className="chat-transcript-empty-desc">Start speaking — transcript appears here instantly</div>
+        <div className="chat-transcript-empty-title">Chưa có lời nói</div>
+        <div className="chat-transcript-empty-desc">Bắt đầu nói — lời thoại sẽ hiện tại đây ngay lập tức</div>
       </div>
     );
   }
@@ -31,7 +31,7 @@ export function ChatTranscript({ messages = [], loading }) {
           <span className="fw-bold chat-transcript-speaker" style={{
             color: msg.speakerColor || 'var(--color-accent)',
           }}>
-            {msg.speaker || 'You'}
+            {msg.speaker || 'Bạn'}
           </span>
           <span className="chat-transcript-text" style={{
             color: msg.status === 'interim' ? 'var(--color-text-muted)' : 'var(--color-text-primary)',

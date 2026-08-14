@@ -5,8 +5,8 @@ import { fetchJson } from '../../lib/api';
 import '../../styles/DevTools.css';
 
 function statusPill(status) {
-  if (status === 'ACTIVE') return <span className="pill pill-active">active</span>;
-  if (status === 'MATCHING') return <span className="pill pill-matching">matching</span>;
+  if (status === 'ACTIVE') return <span className="pill pill-active">đang hoạt động</span>;
+  if (status === 'MATCHING') return <span className="pill pill-matching">đang ghép cặp</span>;
   return <span className="pill pill-end">{status?.toLowerCase()}</span>;
 }
 
@@ -15,13 +15,13 @@ export function RoomList({ onSelectRoom }) {
   const { data, isLoading, error } = useAsyncResource(loader, []);
 
   return (
-    <Card title="Rooms" subtitle="Active and matching rooms" action={
-      data.length > 0 ? <span className="pill pill-active">{data.length} total</span> : null
+    <Card title="Phòng" subtitle="Phòng đang hoạt động và đang ghép cặp" action={
+      data.length > 0 ? <span className="pill pill-active">{data.length} phòng</span> : null
     }>
-      {isLoading ? <p className="empty-state">Loading rooms...</p> : null}
+      {isLoading ? <p className="empty-state">Đang tải phòng...</p> : null}
       {error ? <p className="empty-state empty-state-error">{error}</p> : null}
       {!isLoading && !error && data.length === 0 ? (
-        <p className="empty-state">No rooms yet. Create one to get started.</p>
+        <p className="empty-state">Chưa có phòng nào. Tạo một phòng để bắt đầu.</p>
       ) : null}
       <ul className="list-simple">
         {data.map((room) => (

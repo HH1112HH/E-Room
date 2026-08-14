@@ -12,7 +12,7 @@ export function ExpertResponse({ response }) {
         </div>
         <div className="expert-response__content">
           <div className="expert-response__label">
-            🧠 Expert Answer
+            🧠 Câu trả lời chuyên gia
           </div>
           <div className="expert-response__text">
             {response.text}

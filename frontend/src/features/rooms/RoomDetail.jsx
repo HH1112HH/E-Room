@@ -5,8 +5,8 @@ import { fetchJson } from '../../lib/api';
 import '../../styles/DevTools.css';
 
 function statusPill(status) {
-  if (status === 'ACTIVE') return <span className="pill pill-active">active</span>;
-  if (status === 'MATCHING') return <span className="pill pill-matching">matching</span>;
+  if (status === 'ACTIVE') return <span className="pill pill-active">đang hoạt động</span>;
+  if (status === 'MATCHING') return <span className="pill pill-matching">đang ghép cặp</span>;
   return <span className="pill pill-end">{status?.toLowerCase()}</span>;
 }
 
@@ -19,18 +19,18 @@ export function RoomDetail({ room, onBack }) {
   return (
     <div className="room-detail-grid">
       <div className="devtools-room-back">
-        <button className="outline" onClick={onBack}>&larr; Back</button>
+        <button className="outline" onClick={onBack}>&larr; Quay lại</button>
         <div className="room-detail-header">
           <h3>{detail.topic || detail.livekit_room_name}</h3>
           {statusPill(detail.status)}
         </div>
       </div>
 
-      {error ? <p className="empty-state empty-state-error">Failed to load room detail</p> : null}
+      {error ? <p className="empty-state empty-state-error">Không thể tải chi tiết phòng</p> : null}
 
       <div className="two-col">
-        <Card title="Participants" subtitle={`${detail.current_participants || 0}/${detail.max_participants}`}>
-          {isLoading ? <p className="empty-state">Loading...</p> : null}
+        <Card title="Người tham gia" subtitle={`${detail.current_participants || 0}/${detail.max_participants}`}>
+          {isLoading ? <p className="empty-state">Đang tải...</p> : null}
           {detail.participants && detail.participants.length > 0 ? (
             <ul className="list-simple">
               {detail.participants.map((pid, i) => (
@@ -40,12 +40,12 @@ export function RoomDetail({ room, onBack }) {
               ))}
             </ul>
           ) : (
-            <p className="empty-state">No participants yet</p>
+            <p className="empty-state">Chưa có người tham gia</p>
           )}
         </Card>
 
-        <Card title="Messages" subtitle="Latest room messages">
-          {isLoading ? <p className="empty-state">Loading...</p> : null}
+        <Card title="Tin nhắn" subtitle="Tin nhắn mới nhất trong phòng">
+          {isLoading ? <p className="empty-state">Đang tải...</p> : null}
           {detail.messages && detail.messages.length > 0 ? (
             <ul className="list-simple">
               {detail.messages.map((msg, i) => (
@@ -56,29 +56,29 @@ export function RoomDetail({ room, onBack }) {
               ))}
             </ul>
           ) : (
-            <p className="empty-state">No messages yet</p>
+            <p className="empty-state">Chưa có tin nhắn</p>
           )}
         </Card>
       </div>
 
       <div className="three-col">
         <div className="stat">
-          <span>Agent level</span>
+          <span>Trình độ AI</span>
           <strong>{detail.agent_level || 'basic'}</strong>
         </div>
         <div className="stat">
-          <span>English level</span>
+          <span>Trình độ tiếng Anh</span>
           <strong>{detail.english_level || 'any'}</strong>
         </div>
         <div className="stat">
-          <span>Visibility</span>
-          <strong>{detail.is_public ? 'public' : 'private'}</strong>
+          <span>Chế độ hiển thị</span>
+          <strong>{detail.is_public ? 'công khai' : 'riêng tư'}</strong>
         </div>
       </div>
 
       <div className="form-row">
-        <input placeholder="Send a message..." className="devtools-input-flex" />
-        <button>Send</button>
+        <input placeholder="Gửi tin nhắn..." className="devtools-input-flex" />
+        <button>Gửi</button>
       </div>
     </div>
   );

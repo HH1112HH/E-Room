@@ -40,12 +40,12 @@ export function QueueOverlay({ visible, tags = [], onCancel }) {
         </div>
 
         <h4 className="fw-extrabold mb-2 queue-overlay__heading">
-          Finding your match{dots}
+          Đang tìm phòng cho bạn{dots}
         </h4>
 
         {tags.length > 0 && (
           <p className="mb-2 queue-overlay__tags-text">
-            Looking for people interested in
+            Đang tìm người quan tâm đến
             <span className="queue-overlay__tags-highlight">
               {' '}{tags.join(', ')}
             </span>
@@ -54,22 +54,22 @@ export function QueueOverlay({ visible, tags = [], onCancel }) {
 
         <p className="queue-overlay__wait-text">
           {showFallback
-            ? 'No matches found yet. Expanding search...'
-            : `Est. wait: ~${remaining}s`}
+            ? 'Chưa tìm thấy phòng phù hợp. Đang mở rộng tìm kiếm...'
+            : `Dự kiến chờ: ~${remaining}s`}
         </p>
 
         {/* Fallback options */}
         {showFallback && (
           <div className="queue-overlay__fallback">
             <p className="small mb-2 queue-overlay__fallback-heading">
-              💡 Taking longer than expected
+              💡 Lâu hơn dự kiến
             </p>
             <div className="queue-overlay__fallback-actions">
               <span className="queue-overlay__badge-secondary">
-                🔄 Expand tags
+                🔄 Mở rộng thẻ
               </span>
               <span className="queue-overlay__badge-accent">
-                🤖 Practice with AI
+                🤖 Luyện tập với AI
               </span>
             </div>
           </div>
@@ -81,7 +81,7 @@ export function QueueOverlay({ visible, tags = [], onCancel }) {
           onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
           onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; }}
         >
-          Cancel
+          Hủy
         </button>
       </div>
     </div>

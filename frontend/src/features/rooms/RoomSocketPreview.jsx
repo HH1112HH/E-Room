@@ -20,8 +20,8 @@ export function RoomSocketPreview() {
   }, []);
 
   return (
-    <Card title="WebSocket room preview" subtitle="Contract-first realtime event channel">
-      {events.length === 0 ? <p>Waiting for room events...</p> : null}
+    <Card title="Xem trước WebSocket phòng" subtitle="Kênh sự kiện thời gian thực theo hợp đồng">
+      {events.length === 0 ? <p>Đang chờ sự kiện phòng...</p> : null}
       <ul className="simple-list">
         {events.map((event, index) => (
           <li key={`${event.type}-${index}`}>

@@ -33,30 +33,30 @@ import { CreateRoomModal } from '../../features/rooms/CreateRoomModal';
 import '../../styles/ProfilePage.css';
 
 const sections = [
-  { key: 'overview', label: 'User info', icon: HiUserCircle },
-  { key: 'sessions', label: 'Session history', icon: HiBookOpen },
-  { key: 'notes', label: 'Notes', icon: HiDocumentText },
-  { key: 'schedule', label: 'Schedule room', icon: HiCalendarDays },
+  { key: 'overview', label: 'Thông tin người dùng', icon: HiUserCircle },
+  { key: 'sessions', label: 'Lịch sử buổi học', icon: HiBookOpen },
+  { key: 'notes', label: 'Ghi chú', icon: HiDocumentText },
+  { key: 'schedule', label: 'Lên lịch phòng', icon: HiCalendarDays },
 ];
 
 const accountSections = [
-  { key: 'subscription', label: 'Subscription', icon: HiCreditCard },
-  { key: 'settings', label: 'Settings', icon: HiCog6Tooth },
+  { key: 'subscription', label: 'Gói đăng ký', icon: HiCreditCard },
+  { key: 'settings', label: 'Cài đặt', icon: HiCog6Tooth },
 ];
 
 const plans = [
-  { key: 'free', name: 'Free', price: '$0', features: ['5 rooms/day', 'Basic AI feedback', 'Standard matching'] },
-  { key: 'pro', name: 'Pro', price: '$9.99/mo', features: ['Unlimited rooms', 'Advanced AI feedback', 'Priority matching', 'Session notes'], popular: true },
-  { key: 'pro_plus', name: 'Pro+', price: '$19.99/mo', features: ['All Pro features', 'TTS voice feedback', 'Expert RAG insights', 'Leaderboard'] },
+  { key: 'free', name: 'Free', price: '$0', features: ['5 phòng/ngày', 'Phản hồi AI cơ bản', 'Ghép cặp tiêu chuẩn'] },
+  { key: 'pro', name: 'Pro', price: '$9.99/tháng', features: ['Phòng không giới hạn', 'Phản hồi AI nâng cao', 'Ghép cặp ưu tiên', 'Ghi chú buổi học'], popular: true },
+  { key: 'pro_plus', name: 'Pro+', price: '$19.99/tháng', features: ['Tất cả tính năng Pro', 'Phản hồi giọng nói TTS', 'Phân tích RAG chuyên sâu', 'Bảng xếp hạng'] },
 ];
 
 function getSessionTitle(session) {
-  return session.topic || session.room?.topic || session.title || 'Speaking session';
+  return session.topic || session.room?.topic || session.title || 'Buổi luyện nói';
 }
 
 function getSessionDate(session) {
   const raw = session.created_at || session.started_at || session.updated_at || session.timestamp;
-  if (!raw) return 'Date unavailable';
+  if (!raw) return 'Không có ngày';
   return new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(raw));
 }
 
@@ -74,7 +74,7 @@ function ProfileSidebar({ activeSection, onSelect, user, sessionsCount, tier }) 
       <div className="profile-sidebar__identity">
         <div className="profile-avatar">{initials}</div>
         <div className="profile-sidebar__identity-text">
-          <strong>{user.display_name || 'E-Room learner'}</strong>
+          <strong>{user.display_name || 'Người học E-Room'}</strong>
           <span>{user.email}</span>
         </div>
       </div>
@@ -101,14 +101,14 @@ function SidebarButton({ section, active, onSelect }) {
 }
 
 function ProfileHeader({ user, sessionsCount, tier, activeSection }) {
-  const sectionTitle = [...sections, ...accountSections].find((section) => section.key === activeSection)?.label || 'Dashboard';
+  const sectionTitle = [...sections, ...accountSections].find((section) => section.key === activeSection)?.label || 'Bảng điều khiển';
   return (
     <header className="profile-header">
       <h1>{sectionTitle}</h1>
       <div className="profile-header__stats">
-        <span><strong>{sessionsCount}</strong> Sessions</span>
-        <span><strong>{tier === 'pro_plus' ? 'Pro+' : tier === 'pro' ? 'Pro' : 'Free'}</strong> Plan</span>
-        <span><strong>{user.display_name ? 'Ready' : 'Setup'}</strong> Profile</span>
+        <span><strong>{sessionsCount}</strong> Buổi học</span>
+        <span><strong>{tier === 'pro_plus' ? 'Pro+' : tier === 'pro' ? 'Pro' : 'Free'}</strong> Gói</span>
+        <span><strong>{user.display_name ? 'Sẵn sàng' : 'Thiết lập'}</strong> Hồ sơ</span>
       </div>
     </header>
   );
@@ -123,25 +123,25 @@ function UserInfoSection({ user, displayName, setDisplayName, editing, setEditin
   return (
     <section className="profile-section">
       <div className="profile-section__head">
-        <h2>Personal information</h2>
-        {!editing && <Button variant="outline-primary" onClick={() => setEditing(true)}><HiPencil size={16} /> Edit</Button>}
+        <h2>Thông tin cá nhân</h2>
+        {!editing && <Button variant="outline-primary" onClick={() => setEditing(true)}><HiPencil size={16} /> Chỉnh sửa</Button>}
       </div>
 
       <div className="profile-form-grid">
         <Form.Group>
-          <Form.Label>Display name</Form.Label>
+          <Form.Label>Tên hiển thị</Form.Label>
           <Form.Control value={displayName} onChange={(event) => setDisplayName(event.target.value)} disabled={!editing} />
         </Form.Group>
         <Form.Group>
-          <Form.Label>Email address</Form.Label>
+          <Form.Label>Địa chỉ Email</Form.Label>
           <Form.Control type="email" value={user.email || ''} disabled />
         </Form.Group>
         <Form.Group>
-          <Form.Label>English level</Form.Label>
-          <Form.Control value={user.english_level || 'Not set yet'} disabled />
+          <Form.Label>Trình độ tiếng Anh</Form.Label>
+          <Form.Control value={user.english_level || 'Chưa thiết lập'} disabled />
         </Form.Group>
         <Form.Group>
-          <Form.Label>Language preference</Form.Label>
+          <Form.Label>Ngôn ngữ ưa thích</Form.Label>
           <Form.Select disabled={!editing} defaultValue="Vietnamese">
             <option>Vietnamese</option>
             <option>English</option>
@@ -152,9 +152,9 @@ function UserInfoSection({ user, displayName, setDisplayName, editing, setEditin
       {editing && (
         <div className="profile-actions">
           <Button variant="primary" disabled={saveMutation.isPending || !displayName.trim()} onClick={() => saveMutation.mutate({ display_name: displayName.trim() })}>
-            {saveMutation.isPending ? <><Spinner animation="border" size="sm" /> Saving</> : <><HiCheckCircle size={16} /> Save changes</>}
+            {saveMutation.isPending ? <><Spinner animation="border" size="sm" /> Đang lưu...</> : <><HiCheckCircle size={16} /> Lưu thay đổi</>}
           </Button>
-          <Button variant="outline-secondary" onClick={cancelEdit}>Cancel</Button>
+          <Button variant="outline-secondary" onClick={cancelEdit}>Hủy</Button>
         </div>
       )}
     </section>
@@ -165,20 +165,20 @@ function SessionsSection({ sessions, isLoading, isError, onRetry }) {
   return (
     <section className="profile-section">
       <div className="profile-section__head">
-        <h2>Session history</h2>
-        <Button as={Link} to="/learning" variant="outline-primary">Find a meeting</Button>
+        <h2>Lịch sử buổi học</h2>
+        <Button as={Link} to="/learning" variant="outline-primary">Tìm phòng luyện tập</Button>
       </div>
 
       {isLoading && <LoadingRows />}
-      {isError && <ErrorState title="Could not load sessions" text="Refresh this panel to retry your session history request." onRetry={onRetry} />}
+      {isError && <ErrorState title="Không thể tải lịch sử buổi học" text="Làm mới bảng này để thử lại yêu cầu lịch sử buổi học." onRetry={onRetry} />}
       {!isLoading && !isError && sessions.length === 0 && (
-        <EmptyState title="No completed sessions yet" text="Join a meeting room and your session history will appear here." action={<Button as={Link} to="/learning" variant="primary">Open Meeting</Button>} />
+        <EmptyState title="Chưa có buổi học nào hoàn thành" text="Tham gia một phòng luyện tập và lịch sử buổi học sẽ hiển thị tại đây." action={<Button as={Link} to="/learning" variant="primary">Mở phòng</Button>} />
       )}
       {!isLoading && !isError && sessions.length > 0 && (
         <div className="profile-session-list">
           {sessions.map((session) => (
             <article className="profile-session" key={session.id || `${getSessionTitle(session)}-${getSessionDate(session)}`}>
-              <div className="profile-session__duration"><strong>{formatDuration(session.duration_seconds)}</strong><span>duration</span></div>
+              <div className="profile-session__duration"><strong>{formatDuration(session.duration_seconds)}</strong><span>thời lượng</span></div>
               <div>
                 <h3>{getSessionTitle(session)}</h3>
                 <p>{getSessionDate(session)}</p>
@@ -199,10 +199,10 @@ function NotesSection() {
   return (
     <section className="profile-section">
       <div className="profile-section__head">
-        <h2>Notes</h2>
-        <Button as={Link} to="/notes" variant="outline-primary">Open notes</Button>
+        <h2>Ghi chú</h2>
+        <Button as={Link} to="/notes" variant="outline-primary">Mở ghi chú</Button>
       </div>
-      <EmptyState title="Session notes live here" text="After a room produces notes, this dashboard gives you a faster path back to them." action={<Button as={Link} to="/notes" variant="primary">Go to Notes</Button>} />
+      <EmptyState title="Ghi chú buổi học nằm tại đây" text="Sau khi phòng tạo ghi chú, bảng điều khiển này giúp bạn truy cập nhanh hơn." action={<Button as={Link} to="/notes" variant="primary">Đến Ghi chú</Button>} />
     </section>
   );
 }
@@ -211,12 +211,12 @@ function ScheduleSection({ onCreateRoom }) {
   return (
     <section className="profile-section">
       <div className="profile-section__head">
-        <h2>Schedule room</h2>
+        <h2>Lên lịch phòng</h2>
       </div>
       <div className="profile-schedule">
-        <h3>Prepare your next speaking room</h3>
-        <p>Create a room with topic, level, participants, and tags. Calendar-based scheduling is not enabled by the current room API, so this dashboard keeps the instant creation flow reliable.</p>
-        <Button variant="primary" onClick={onCreateRoom}><HiPlusCircle size={18} /> Create room</Button>
+        <h3>Chuẩn bị phòng luyện nói tiếp theo</h3>
+        <p>Tạo phòng với chủ đề, trình độ, số người tham gia và thẻ. Lịch hẹn theo lịch chưa được bật ở API hiện tại, nên bảng này giữ luồng tạo phòng tức thì ổn định.</p>
+        <Button variant="primary" onClick={onCreateRoom}><HiPlusCircle size={18} /> Tạo phòng</Button>
       </div>
     </section>
   );
@@ -226,7 +226,7 @@ function SubscriptionSection({ tier }) {
   return (
     <section className="profile-section">
       <div className="profile-section__head">
-        <h2>Subscription</h2>
+        <h2>Gói đăng ký</h2>
       </div>
       <div className="profile-plan-grid">
         {plans.map((plan) => {
@@ -235,15 +235,15 @@ function SubscriptionSection({ tier }) {
             <article className={`profile-plan${plan.popular ? ' is-popular' : ''}`} key={plan.key}>
               <div className="profile-plan__top">
                 <h3>{plan.name}</h3>
-                {current && <Badge bg="success">Current</Badge>}
-                {plan.popular && !current && <Badge bg="primary">Popular</Badge>}
+                {current && <Badge bg="success">Hiện tại</Badge>}
+                {plan.popular && !current && <Badge bg="primary">Phổ biến</Badge>}
               </div>
               <strong className="profile-plan__price">{plan.price}</strong>
               <ul>{plan.features.map((feature) => <li key={feature}><HiCheckCircle size={14} /> {feature}</li>)}</ul>
               {plan.key === 'free' ? (
-                <Button variant="outline-secondary" className="w-100" disabled={current}>Free plan</Button>
+                <Button variant="outline-secondary" className="w-100" disabled={current}>Gói miễn phí</Button>
               ) : (
-                <Button as={Link} to={`/payment?plan=${plan.key}`} variant={plan.popular ? 'primary' : 'outline-primary'} className="w-100">{current ? 'Manage plan' : 'Upgrade'}</Button>
+                <Button as={Link} to={`/payment?plan=${plan.key}`} variant={plan.popular ? 'primary' : 'outline-primary'} className="w-100">{current ? 'Quản lý gói' : 'Nâng cấp'}</Button>
               )}
             </article>
           );
@@ -258,40 +258,40 @@ function SettingsSection({ logout, onLogout }) {
   return (
     <section className="profile-section">
       <div className="profile-section__head">
-        <h2>Settings</h2>
+        <h2>Cài đặt</h2>
       </div>
       <div className="profile-settings-list">
         <div className="profile-settings-item">
           <HiBell size={18} />
           <div className="profile-settings-item__body">
-            <h3>Notifications</h3>
-            <Form.Check type="switch" id="match-notifications" label="Room match notifications" defaultChecked />
-            <Form.Check type="switch" id="session-reminders" label="Session reminders" defaultChecked />
-            <Form.Check type="switch" id="email-updates" label="Email updates" />
+            <h3>Thông báo</h3>
+            <Form.Check type="switch" id="match-notifications" label="Thông báo phòng ghép cặp" defaultChecked />
+            <Form.Check type="switch" id="session-reminders" label="Nhắc nhở buổi học" defaultChecked />
+            <Form.Check type="switch" id="email-updates" label="Cập nhật qua Email" />
           </div>
         </div>
         <div className="profile-settings-item">
           <HiShieldCheck size={18} />
           <div className="profile-settings-item__body">
-            <h3>Privacy</h3>
-            <Form.Check type="switch" id="show-profile" label="Show profile in rooms" defaultChecked />
-            <Form.Check type="switch" id="show-leaderboard" label="Show on leaderboard" defaultChecked />
+            <h3>Quyền riêng tư</h3>
+            <Form.Check type="switch" id="show-profile" label="Hiển thị hồ sơ trong phòng" defaultChecked />
+            <Form.Check type="switch" id="show-leaderboard" label="Hiển thị trên bảng xếp hạng" defaultChecked />
           </div>
         </div>
         <div className="profile-settings-item">
           <HiSparkles size={18} />
           <div className="profile-settings-item__body">
-            <h3>Appearance</h3>
-            <p>Current theme: {theme}</p>
-            <Button variant="outline-primary" onClick={toggleTheme}>Toggle theme</Button>
+            <h3>Giao diện</h3>
+            <p>Giao diện hiện tại: {theme}</p>
+            <Button variant="outline-primary" onClick={toggleTheme}>Đổi giao diện</Button>
           </div>
         </div>
         <div className="profile-settings-item">
           <HiExclamationTriangle size={18} />
           <div className="profile-settings-item__body">
-            <h3>Account access</h3>
-            <p>Sign out of this device when you finish practicing.</p>
-            <Button variant="outline-danger" onClick={() => { logout(); onLogout(); }}><HiArrowRightOnRectangle size={16} /> Sign out</Button>
+            <h3>Truy cập tài khoản</h3>
+            <p>Đăng xuất khỏi thiết bị này khi hoàn tất luyện tập.</p>
+            <Button variant="outline-danger" onClick={() => { logout(); onLogout(); }}><HiArrowRightOnRectangle size={16} /> Đăng xuất</Button>
           </div>
         </div>
       </div>
@@ -300,11 +300,11 @@ function SettingsSection({ logout, onLogout }) {
 }
 
 function LoadingRows() {
-  return <div className="profile-loading" aria-busy="true" aria-label="Loading sessions">{[0, 1, 2].map((item) => <span key={item} />)}</div>;
+  return <div className="profile-loading" aria-busy="true" aria-label="Đang tải lịch sử buổi học">{[0, 1, 2].map((item) => <span key={item} />)}</div>;
 }
 
 function ErrorState({ title, text, onRetry }) {
-  return <div className="profile-empty"><h3>{title}</h3><p>{text}</p><Button variant="outline-primary" onClick={onRetry}>Try again</Button></div>;
+  return <div className="profile-empty"><h3>{title}</h3><p>{text}</p><Button variant="outline-primary" onClick={onRetry}>Thử lại</Button></div>;
 }
 
 function EmptyState({ title, text, action }) {
@@ -337,10 +337,10 @@ export function ProfilePage() {
       queryClient.invalidateQueries({ queryKey: ['me'] });
       queryClient.invalidateQueries({ queryKey: ['user'] });
       setEditing(false);
-      setMessage({ type: 'success', text: 'Profile updated successfully.' });
+      setMessage({ type: 'success', text: 'Đã cập nhật hồ sơ thành công.' });
       setTimeout(() => setMessage(null), 3000);
     },
-    onError: (err) => setMessage({ type: 'danger', text: err?.message || 'Failed to update profile.' }),
+    onError: (err) => setMessage({ type: 'danger', text: err?.message || 'Không thể cập nhật hồ sơ.' }),
   });
 
   const content = useMemo(() => {
@@ -355,7 +355,7 @@ export function ProfilePage() {
   }, [activeSection, displayName, editing, logout, navigate, saveMutation, sessions, sessionsQuery.isError, sessionsQuery.isLoading, sessionsQuery.refetch, tier, user]);
 
   if (!user) {
-    return <Container className="py-5 text-center"><Spinner animation="border" variant="primary" /><p className="text-muted mt-2">Loading profile...</p></Container>;
+    return <Container className="py-5 text-center"><Spinner animation="border" variant="primary" /><p className="text-muted mt-2">Đang tải hồ sơ...</p></Container>;
   }
 
   function handleRoomCreated(room) {
@@ -372,7 +372,7 @@ export function ProfilePage() {
         <div className={`profile-dashboard__layout${sidebarOpen ? '' : ' is-collapsed'}`}>
           <div className="profile-dashboard__sidebar-wrap">
             <button type="button" className="profile-toggle" onClick={() => setSidebarOpen(prev => !prev)} aria-expanded={sidebarOpen}>
-              <HiBars3 size={18} /> {sidebarOpen ? 'Hide menu' : 'Show menu'}
+              <HiBars3 size={18} /> {sidebarOpen ? 'Ẩn menu' : 'Hiện menu'}
             </button>
             {sidebarOpen && <ProfileSidebar activeSection={activeSection} onSelect={setActiveSection} user={user} sessionsCount={sessionsCount} tier={tier} />}
           </div>

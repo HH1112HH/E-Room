@@ -16,12 +16,12 @@ export function TagPanel() {
   }
 
   return (
-    <Card title="Tags" subtitle="Pick topics for matching" action={
-      selected.length > 0 ? <span className="pill pill-active">{selected.length} selected</span> : null
+    <Card title="Thẻ" subtitle="Chọn chủ đề để ghép phòng" action={
+      selected.length > 0 ? <span className="pill pill-active">{selected.length} đã chọn</span> : null
     }>
-      {isLoading ? <p className="empty-state">Loading tags...</p> : null}
+      {isLoading ? <p className="empty-state">Đang tải thẻ...</p> : null}
       {error ? <p className="empty-state empty-state-error">{error}</p> : null}
-      {!isLoading && !error && data.length === 0 ? <p className="empty-state">No tags seeded yet</p> : null}
+      {!isLoading && !error && data.length === 0 ? <p className="empty-state">Chưa có thẻ nào</p> : null}
       <div className="tag-cloud">
         {data.map((tag) => (
           <span

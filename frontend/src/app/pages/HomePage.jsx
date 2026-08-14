@@ -29,7 +29,7 @@ function useMatchMutation() {
       if (result.status === 'matched') {
         return await fetchJson(`/rooms/${result.roomId}`);
       }
-      throw new Error(result.message || 'No matching room found');
+      throw new Error(result.message || 'Không tìm thấy phòng phù hợp');
     },
     onSuccess: (room) => { setMatchResult(room); setQuickJoining(false); },
     onError: () => { setQuickJoining(false); setMatchResult(null); },
@@ -91,10 +91,10 @@ const FAQS = [
 ];
 
 const ROOM_CATEGORIES = [
-  { icon: HiChatBubbleOvalLeft, titleKey: 'cat_1_title', descKey: 'cat_1_desc', color: '#f1f5f9', iconColor: '#6699FF', count: '12 rooms' },
-  { icon: HiBriefcase, titleKey: 'cat_2_title', descKey: 'cat_2_desc', color: '#f8fafc', iconColor: '#336699', count: '8 rooms' },
-  { icon: HiSpeakerWave, titleKey: 'cat_3_title', descKey: 'cat_3_desc', color: '#f1f5f9', iconColor: '#FF9966', count: '6 rooms' },
-  { icon: HiBookOpen, titleKey: 'cat_4_title', descKey: 'cat_4_desc', color: '#f8fafc', iconColor: '#33CC99', count: '10 rooms' },
+  { icon: HiChatBubbleOvalLeft, titleKey: 'cat_1_title', descKey: 'cat_1_desc', color: '#f1f5f9', iconColor: '#6699FF', count: '12 phòng' },
+  { icon: HiBriefcase, titleKey: 'cat_2_title', descKey: 'cat_2_desc', color: '#f8fafc', iconColor: '#336699', count: '8 phòng' },
+  { icon: HiSpeakerWave, titleKey: 'cat_3_title', descKey: 'cat_3_desc', color: '#f1f5f9', iconColor: '#FF9966', count: '6 phòng' },
+  { icon: HiBookOpen, titleKey: 'cat_4_title', descKey: 'cat_4_desc', color: '#f8fafc', iconColor: '#33CC99', count: '10 phòng' },
 ];
 
 const TRUST_LOGOS = [
@@ -258,13 +258,13 @@ export function HomePage() {
               {rooms.slice(0, 3).map((room) => (
                 <div key={room.id} className="hp-room-card" onClick={() => navigate(`/rooms/${room.id}`)}>
                   <div className="hp-room-card-top">
-                    <span className="hp-room-card-topic">{room.topic || 'General'}</span>
-                    <span className="hp-room-card-level">{room.level || 'All levels'}</span>
+                    <span className="hp-room-card-topic">{room.topic || 'Chung'}</span>
+                    <span className="hp-room-card-level">{room.level || 'Mọi trình độ'}</span>
                   </div>
                   <h4>{room.name}</h4>
                   <p>{room.description}</p>
                   <div className="hp-room-card-meta">
-                    <span>{room.participant_count || 0} speaking</span>
+                    <span>{room.participant_count || 0} đang nói</span>
                     <HiArrowRight size={14} />
                   </div>
                 </div>

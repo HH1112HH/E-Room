@@ -65,7 +65,7 @@ export function AuthProvider({ children }) {
       const detail = Array.isArray(body.detail)
         ? body.detail.map((e) => e.msg).join('; ')
         : body.detail;
-      throw new Error(detail || 'Login failed');
+      throw new Error(detail || 'Đăng nhập thất bại');
     }
     const data = await response.json();
     setTokens(data.access_token, data.refresh_token);
@@ -98,7 +98,7 @@ export function AuthProvider({ children }) {
       const detail = Array.isArray(body.detail)
         ? body.detail.map((e) => e.msg).join('; ')
         : body.detail;
-      throw new Error(detail || 'Registration failed');
+      throw new Error(detail || 'Đăng ký thất bại');
     }
     return response.json();
   }, []);

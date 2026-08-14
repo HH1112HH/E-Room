@@ -27,11 +27,11 @@ function getPasswordStrength(pw) {
   if (/[^A-Za-z0-9]/.test(pw)) score++;
   const map = [
     { score: 0, label: '', color: '' },
-    { score: 1, label: 'Weak', color: '#ef4444' },
-    { score: 2, label: 'Fair', color: '#f59e0b' },
-    { score: 3, label: 'Good', color: '#16a34a' },
-    { score: 4, label: 'Strong', color: '#16a34a' },
-    { score: 5, label: 'Great', color: '#16a34a' },
+    { score: 1, label: 'Yếu', color: '#ef4444' },
+    { score: 2, label: 'Khá', color: '#f59e0b' },
+    { score: 3, label: 'Tốt', color: '#16a34a' },
+    { score: 4, label: 'Mạnh', color: '#16a34a' },
+    { score: 5, label: 'Tuyệt vời', color: '#16a34a' },
   ];
   return map[Math.min(score, 5)];
 }
@@ -60,7 +60,7 @@ export function LoginPage() {
     e.preventDefault();
     setError('');
     if (isRegister && !agreeTerms) {
-      setError('Please agree to the Terms of Service and Privacy Policy.');
+      setError('Vui lòng đồng ý với Điều khoản Dịch vụ và Chính sách Bảo mật.');
       return;
     }
     setBusy(true);
@@ -73,7 +73,7 @@ export function LoginPage() {
       }
       navigate('/', { replace: true });
     } catch (err) {
-      setError(err.message || 'Authentication failed.');
+      setError(err.message || 'Xác thực thất bại.');
     } finally {
       setBusy(false);
     }
@@ -91,10 +91,10 @@ export function LoginPage() {
         <div className="login-card__header">
           <div className="login-card__logo"><Logo size={44} /></div>
           <h1 className="login-card__title">
-            {isRegister ? 'Create Account' : 'Welcome Back'}
+            {isRegister ? 'Tạo tài khoản' : 'Chào mừng trở lại'}
           </h1>
           <p className="login-card__desc">
-            {isRegister ? 'Start your English speaking journey' : 'Sign in to continue practicing'}
+            {isRegister ? 'Bắt đầu hành trình luyện nói tiếng Anh' : 'Đăng nhập để tiếp tục luyện tập'}
           </p>
         </div>
 
@@ -103,7 +103,7 @@ export function LoginPage() {
           <button type="button" className="login-social-btn"><FaGithub size={20} /> GitHub</button>
         </div>
 
-        <div className="login-divider"><span>or email</span></div>
+        <div className="login-divider"><span>hoặc email</span></div>
         {IS_DEMO_MODE && (
           <button
             type="button"
@@ -111,31 +111,31 @@ export function LoginPage() {
             style={{ background: 'var(--color-accent)', marginBottom: 12 }}
             onClick={() => { setBusy(true); login('demo@e-room.local', 'demo').then(() => navigate('/', { replace: true })).finally(() => setBusy(false)); }}
           >
-            Continue as Demo (skip login)
+            Tiếp tục với Demo (bỏ qua đăng nhập)
           </button>
         )}
         <Form onSubmit={handleSubmit}>
           {isRegister && (
             <div className="login-name-row">
               <div className="login-field">
-                <label className="login-field__label">First Name</label>
+                <label className="login-field__label">Tên</label>
                 <div className="login-input-wrap">
                   <span className="login-input-icon"><HiUser size={16} /></span>
-                  <Form.Control type="text" value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="First" required className="login-input" />
+                  <Form.Control type="text" value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="Tên" required className="login-input" />
                 </div>
               </div>
               <div className="login-field">
-                <label className="login-field__label">Last Name</label>
+                <label className="login-field__label">Họ</label>
                 <div className="login-input-wrap">
                   <span className="login-input-icon"><HiUser size={16} /></span>
-                  <Form.Control type="text" value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Last" required className="login-input" />
+                  <Form.Control type="text" value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Họ" required className="login-input" />
                 </div>
               </div>
             </div>
           )}
 
           <div className="login-field">
-            <label className="login-field__label">Email Address</label>
+            <label className="login-field__label">Địa chỉ Email</label>
             <div className="login-input-wrap">
               <span className="login-input-icon"><HiEnvelope size={16} /></span>
               <Form.Control type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" autoFocus required className="login-input" />
@@ -143,10 +143,10 @@ export function LoginPage() {
           </div>
 
           <div className="login-field">
-            <label className="login-field__label">Password</label>
+            <label className="login-field__label">Mật khẩu</label>
             <div className="login-input-wrap">
               <span className="login-input-icon"><HiLockClosed size={16} /></span>
-              <Form.Control type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="password" required minLength={8} autoComplete="current-password" className="login-input" />
+              <Form.Control type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="mật khẩu" required minLength={8} autoComplete="current-password" className="login-input" />
               <button type="button" className="login-input-toggle" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}>
                 {showPassword ? <HiEyeSlash size={16} /> : <HiEye size={16} />}
               </button>
@@ -156,7 +156,7 @@ export function LoginPage() {
           {isRegister && password && (
             <div style={{ marginBottom: 16 }}>
               <div className="d-flex justify-content-between align-items-center mb-1">
-                <small className="login-strength-label">Password strength</small>
+                <small className="login-strength-label">Độ mạnh mật khẩu</small>
                 <small className="fw-semibold login-strength-label" style={{ color: strength.color }}>{strength.label}</small>
               </div>
               <ProgressBar
@@ -166,10 +166,10 @@ export function LoginPage() {
               />
               <div className="d-flex flex-wrap gap-2 mt-2">
                 {[
-                  { ok: password.length >= 8, text: '8+ chars' },
-                  { ok: /[A-Z]/.test(password), text: 'Uppercase' },
-                  { ok: /[0-9]/.test(password), text: 'Number' },
-                  { ok: /[^A-Za-z0-9]/.test(password), text: 'Symbol' },
+                  { ok: password.length >= 8, text: '8+ ký tự' },
+                  { ok: /[A-Z]/.test(password), text: 'Chữ hoa' },
+                  { ok: /[0-9]/.test(password), text: 'Số' },
+                  { ok: /[^A-Za-z0-9]/.test(password), text: 'Ký tự đặc biệt' },
                 ].map((r, i) => (
                   <small key={i} className={`login-check-item${r.ok ? ' login-check-item--ok' : ''}`}>
                     <HiCheck size={12} style={{ opacity: r.ok ? 1 : 0.3 }} /> {r.text}
@@ -181,7 +181,7 @@ export function LoginPage() {
 
           {!isRegister && (
             <div className="login-forgot">
-              <button type="button" className="login-link-btn">Forgot password?</button>
+              <button type="button" className="login-link-btn">Quên mật khẩu?</button>
             </div>
           )}
 
@@ -189,7 +189,7 @@ export function LoginPage() {
             <div className="login-field">
               <Form.Check type="checkbox" id="agree-terms"
                 checked={agreeTerms} onChange={e => setAgreeTerms(e.target.checked)}
-                label={<span className="login-terms">I agree to the <a href="#terms">Terms of Service</a> and <a href="#privacy">Privacy Policy</a></span>}
+                label={<span className="login-terms">Tôi đồng ý với <a href="#terms">Điều khoản Dịch vụ</a> và <a href="#privacy">Chính sách Bảo mật</a></span>}
               />
             </div>
           )}
@@ -202,14 +202,14 @@ export function LoginPage() {
           )}
 
           <button type="submit" className="login-submit" disabled={busy}>
-            {busy ? <><Spinner animation="border" size="sm" /> Please wait...</> : <>{isRegister ? 'Create Account' : 'Sign In'} <HiArrowRight size={18} /></>}
+            {busy ? <><Spinner animation="border" size="sm" /> Vui lòng chờ...</> : <>{isRegister ? 'Tạo tài khoản' : 'Đăng nhập'} <HiArrowRight size={18} /></>}
           </button>
         </Form>
 
         <p className="login-footer">
-          {isRegister ? 'Already have an account?' : "Don't have an account?"}{' '}
+          {isRegister ? 'Bạn đã có tài khoản?' : 'Chưa có tài khoản?'}{' '}
           <button type="button" className="login-link-btn fw-semibold" onClick={toggleMode}>
-            {isRegister ? 'Sign in' : 'Create free account'}
+            {isRegister ? 'Đăng nhập' : 'Tạo tài khoản miễn phí'}
           </button>
         </p>
       </div>

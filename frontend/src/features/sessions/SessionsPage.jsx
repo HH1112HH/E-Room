@@ -40,12 +40,12 @@ export function SessionsPage() {
   return (
     <Container className="sessions-page py-4">
       <div className="sessions-page__header">
-        <h1>Your sessions</h1>
-        <p className="sessions-page__subtitle">Every room you have joined, with scores, duration, and review feedback.</p>
+        <h1>Buổi học của bạn</h1>
+        <p className="sessions-page__subtitle">Mọi phòng bạn đã tham gia, kèm điểm số, thời lượng và phản hồi đánh giá.</p>
       </div>
 
       <div className="sessions-page__stats">
-        {sessions.length} sessions — {avgScore} avg score — {filtered.length} showing
+        {sessions.length} buổi học — điểm TB {avgScore} — hiện {filtered.length}
       </div>
 
       <div className="sessions-page__toolbar">
@@ -55,15 +55,15 @@ export function SessionsPage() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by topic or tag..."
+            placeholder="Tìm theo chủ đề hoặc thẻ..."
             className="sessions-page__search-input"
           />
         </div>
         <div className="sessions-page__filters">
           {[
-            { key: 'all', label: 'All' },
-            { key: 'recent', label: 'This week' },
-            { key: 'reviewed', label: 'Reviewed' },
+            { key: 'all', label: 'Tất cả' },
+            { key: 'recent', label: 'Tuần này' },
+            { key: 'reviewed', label: 'Đã đánh giá' },
           ].map(({ key, label }) => (
             <button
               key={key}
@@ -79,13 +79,13 @@ export function SessionsPage() {
       {isLoading ? (
         <div className="sessions-page__loading">
           <Spinner animation="border" variant="primary" />
-          <span>Loading sessions...</span>
+          <span>Đang tải buổi học...</span>
         </div>
       ) : filtered.length === 0 ? (
         <div className="sessions-page__empty">
           <HiClock size={24} />
-          <p>No sessions yet</p>
-          <Button as={Link} to="/learning" variant="primary" className="px-3">Open Meeting</Button>
+          <p>Chưa có buổi học nào</p>
+          <Button as={Link} to="/learning" variant="primary" className="px-3">Mở phòng</Button>
         </div>
       ) : (
         <div className="sessions-page__list">
@@ -94,12 +94,12 @@ export function SessionsPage() {
             return (
               <Link key={session.id} to={`/sessions/${session.id}`} className="sessions-page__row">
                 <div className="sessions-page__row-main">
-                  <div className="sessions-page__row-title">{session.topic || session.name || session.room_name || 'Practice Session'}</div>
+                  <div className="sessions-page__row-title">{session.topic || session.name || session.room_name || 'Buổi luyện tập'}</div>
                   <div className="sessions-page__row-meta">
                     <span>{formatDate(session.created_at)}</span>
                     <span className="sessions-page__meta-sep"> &middot; </span>
                     <span>{formatDuration(session.duration)}</span>
-                    {session.review && <><span className="sessions-page__meta-sep"> &middot; </span><span className="sessions-page__reviewed">Reviewed</span></>}
+                    {session.review && <><span className="sessions-page__meta-sep"> &middot; </span><span className="sessions-page__reviewed">Đã đánh giá</span></>}
                   </div>
                 </div>
                 <div className="sessions-page__row-score">{score != null ? Math.round(score) : '--'}</div>

@@ -9,7 +9,7 @@ import '../../styles/MarketingPages.css';
 
 export function BlogPage() {
   const { t } = useTranslation();
-  const [activeCategory, setActiveCategory] = useState('All');
+  const [activeCategory, setActiveCategory] = useState('Tất cả');
   const [searchQuery, setSearchQuery] = useState('');
 
   const posts = blogPosts.map((p) => ({
@@ -23,10 +23,10 @@ export function BlogPage() {
     content: t(p.contentKey, { returnObjects: true }),
   }));
 
-  const categories = ['All', ...new Set(posts.map((p) => p.category))];
+  const categories = ['Tất cả', ...new Set(posts.map((p) => p.category))];
 
   const filtered = posts.filter((post) => {
-    const matchCategory = activeCategory === 'All' || post.category === activeCategory;
+    const matchCategory = activeCategory === 'Tất cả' || post.category === activeCategory;
     const q = searchQuery.toLowerCase();
     const matchSearch = !q || post.title.toLowerCase().includes(q) || post.excerpt.toLowerCase().includes(q);
     return matchCategory && matchSearch;
@@ -70,7 +70,7 @@ export function BlogPage() {
             <p>{t('marketing.blog_empty')}</p>
           </div>
         ) : (
-          <section className="blog-layout" aria-label="Latest blog posts">
+          <section className="blog-layout" aria-label="Bài viết mới nhất">
             {lead && (
               <article className="blog-lead">
                 <div className="blog-lead__body">

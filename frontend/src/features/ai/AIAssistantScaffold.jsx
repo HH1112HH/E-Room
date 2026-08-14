@@ -2,19 +2,19 @@ import { Card } from '../../components/ui/Card';
 
 export function AIAssistantScaffold() {
   return (
-    <Card title="AI modules" subtitle="Scaffolded contracts. Implementation follows after infrastructure is stable.">
+    <Card title="Mô-đun AI" subtitle="Các hợp đồng đã phác thảo. Việc triển khai sẽ thực hiện sau khi hạ tầng ổn định.">
       <div className="ai-grid-scaffold">
         <div className="ai-box-scaffold">
-          <strong>Heartbeat</strong>
-          <p>UI and event contracts attach here later.</p>
+          <strong>Gợi ý hội thoại</strong>
+          <p>Giao diện và hợp đồng sự kiện sẽ gắn vào đây sau.</p>
         </div>
         <div className="ai-box-scaffold">
-          <strong>Expert</strong>
-          <p>RAG and search remain behind the infrastructure milestone.</p>
+          <strong>Chuyên gia</strong>
+          <p>RAG và tìm kiếm vẫn chờ cột mốc hạ tầng.</p>
         </div>
         <div className="ai-box-scaffold">
-          <strong>Correction</strong>
-          <p>Message and transcript resources are ready for enrichment.</p>
+          <strong>Sửa lỗi</strong>
+          <p>Tài nguyên tin nhắn và lời thoại đã sẵn sàng để nâng cấp.</p>
         </div>
       </div>
     </Card>

@@ -17,7 +17,7 @@ export function HeartbeatMessage({ message }) {
         </div>
         <div className="heartbeat-message__content">
           <div className="heartbeat-message__label">
-            AI Coach
+            Huấn luyện viên AI
           </div>
           <div className="heartbeat-message__text">
             {message.text}

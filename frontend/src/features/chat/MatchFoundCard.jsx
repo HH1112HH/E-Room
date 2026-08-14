@@ -15,17 +15,17 @@ export function MatchFoundCard({ room, participants = [], onJoin, onDecline }) {
         </div>
 
         <h4 className="fw-extrabold mb-1 match-found-heading">
-          Match Found!
+          Đã tìm thấy phòng!
         </h4>
         <p className="text-muted small mb-3">
-          {participants.length} people share your interests
+          {participants.length} người có chung sở thích với bạn
         </p>
 
         {/* Common tags */}
         {commonTags.length > 0 && (
           <div className="match-found-common-tags">
             <div className="text-muted fw-semibold small mb-2 match-found-common-label">
-              Common Interests
+              Sở thích chung
             </div>
             <div className="match-found-tags-flex">
               {commonTags.map((tag) => (
@@ -56,7 +56,7 @@ export function MatchFoundCard({ room, participants = [], onJoin, onDecline }) {
         {/* Room info */}
         <div className="match-found-room-info">
           <div className="fw-bold match-found-room-topic">{room.topic || room.name}</div>
-          <div className="text-muted match-found-room-desc">{room.description || 'Start your conversation'}</div>
+          <div className="text-muted match-found-room-desc">{room.description || 'Bắt đầu cuộc trò chuyện của bạn'}</div>
         </div>
 
         {/* Actions */}
@@ -68,14 +68,14 @@ export function MatchFoundCard({ room, participants = [], onJoin, onDecline }) {
               onMouseOver={(e) => { e.currentTarget.style.background = 'var(--color-bg-hover)'; }}
               onMouseOut={(e) => { e.currentTarget.style.background = 'var(--color-bg-surface)'; }}
             >
-              Skip
+              Bỏ qua
             </button>
           )}
           <button
             onClick={onJoin}
             className="match-found-btn-join"
           >
-            Join Room
+            Vào phòng
           </button>
         </div>
       </div>

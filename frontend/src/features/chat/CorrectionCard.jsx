@@ -25,7 +25,7 @@ export function CorrectionCard({ correction, onTTS }) {
             {correction.corrected}
             {correction.severity === 'major' && (
               <span className="correction-card__severity">
-                IMPORTANT
+                QUAN TRỌNG
               </span>
             )}
           </div>
@@ -40,7 +40,7 @@ export function CorrectionCard({ correction, onTTS }) {
             onClick={() => setShowExplanation(!showExplanation)}
             className="correction-card__explanation"
           >
-            {showExplanation ? correction.explanation : 'Why? Tap to expand'}
+            {showExplanation ? correction.explanation : 'Tại sao? Chạm để mở rộng'}
           </div>
           {/* TTS button */}
           {onTTS && (
@@ -50,7 +50,7 @@ export function CorrectionCard({ correction, onTTS }) {
               onMouseOver={(e) => { e.currentTarget.style.background = 'var(--color-bg-hover)'; }}
               onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; }}
             >
-              <HiSpeakerWave size={14} /> Hear correct pronunciation
+              <HiSpeakerWave size={14} /> Nghe phát âm chuẩn
             </button>
           )}
         </div>

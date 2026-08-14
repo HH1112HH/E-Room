@@ -22,7 +22,7 @@ export class ErrorBoundary extends Component {
       }
       return (
         <div className="error-boundary">
-          <h2>Something went wrong</h2>
+          <h2>Đã xảy ra lỗi</h2>
           <p className="error-boundary-message">
             {this.state.error?.message}
           </p>
@@ -30,7 +30,7 @@ export class ErrorBoundary extends Component {
             onClick={() => window.location.reload()}
             className="error-boundary-btn"
           >
-            Reload page
+            Tải lại trang
           </button>
         </div>
       );

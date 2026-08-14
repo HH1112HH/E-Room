@@ -51,7 +51,7 @@ export function PricingPage() {
           <p>{t('marketing.pricing_hero_sub')}</p>
         </section>
 
-        <section className="pricing-grid" aria-label="Subscription plans">
+        <section className="pricing-grid" aria-label="Các gói đăng ký">
           {plans.map((plan) => (
             <article className="pricing-card" key={plan.key}>
               <div className="pricing-card__header">
