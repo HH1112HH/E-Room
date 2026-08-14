@@ -131,13 +131,13 @@ export function HomePage() {
             {t('landing.hero_sub')}
           </p>
           <div className="hp-hero-actions">
-            <button className="hp-btn hp-btn-primary" onClick={() => user ? handleQuickJoin(user.tags?.map(t => t.id) || []) : navigate('/login')}>
-              {t('landing.start_free')}
-              <HiArrowRight size={18} />
-            </button>
-            <button className="hp-btn hp-btn-ghost" onClick={() => document.getElementById('hp-how')?.scrollIntoView({ behavior: 'smooth' })}>
+            <button className="hp-btn hp-btn-primary" onClick={() => document.getElementById('hp-how')?.scrollIntoView({ behavior: 'smooth' })}>
               <HiPlay size={18} />
               {t('landing.see_how')}
+            </button>
+            <button className="hp-btn hp-btn-ghost" onClick={() => user ? handleQuickJoin(user.tags?.map(t => t.id) || []) : navigate('/login')}>
+              {t('landing.start_free')}
+              <HiArrowRight size={18} />
             </button>
           </div>
           <div className="hp-hero-meta">
