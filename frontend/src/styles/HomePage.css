@@ -822,7 +822,7 @@
   position: relative;
   padding: 80px 40px;
   border-radius: 32px;
-  background: #66CC99;
+  background: linear-gradient(180deg, #66CC99 0%, #CCFFCC 100%);
   text-align: center;
   overflow: hidden;
 }
