@@ -6,7 +6,7 @@ from uuid import UUID
 
 from sqlmodel import Session, select
 
-from app.agent.heartbeat import generate_heartbeat_question
+from app.agent.heartbeat import FALLBACK_QUESTIONS_VI, generate_heartbeat_question
 from app.config import settings
 from app.database import engine
 from app.infrastructure.redis_client import get_redis_client
@@ -41,6 +41,7 @@ async def heartbeat_loop() -> None:
 
                     room_id_str = str(room.id) if isinstance(room.id, UUID) else room.id
                     question_text = data.get("question", "")
+                    question_vi = data.get("question_vi") or FALLBACK_QUESTIONS_VI.get(question_text, "")
                     if question_text:
                         try:
                             from app.service.message import MessageService
@@ -51,7 +52,11 @@ async def heartbeat_loop() -> None:
                                     user_id=None,
                                     content=question_text,
                                     message_type=MessageType.AI_HEARTBEAT,
-                                    payload={"question_id": data.get("question_id", ""), "answers": data.get("answers", [])},
+                                    payload={
+                                        "question_id": data.get("question_id", ""),
+                                        "answers": data.get("answers", []),
+                                        "vi": question_vi,
+                                    },
                                 )
                                 MessageService(session).save(msg)
                         except Exception:
@@ -63,6 +68,7 @@ async def heartbeat_loop() -> None:
                             {
                                 "type": "chat_message",
                                 "content": question_text,
+                                "vi": question_vi,
                                 "sender_id": "assistant",
                                 "display_name": "assistant",
                                 "question_id": data.get("question_id", ""),

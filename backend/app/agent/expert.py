@@ -102,4 +102,8 @@ async def answer_expert(question: str, room_id: str, tags: list[str] | None = No
         return {"answer": answer, "sources": list(dict.fromkeys(sources))}
     except Exception as e:
         logger.error("Trả lời chuyên gia thất bại", exc_info=True, extra={"room_id": room_id, "error": str(e)})
-        return {"answer": f"Xin lỗi, mình không thể xử lý câu hỏi của bạn: {e}", "sources": []}
+        return {
+            "answer": f"Sorry, I could not process your question: {e}",
+            "vi": f"Xin lỗi, mình không thể xử lý câu hỏi của bạn: {e}",
+            "sources": [],
+        }

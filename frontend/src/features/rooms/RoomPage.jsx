@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useRef, forwardRef, useImperativeHandle } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { LiveKitRoom, GridLayout, ParticipantTile, useLocalParticipant, useRemoteParticipants, useRoomContext, useTracks, AudioTrack } from '@livekit/components-react';
 import '@livekit/components-styles';
@@ -32,12 +33,12 @@ function formatTime(seconds) {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
-function formatParticipantName(name, identity, isLocal) {
-  if (isLocal) return 'Bạn';
+function formatParticipantName(name, identity, isLocal, t) {
+  if (isLocal) return t('room.you');
   if (name && !/^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(name)) return name;
   if (name) return 'P' + name.replace(/-/g, '').slice(0, 5);
   if (identity && !/^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(identity)) return identity;
-  return 'Người tham gia';
+  return t('room.participants');
 }
 
 function getInitials(name) {
@@ -65,6 +66,7 @@ function ControlBtn({ icon: Icon, active, onClick, label, danger, className = ''
 
 function MeetControls({ onLeave, togglePanel, activePanel, handRaised, setHandRaised,
   showEmojiPicker, setShowEmojiPicker, sendEmoji, screenShareOn, setScreenShareOn, onMicToggle }) {
+  const { t } = useTranslation();
   const { localParticipant } = useLocalParticipant();
   const room = useRoomContext();
   const [micOn, setMicOn] = useState(true);
@@ -127,7 +129,7 @@ function MeetControls({ onLeave, togglePanel, activePanel, handRaised, setHandRa
         const msg = JSON.parse(new TextDecoder().decode(payload));
         if (msg.type === 'hand_raise') {
           window.dispatchEvent(new CustomEvent('hand-raise-notif', {
-            detail: { identity: participant.identity, name: participant.name || 'Người tham gia', state: msg.state, id: Date.now() + Math.random() }
+            detail: { identity: participant.identity, name: participant.name || t('room.participants'), state: msg.state, id: Date.now() + Math.random() }
           }));
         }
       } catch {}
@@ -141,24 +143,24 @@ function MeetControls({ onLeave, togglePanel, activePanel, handRaised, setHandRa
       <div className="meet-controls-center">
         <ControlBtn icon={HiComputerDesktop} active={screenShareOn}
           onClick={toggleScreenShare}
-          label={screenShareOn ? 'Dừng chia sẻ' : 'Chia sẻ màn hình'}
+          label={screenShareOn ? t('room.stop_share') : t('room.share_screen')}
         />
         <ControlBtn icon={micOn ? HiMicrophone : HiMicOff} active={micOn}
           onClick={toggleMic}
-          label={micOn ? 'Tắt mic' : 'Bật mic'}
+          label={micOn ? t('room.mute') : t('room.unmute')}
         />
         <ControlBtn icon={camOn ? HiVideoCamera : HiVideoCameraSlash} active={camOn}
           onClick={toggleCam}
-          label={camOn ? 'Tắt cam' : 'Bật cam'}
+          label={camOn ? t('room.cam_off') : t('room.cam_on')}
         />
         <ControlBtn icon={HiHandRaised} active={handRaised}
           onClick={toggleHandRaise}
-          label={handRaised ? 'Hạ tay' : 'Giơ tay'}
+          label={handRaised ? t('room.lower_hand') : t('room.raise_hand')}
         />
         <div className="meet-controls__emoji-wrap">
           <ControlBtn icon={HiFaceSmile} active={showEmojiPicker}
             onClick={() => setShowEmojiPicker(prev => !prev)}
-            label="Gửi cảm xúc"
+            label={t('room.send_reaction')}
           />
           {showEmojiPicker && (
             <div className="meet-controls__emoji-picker">
@@ -168,12 +170,12 @@ function MeetControls({ onLeave, togglePanel, activePanel, handRaised, setHandRa
             </div>
           )}
         </div>
-        <button className="ctrl-hangup" onClick={onLeave} title="Rời cuộc gọi">
+        <button className="ctrl-hangup" onClick={onLeave} title={t('room.leave_call')}>
           <HiPhoneXMark size={24} color="#fff" />
         </button>
         <ControlBtn icon={HiChatBubbleLeftRight} active={activePanel === 'chat'}
           onClick={() => togglePanel('chat')}
-          label={activePanel === 'chat' ? 'Ẩn trò chuyện' : 'Hiện trò chuyện'}
+          label={activePanel === 'chat' ? t('room.hide_chat') : t('room.show_chat')}
         />
       </div>
     </footer>
@@ -181,6 +183,7 @@ function MeetControls({ onLeave, togglePanel, activePanel, handRaised, setHandRa
 }
 
 function ParticipantTracker({ onUpdate }) {
+  const { t } = useTranslation();
   const remoteParticipants = useRemoteParticipants();
   const { localParticipant } = useLocalParticipant();
   const callbackRef = useRef(onUpdate);
@@ -190,7 +193,7 @@ function ParticipantTracker({ onUpdate }) {
     if (localParticipant) {
       all.push({
         identity: localParticipant.identity || 'local',
-        name: formatParticipantName(localParticipant.name, localParticipant.identity, true),
+        name: formatParticipantName(localParticipant.name, localParticipant.identity, true, t),
         isLocal: true, micOn: localParticipant.isMicrophoneEnabled,
         camOn: localParticipant.isCameraEnabled, screenOn: localParticipant.isScreenShareEnabled,
       });
@@ -198,7 +201,7 @@ function ParticipantTracker({ onUpdate }) {
     (remoteParticipants || []).forEach(p => {
       all.push({
         identity: p.identity || 'unknown',
-        name: formatParticipantName(p.name, p.identity, false),
+        name: formatParticipantName(p.name, p.identity, false, t),
         isLocal: false, micOn: p.isMicrophoneEnabled,
         camOn: p.isCameraEnabled, screenOn: p.isScreenShareEnabled,
       });
@@ -224,15 +227,16 @@ function EmojiFly({ emojis }) {
 }
 
 function SelfPreview() {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const tracks = useTracks([{ source: Track.Source.Camera, withPlaceholder: true }]);
   const localTrack = tracks.find(track => track?.participant?.isLocal);
 
   return (
     <div className={`self-preview ${expanded ? 'is-expanded' : ''}`}>
-      <div className="self-preview-badge">Bạn</div>
+      <div className="self-preview-badge">{t('room.you')}</div>
       <button className="self-preview-expand" onClick={() => setExpanded(prev => !prev)}>
-        {expanded ? 'Thu nhỏ' : 'Mở rộng'}
+        {expanded ? t('room.collapse') : t('room.expand')}
       </button>
       <div className="self-preview-feed">
         {localTrack ? <ParticipantTile trackRef={localTrack} /> : (
@@ -257,11 +261,12 @@ function RemoteAudioRenderer() {
 }
 
 function WaitingForOthers() {
+  const { t } = useTranslation();
   return (
     <div className="waiting-card">
       <div className="waiting-icon"><HiUserGroup size={40} color={COLOR.muted} /></div>
-      <h3 className="waiting-title">Đang chờ người khác tham gia</h3>
-      <p className="waiting-sub">Chia sẻ liên kết phòng để mời người tham gia. Phòng này đang hoạt động.</p>
+      <h3 className="waiting-title">{t('room.waiting')}</h3>
+      <p className="waiting-sub">{t('room.waiting_sub')}</p>
       
     </div>
   );
@@ -272,6 +277,7 @@ function getTrackKey(trackRef) {
 }
 
 function VideoArea({ isSharing, isHandRaised }) {
+  const { t } = useTranslation();
   const tracks = useTracks([
     { source: Track.Source.Camera, withPlaceholder: true },
     { source: Track.Source.ScreenShare, withPlaceholder: false },
@@ -299,7 +305,7 @@ function VideoArea({ isSharing, isHandRaised }) {
         <div className="meet-focus-layout">
           <div className="meet-focus-main">
             {renderTile(pinnedTrack, true)}
-            <button className="meet-focus-clear" onClick={() => setPinnedKey(null)}>Quay lại lưới</button>
+            <button className="meet-focus-clear" onClick={() => setPinnedKey(null)}>{t('room.back_to_grid')}</button>
           </div>
           <div className="meet-focus-strip">
             {sideTracks.length > 0 ? sideTracks.map(track => renderTile(track)) : (!isSharing && <WaitingForOthers />)}
@@ -312,12 +318,12 @@ function VideoArea({ isSharing, isHandRaised }) {
       )}
       {isSharing && (
         <div className="meet-room-notice meet-room-notice--share">
-          <HiComputerDesktop size={16} /> Đang chia sẻ màn hình
+          <HiComputerDesktop size={16} /> {t('room.screen_sharing')}
         </div>
       )}
       {isHandRaised && (
         <div className="meet-room-notice meet-room-notice--hand">
-          <HiHandRaised size={16} /> Đã giơ tay
+          <HiHandRaised size={16} /> {t('room.hand_raised')}
         </div>
       )}
     </div>
@@ -325,10 +331,11 @@ function VideoArea({ isSharing, isHandRaised }) {
 }
 
 function ConnectingGate() {
+  const { t } = useTranslation();
   return (
     <div className="room-page__connecting-wrap">
       <div className="room-page__connecting-spinner" />
-      <p className="room-page__connecting-text">Đang kết nối phòng...</p>
+      <p className="room-page__connecting-text">{t('room.connecting')}</p>
       
     </div>
   );
@@ -340,16 +347,17 @@ function removeFriend(identity) { const f=getFriends().filter(x=>x.id!==identity
 function isFriend(identity) { return getFriends().some(x=>x.id===identity); }
 
 function ParticipantsPanel({ participants, onClose }) {
+  const { t } = useTranslation();
   const friends = getFriends();
   return (
     <aside className="room-page__panel">
       <header className="room-page__panel-header">
         <div className="room-page__panel-header-left">
           <span className="room-page__panel-header-icon"><HiUserGroup size={16} /></span>
-          <h3 className="room-page__panel-header-title">Người tham gia</h3>
+          <h3 className="room-page__panel-header-title">{t('room.participants')}</h3>
           <span className="room-page__panel-header-count">{participants?.length ?? 0}</span>
         </div>
-        <button onClick={onClose} aria-label="Đóng" className="room-page__panel-close-btn">
+        <button onClick={onClose} aria-label={t('learning.close')} className="room-page__panel-close-btn">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
         </button>
       </header>
@@ -365,24 +373,24 @@ function ParticipantsPanel({ participants, onClose }) {
               <div className="room-page__panel-row-name-wrap">
                 <div className="room-page__panel-row-name">
                   {p.name}
-                  {p.isLocal && <span className="room-page__panel-you-badge">Bạn</span>}
+                  {p.isLocal && <span className="room-page__panel-you-badge">{t('room.you')}</span>}
                 </div>
                 <div className="room-page__panel-status-row">
                   <span className="room-page__panel-status-item" style={{ color: p.micOn ? 'var(--color-success)' : 'var(--color-danger)' }}>
                     <span className="room-page__panel-status-dot" style={{ background: p.micOn ? 'var(--color-success)' : 'var(--color-danger)' }} />
-                    {p.micOn ? 'Mic bật' : 'Đã tắt tiếng'}
+                    {p.micOn ? t('room.mic_on') : t('room.mic_off')}
                   </span>
                   <span className="room-page__panel-status-item" style={{ color: p.camOn ? 'var(--color-success)' : 'var(--color-danger)' }}>
                     <span className="room-page__panel-status-dot" style={{ background: p.camOn ? 'var(--color-success)' : 'var(--color-danger)' }} />
-                    {p.camOn ? 'Cam bật' : 'Cam tắt'}
+                    {p.camOn ? t('room.cam_on_status') : t('room.cam_off_status')}
                   </span>
                 </div>
               </div>
               {!p.isLocal && (
                 alreadyFriend ? (
-                  <button onClick={() => removeFriend(p.identity)} className="room-page__panel-btn-friend"><HiUser size={11} /> Bạn bè</button>
+                  <button onClick={() => removeFriend(p.identity)} className="room-page__panel-btn-friend"><HiUser size={11} /> {t('room.friends')}</button>
                 ) : (
-                  <button onClick={() => addFriend(p.identity, p.name)} className="room-page__panel-btn-add"><HiUserPlus size={11} /> Thêm bạn</button>
+                  <button onClick={() => addFriend(p.identity, p.name)} className="room-page__panel-btn-add"><HiUserPlus size={11} /> {t('room.add_friend')}</button>
                 ))}
             </div>
           );
@@ -390,7 +398,7 @@ function ParticipantsPanel({ participants, onClose }) {
       </div>
       {friends.length > 0 && (
         <div className="room-page__panel-friends-section">
-          <div className="room-page__panel-friends-title">Bạn bè ({friends.length})</div>
+          <div className="room-page__panel-friends-title">{t('room.friends')} ({friends.length})</div>
           <div className="room-page__panel-friends-row">
             {friends.map(f => (
               <span key={f.id} className="room-page__panel-friend-tag">
@@ -407,19 +415,11 @@ function ParticipantsPanel({ participants, onClose }) {
 
 const ENGLISH_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 const AGENT_LEVELS = [
-  { value: 'basic', label: 'Cơ bản', desc: 'Phản hồi phát âm cơ bản' },
-  { value: 'advanced', label: 'Nâng cao', desc: 'Mẹo ngữ pháp + chọn từ' },
-  { value: 'full', label: 'Đầy đủ', desc: 'Huấn luyện viên hội thoại AI toàn diện' },
+  { value: 'basic', labelKey: 'room.agent_basic', descKey: 'room.agent_basic_desc' },
+  { value: 'advanced', labelKey: 'room.agent_advanced', descKey: 'room.agent_advanced_desc' },
+  { value: 'full', labelKey: 'room.agent_full', descKey: 'room.agent_full_desc' },
 ];
-const DURATIONS = [
-  { value: 300, label: '5 phút' },
-  { value: 600, label: '10 phút' },
-  { value: 900, label: '15 phút' },
-  { value: 1200, label: '20 phút' },
-  { value: 1800, label: '30 phút' },
-  { value: 2700, label: '45 phút' },
-  { value: 3600, label: '60 phút' },
-];
+const DURATIONS = [300, 600, 900, 1200, 1800, 2700, 3600];
 
 function ToggleSwitch({ label, value, onChange }) {
   return (
@@ -433,6 +433,7 @@ function ToggleSwitch({ label, value, onChange }) {
 }
 
 function RoomSettings({ roomId, current, onClose, onSave, api }) {
+  const { t } = useTranslation();
   const [topic, setTopic] = useState(current.topic || '');
   const [englishLevel, setEnglishLevel] = useState(current.english_level || '');
   const [agentLevel, setAgentLevel] = useState(current.agent_level || 'basic');
@@ -461,50 +462,50 @@ function RoomSettings({ roomId, current, onClose, onSave, api }) {
       if (onSave) await onSave();
       onClose();
     } catch (err) {
-      setSaveError(err?.message || 'Lưu thất bại');
+      setSaveError(err?.message || t('room.save_failed'));
     } finally {
       setSaving(false);
     }
-  }, [roomId, topic, englishLevel, agentLevel, maxParticipants, duration, enableHeartbeat, enableCorrection, enableVoice, api, onSave, onClose]);
+  }, [roomId, topic, englishLevel, agentLevel, maxParticipants, duration, enableHeartbeat, enableCorrection, enableVoice, api, onSave, onClose, t]);
 
   return (
     <aside className="room-page__panel">
       <header className="room-page__panel-header">
         <div className="room-page__panel-header-left">
           <span className="room-page__panel-header-icon"><HiCog6Tooth size={16} /></span>
-          <h3 className="room-page__panel-header-title">Cài đặt phòng</h3>
+          <h3 className="room-page__panel-header-title">{t('room.settings')}</h3>
         </div>
-        <button onClick={onClose} aria-label="Đóng" className="room-page__panel-close-btn">
+        <button onClick={onClose} aria-label={t('learning.close')} className="room-page__panel-close-btn">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
         </button>
       </header>
       <div className="room-page__panel-body room-settings__body">
         <div className="room-settings__group">
-          <label className="room-settings__label">Chủ đề</label>
-          <input className="room-settings__input" value={topic} onChange={e => setTopic(e.target.value)} placeholder="Chủ đề thảo luận" />
+          <label className="room-settings__label">{t('room.topic')}</label>
+          <input className="room-settings__input" value={topic} onChange={e => setTopic(e.target.value)} placeholder={t('room.topic_ph')} />
         </div>
         <div className="room-settings__group">
-          <label className="room-settings__label">Trình độ tiếng Anh</label>
+          <label className="room-settings__label">{t('learning.create_room_level')}</label>
           <div className="room-settings__chips">
-            <button className={`room-settings__chip ${!englishLevel ? 'active' : ''}`} onClick={() => setEnglishLevel('')}>Bất kỳ</button>
+            <button className={`room-settings__chip ${!englishLevel ? 'active' : ''}`} onClick={() => setEnglishLevel('')}>{t('room.any')}</button>
             {ENGLISH_LEVELS.map(lv => (
               <button key={lv} className={`room-settings__chip ${englishLevel === lv ? 'active' : ''}`} onClick={() => setEnglishLevel(lv)}>{lv}</button>
             ))}
           </div>
         </div>
         <div className="room-settings__group">
-          <label className="room-settings__label">Trình độ AI</label>
+          <label className="room-settings__label">{t('room.agent_level')}</label>
           <div className="room-settings__agent-options">
             {AGENT_LEVELS.map(al => (
               <button key={al.value} className={`room-settings__agent-card ${agentLevel === al.value ? 'active' : ''}`} onClick={() => setAgentLevel(al.value)}>
-                <div className="room-settings__agent-name">{al.label}</div>
-                <div className="room-settings__agent-desc">{al.desc}</div>
+                <div className="room-settings__agent-name">{t(al.labelKey)}</div>
+                <div className="room-settings__agent-desc">{t(al.descKey)}</div>
               </button>
             ))}
           </div>
         </div>
         <div className="room-settings__group">
-          <label className="room-settings__label">Tối đa người tham gia: {maxParticipants}</label>
+          <label className="room-settings__label">{t('room.max_participants', { n: maxParticipants })}</label>
           <div className="room-settings__chips">
             {[2, 3, 4, 5].map(n => (
               <button key={n} className={`room-settings__chip ${maxParticipants === n ? 'active' : ''}`} onClick={() => setMaxParticipants(n)}>{n}</button>
@@ -512,26 +513,26 @@ function RoomSettings({ roomId, current, onClose, onSave, api }) {
           </div>
         </div>
         <div className="room-settings__group">
-          <label className="room-settings__label">Thời lượng buổi học</label>
+          <label className="room-settings__label">{t('room.session_duration')}</label>
           <div className="room-settings__chips">
             {DURATIONS.map(d => (
-              <button key={d.value} className={`room-settings__chip ${duration === d.value ? 'active' : ''}`} onClick={() => setDuration(d.value)}>{d.label}</button>
+              <button key={d} className={`room-settings__chip ${duration === d ? 'active' : ''}`} onClick={() => setDuration(d)}>{t('room.duration_min', { n: d / 60 })}</button>
             ))}
           </div>
         </div>
         <div className="room-settings__divider" />
         <div className="room-settings__group">
-          <label className="room-settings__label">Tính năng</label>
-          <ToggleSwitch label="Câu hỏi gợi ý" value={enableHeartbeat} onChange={setEnableHeartbeat} />
-          <ToggleSwitch label="Sửa lỗi phát âm" value={enableCorrection} onChange={setEnableCorrection} />
-          <ToggleSwitch label="Nhận diện giọng nói" value={enableVoice} onChange={setEnableVoice} />
+          <label className="room-settings__label">{t('room.features')}</label>
+          <ToggleSwitch label={t('subscription.heartbeats')} value={enableHeartbeat} onChange={setEnableHeartbeat} />
+          <ToggleSwitch label={t('room.feature_correction')} value={enableCorrection} onChange={setEnableCorrection} />
+          <ToggleSwitch label={t('room.feature_voice')} value={enableVoice} onChange={setEnableVoice} />
         </div>
       </div>
       {saveError && <div className="room-settings__error">{saveError}</div>}
       <div className="room-page__panel-footer room-settings__footer">
-        <button className="room-settings__btn room-settings__btn--cancel" onClick={onClose}>Hủy</button>
+        <button className="room-settings__btn room-settings__btn--cancel" onClick={onClose}>{t('common.cancel')}</button>
         <button className="room-settings__btn room-settings__btn--save" onClick={handleSave} disabled={saving}>
-          {saving ? 'Đang lưu...' : 'Lưu cài đặt'}
+          {saving ? t('onboarding.saving') : t('room.save_settings')}
         </button>
       </div>
     </aside>
@@ -540,6 +541,7 @@ function RoomSettings({ roomId, current, onClose, onSave, api }) {
 
 
 export function RoomPage() {
+  const { t } = useTranslation();
   const api = new ApiClient();
   const { roomId } = useParams();
   const navigate = useNavigate();
@@ -571,12 +573,12 @@ export function RoomPage() {
   const handleDisconnected = useCallback(() => {
     if (!hasLeftRef.current) {
 
-      setError('Mất kết nối phòng. Vui lòng thử lại.');
+      setError(t('room.connection_lost_msg'));
       setPhase('error');
     } else {
       setPhase('left');
     }
-  }, []);
+  }, [t]);
 
   const handleRetry = useCallback(() => {
     setPhase('loading');
@@ -586,9 +588,9 @@ export function RoomPage() {
     try {
       const data = await fetchJson(`/rooms/${roomId}`);
       setRoomData(data);
-      setRoomName(data?.topic || data?.name || data?.room_name || 'Phòng');
+      setRoomName(data?.topic || data?.name || data?.room_name || t('room.room'));
     } catch {}
-  }, [roomId]);
+  }, [roomId, t]);
 
   const handleLeave = useCallback(() => {
     hasLeftRef.current = true;
@@ -644,7 +646,7 @@ export function RoomPage() {
       try {
         const roomData = await fetchJson(`/rooms/${roomId}`);
         if (cancelled) return;
-        setRoomName(roomData?.topic || roomData?.name || roomData?.room_name || 'Phòng');
+        setRoomName(roomData?.topic || roomData?.name || roomData?.room_name || t('room.room'));
         setRoomData(roomData);
         if (!joinedRef.current) {
           await api.post(`/rooms/${roomId}/join`, {});
@@ -670,7 +672,7 @@ export function RoomPage() {
     }
     joinAndGetToken();
     return () => { cancelled = true; };
-  }, [roomId, retrySignal]);
+  }, [roomId, retrySignal, t]);
 
   useEffect(() => {
     if (phase === 'left' && elapsed > 0) setSavedElapsed(elapsed);
@@ -764,11 +766,11 @@ export function RoomPage() {
     return (
       <div className="room-page__error-wrap">
         <HiShieldExclamation size={48} color={COLOR.danger} />
-        <h2 className="room-page__error-title">Không thể vào phòng</h2>
+        <h2 className="room-page__error-title">{t('room.join_error')}</h2>
         <p className="room-page__error-message">{error}</p>
         <div className="room-page__error-actions">
-          <button className="room-btn-sec" onClick={handleRetry}>Thử lại</button>
-          <button className="room-btn-pri" onClick={goBack}>Quay lại Luyện tập</button>
+          <button className="room-btn-sec" onClick={handleRetry}>{t('room.retry')}</button>
+          <button className="room-btn-pri" onClick={goBack}>{t('room.back_to_learning')}</button>
         </div>
         
       </div>
@@ -782,21 +784,21 @@ export function RoomPage() {
           <div className="room-page__left-icon-wrap">
             <HiCheckCircle size={36} color={COLOR.success} />
           </div>
-          <h2 className="room-page__left-title">Bạn đã rời phòng</h2>
+          <h2 className="room-page__left-title">{t('room.left_title')}</h2>
           <p className="room-page__left-message">
-            Cảm ơn bạn đã tham gia <strong>{roomName || 'buổi học'}</strong>!
+            {t('room.left_message_prefix')} <strong>{roomName || t('room.session')}</strong>!
           </p>
           <div className="room-page__left-stats">
             <div className="room-page__left-stat">
               <div className="room-page__left-stat-value">{formatTime(savedElapsed || elapsed)}</div>
-              <div className="room-page__left-stat-label">Thời lượng</div>
+              <div className="room-page__left-stat-label">{t('sessions.duration')}</div>
             </div>
             <div className="room-page__left-stat">
               <div className="room-page__left-stat-value">{participantsList.length || 1}</div>
-              <div className="room-page__left-stat-label">Người tham gia</div>
+              <div className="room-page__left-stat-label">{t('room.participants')}</div>
             </div>
           </div>
-          <button onClick={goBack} className="room-page__left-return-btn">Quay lại Luyện tập <HiArrowRight size={16} /></button>
+          <button onClick={goBack} className="room-page__left-return-btn">{t('room.back_to_learning')} <HiArrowRight size={16} /></button>
         </div>
         
       </div>
@@ -811,29 +813,29 @@ export function RoomPage() {
 
       <header className="meet-topbar">
         <div className="meet-topbar-left">
-          <button className="meet-back" onClick={goBack} title="Quay lại"><HiArrowLeft size={20} /></button>
+          <button className="meet-back" onClick={goBack} title={t('common.back')}><HiArrowLeft size={20} /></button>
           <div className="meet-room-info">
-            <h1 className="meet-room-name">{roomName || 'Phòng'}</h1>
+            <h1 className="meet-room-name">{roomName || t('room.room')}</h1>
             <div className="meet-room-meta">
-              <span className="meet-badge-live">● TRỰC TIẾP</span>
+              <span className="meet-badge-live">{t('room.live_badge')}</span>
               <span className="meet-timer"><HiClock size={13} />{formatTime(elapsed)}</span>
             </div>
           </div>
         </div>
         <div className="meet-topbar-right">
           {handRaised && (
-            <span className="room-page__hand-raised-badge">✋ Đã giơ tay</span>
+            <span className="room-page__hand-raised-badge">✋ {t('room.hand_raised')}</span>
           )}
-          <button className={`meet-participant-count ${activePanel==='participants'?'active':''}`} onClick={openParticipants} title="Xem người tham gia"
+          <button className={`meet-participant-count ${activePanel==='participants'?'active':''}`} onClick={openParticipants} title={t('room.view_participants')}
             style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 99, background: activePanel==='participants'?'rgba(255,255,255,0.14)':'rgba(255,255,255,0.06)', border: 'none', cursor: 'pointer', fontSize: 12, color: '#ffffff', fontFamily: 'inherit', transition: 'all 0.15s' }}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
             <span>{participantCount}</span>
           </button>
-          <button className={`meet-chat-toggle ${activePanel==='settings'?'active':''}`} onClick={()=>togglePanel('settings')} title="Cài đặt phòng" style={{ marginRight: 4 }}>
+          <button className={`meet-chat-toggle ${activePanel==='settings'?'active':''}`} onClick={()=>togglePanel('settings')} title={t('room.settings')} style={{ marginRight: 4 }}>
             <HiCog6Tooth size={18} />
           </button>
-          <button className={`meet-chat-toggle ${activePanel==='chat'?'active':''}`} onClick={()=>togglePanel('chat')} title={activePanel==='chat'?'Ẩn trò chuyện':'Hiện trò chuyện'}>
+          <button className={`meet-chat-toggle ${activePanel==='chat'?'active':''}`} onClick={()=>togglePanel('chat')} title={activePanel==='chat'?t('room.hide_chat'):t('room.show_chat')}>
             <HiChatBubbleLeftRight size={18} />
           </button>
         </div>
@@ -882,7 +884,7 @@ export function RoomPage() {
           animation: 'slideIn 0.3s ease both, fadeOut 0.3s ease 5s forwards',
           pointerEvents: 'none',
         }}>
-          ✋ {n.name || 'Ai đó'} đã giơ tay!
+          ✋ {t('room.hand_raised_notif', { name: n.name || t('room.someone') })}
         </div>
       ))}
 

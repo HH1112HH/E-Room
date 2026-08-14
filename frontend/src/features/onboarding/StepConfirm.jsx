@@ -1,31 +1,47 @@
+import { useTranslation } from 'react-i18next';
 import { HiCheckCircle } from 'react-icons/hi2';
 import { TagBadge } from '../../components/tags/TagBadge';
 import '../../styles/OnboardingWizard.css';
 
 const ENGLISH_LEVELS = {
-  A1: 'Người mới bắt đầu', A2: 'Sơ cấp', B1: 'Trung cấp',
-  B2: 'Trung cấp khá', C1: 'Nâng cao', C2: 'Thành thạo',
+  A1: 'onboarding.level_a1', A2: 'onboarding.level_a2', B1: 'onboarding.level_b1',
+  B2: 'onboarding.level_b2', C1: 'onboarding.level_c1', C2: 'onboarding.level_c2',
 };
 
-const GOAL_LABELS = {
-  work: '💼 Sự nghiệp', interview: '🎤 Phỏng vấn', fluency: '🚀 Lưu loát',
-  business: '🌍 Kinh doanh', academic: '🎓 Học thuật',
+const GOAL_EMOJI = {
+  work: '💼', interview: '🎤', fluency: '🚀',
+  business: '🌍', academic: '🎓',
+};
+
+const CAREER_LABEL_KEYS = {
+  Technology: 'onboarding.career_tech', Business: 'onboarding.career_business', Health: 'onboarding.career_health',
+  Education: 'onboarding.career_education', Finance: 'onboarding.career_finance', Marketing: 'onboarding.career_marketing',
+  Engineering: 'onboarding.career_engineering', Science: 'onboarding.career_science', 'Art & Design': 'onboarding.career_art',
+  Law: 'onboarding.career_law', Other: 'onboarding.career_other',
 };
 
 export function StepConfirm({ form, updateField, error }) {
+  const { t } = useTranslation();
   const fields = [
-    { label: 'Trình độ tiếng Anh', value: form.english_level ? `${form.english_level} — ${ENGLISH_LEVELS[form.english_level] || form.english_level}` : 'Chưa thiết lập (có thể đặt sau)', key: 'level' },
-    { label: 'Lĩnh vực nghề nghiệp', value: form.career_field || 'Chưa thiết lập', key: 'career' },
-    { label: 'Chức danh', value: form.job_title || 'Chưa thiết lập', key: 'job' },
-    { label: 'Mục tiêu học tập', value: GOAL_LABELS[form.learning_goal] || form.learning_goal || 'Chưa thiết lập', key: 'goal' },
+    {
+      label: t('onboarding.step_level'),
+      value: form.english_level ? `${form.english_level} — ${ENGLISH_LEVELS[form.english_level] ? t(ENGLISH_LEVELS[form.english_level]) : form.english_level}` : t('onboarding.not_set_later'),
+      key: 'level',
+    },
+    { label: t('onboarding.career_field'), value: form.career_field ? (CAREER_LABEL_KEYS[form.career_field] ? t(CAREER_LABEL_KEYS[form.career_field]) : form.career_field) : t('onboarding.not_set'), key: 'career' },    { label: t('onboarding.job_title_label'), value: form.job_title || t('onboarding.not_set'), key: 'job' },
+    {
+      label: t('onboarding.step_goal'),
+      value: form.learning_goal ? `${GOAL_EMOJI[form.learning_goal] || ''} ${t(`onboarding.goal_${form.learning_goal}`)}` : t('onboarding.not_set'),
+      key: 'goal',
+    },
   ];
 
   return (
     <div>
       <div className="text-center mb-3">
         <HiCheckCircle size={36} className="onboarding-wizard__step-icon--success" />
-        <h4 className="fw-bold mt-2 mb-1">Sẵn sàng bắt đầu!</h4>
-        <p className="text-muted small mb-0">Xem lại lựa chọn trước khi hoàn tất thiết lập.</p>
+        <h4 className="fw-bold mt-2 mb-1">{t('onboarding.confirm_title')}</h4>
+        <p className="text-muted small mb-0">{t('onboarding.confirm_sub')}</p>
       </div>
 
       {error && (
@@ -37,11 +53,11 @@ export function StepConfirm({ form, updateField, error }) {
       {form.tagIds.length > 0 && (
         <div className="onboarding-wizard__tags-section">
           <div className="fw-bold small text-muted mb-2 onboarding-wizard__tags-header">
-            Sở thích của bạn ({form.tagIds.length})
+            {t('onboarding.your_tags', { count: form.tagIds.length })}
           </div>
           <div className="onboarding-wizard__tags-list">
             {form.tagIds.map((tag) => (
-              <TagBadge key={tag} label={tag} />
+              <TagBadge key={tag} label={typeof tag === 'string' ? t(tag) : tag} />
             ))}
           </div>
         </div>
@@ -58,7 +74,7 @@ export function StepConfirm({ form, updateField, error }) {
 
       {form.tagIds.length === 0 && (
         <div className="onboarding-wizard__warning">
-          ⚠️ Bạn chưa chọn thẻ nào. Ghép cặp tự động sẽ bị tắt. Bạn có thể thêm thẻ bất cứ lúc nào trong Cài đặt.
+          {t('onboarding.no_tags_warning')}
         </div>
       )}
     </div>

@@ -80,6 +80,7 @@ export function useChatState(roomId, wsSocket, visible) {
           text: text,
           time: new Date(data.timestamp || Date.now()),
         };
+        if (data.vi) msg.vi = data.vi;
         if (ttsBase64) msg.ttsAudioBase64 = ttsBase64;
         if (ttsKey) msg.ttsAudioKey = ttsKey;
         if (ttsBase64) {
@@ -110,6 +111,7 @@ export function useChatState(roomId, wsSocket, visible) {
             if (m.message_type === 'ai_expert' || m.message_type === 'ai_heartbeat') {
               const p = m.payload || {};
               const item = { id: m.id, senderId: 'assistant', sender: 'assistant', text: m.content, time: new Date(m.created_at) };
+              if (p.vi) item.vi = p.vi;
               if (p.tts_audio_base64) item.ttsAudioBase64 = p.tts_audio_base64;
               if (p.tts_audio_key) item.ttsAudioKey = p.tts_audio_key;
               chats.push(item);

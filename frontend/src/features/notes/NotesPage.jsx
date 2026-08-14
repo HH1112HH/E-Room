@@ -45,12 +45,12 @@ export function NotesPage() {
         <Container className="notes-page py-4 text-center">
           <div className="notes-page__upgrade">
             <HiSparkles size={24} />
-            <h3>Ghi chú buổi học là tính năng Pro+</h3>
-            <p>Nâng cấp để mở khóa tóm tắt buổi học do AI tạo, sửa lỗi và ghi chú học tập cá nhân hóa.</p>
-            <Button variant="primary" className="px-3" onClick={() => setShowUpgrade(true)}>Nâng cấp lên Pro+</Button>
+            <h3>{t('notes.pro_feature_title')}</h3>
+            <p>{t('notes.pro_feature_desc')}</p>
+            <Button variant="primary" className="px-3" onClick={() => setShowUpgrade(true)}>{t('notes.upgrade_btn')}</Button>
           </div>
         </Container>
-        <UpgradePrompt feature="Ghi chú buổi học" visible={showUpgrade} onClose={() => setShowUpgrade(false)} />
+        <UpgradePrompt feature={t('notes.upgrade_title')} visible={showUpgrade} onClose={() => setShowUpgrade(false)} />
       </>
     );
   }
@@ -58,8 +58,8 @@ export function NotesPage() {
   return (
     <Container className="notes-page py-4">
       <div className="notes-page__header">
-        <h1>Ghi chú</h1>
-        <p>Tóm tắt buổi học, các lỗi chính và nhắc nhở từ mọi phòng bạn đã tham gia.</p>
+        <h1>{t('nav.notes')}</h1>
+        <p>{t('notes.subtitle')}</p>
       </div>
 
       <div className="notes-page__search-wrap">
@@ -68,7 +68,7 @@ export function NotesPage() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Tìm ghi chú theo tiêu đề, nội dung hoặc thẻ..."
+          placeholder={t('notes.search_placeholder')}
           className="notes-page__search"
         />
       </div>
@@ -76,27 +76,27 @@ export function NotesPage() {
       {isLoading ? (
         <div className="notes-page__loading">
           <Spinner animation="border" variant="primary" />
-          <span>Đang tải ghi chú...</span>
+          <span>{t('notes.loading')}</span>
         </div>
       ) : filtered.length === 0 ? (
         <div className="notes-page__empty">
           <HiDocumentText size={24} />
-          <h3>{search ? 'Không tìm thấy ghi chú phù hợp' : 'Chưa có ghi chú nào'}</h3>
-          <p>{search ? 'Hãy thử từ khóa tìm kiếm khác.' : 'Sau buổi học Pro+, ghi chú của bạn sẽ tự động xuất hiện tại đây.'}</p>
-          {!search && <Button as={Link} to="/learning" variant="outline-primary" className="px-3">Bắt đầu buổi học</Button>}
+          <h3>{search ? t('notes.no_match') : t('notes.no_notes')}</h3>
+          <p>{search ? t('notes.try_other_search') : t('notes.pro_empty_desc')}</p>
+          {!search && <Button as={Link} to="/learning" variant="outline-primary" className="px-3">{t('notes.start_session')}</Button>}
         </div>
       ) : (
         <div className="notes-page__list">
           {filtered.map((note) => (
             <div key={note.id} className="notes-page__row">
               <div className="notes-page__row-top">
-                <h2 className="notes-page__row-title">{note.title || 'Tóm tắt buổi học'}</h2>
+                <h2 className="notes-page__row-title">{note.title || t('notes.session_summary')}</h2>
                 <button
                   onClick={() => { setDeleting(note.id); deleteMutation.mutate(note.id); }}
                   disabled={deleting === note.id}
                   className="notes-page__delete"
                 >
-                  Xóa
+                  {t('common.delete')}
                 </button>
               </div>
               <div className="notes-page__row-meta">
@@ -107,7 +107,7 @@ export function NotesPage() {
                 {(note.content || '').slice(0, 250)}{(note.content || '').length > 250 ? '...' : ''}
               </div>
               {(note.content || '').length > 250 && (
-                <Link to={`/notes/${note.id}`} className="notes-page__read-more">Đọc ghi chú đầy đủ</Link>
+                <Link to={`/notes/${note.id}`} className="notes-page__read-more">{t('notes.read_full')}</Link>
               )}
               {note.tags && note.tags.length > 0 && (
                 <div className="notes-page__tags">

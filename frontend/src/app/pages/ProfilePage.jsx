@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
@@ -33,30 +34,30 @@ import { CreateRoomModal } from '../../features/rooms/CreateRoomModal';
 import '../../styles/ProfilePage.css';
 
 const sections = [
-  { key: 'overview', label: 'Thông tin người dùng', icon: HiUserCircle },
-  { key: 'sessions', label: 'Lịch sử buổi học', icon: HiBookOpen },
-  { key: 'notes', label: 'Ghi chú', icon: HiDocumentText },
-  { key: 'schedule', label: 'Lên lịch phòng', icon: HiCalendarDays },
+  { key: 'overview', labelKey: 'common.user_info', icon: HiUserCircle },
+  { key: 'sessions', labelKey: 'common.session_history', icon: HiBookOpen },
+  { key: 'notes', labelKey: 'notes.title', icon: HiDocumentText },
+  { key: 'schedule', labelKey: 'common.schedule_rooms', icon: HiCalendarDays },
 ];
 
 const accountSections = [
-  { key: 'subscription', label: 'Gói đăng ký', icon: HiCreditCard },
-  { key: 'settings', label: 'Cài đặt', icon: HiCog6Tooth },
+  { key: 'subscription', labelKey: 'common.subscription', icon: HiCreditCard },
+  { key: 'settings', labelKey: 'nav.settings', icon: HiCog6Tooth },
 ];
 
 const plans = [
-  { key: 'free', name: 'Free', price: '$0', features: ['5 phòng/ngày', 'Phản hồi AI cơ bản', 'Ghép cặp tiêu chuẩn'] },
-  { key: 'pro', name: 'Pro', price: '$9.99/tháng', features: ['Phòng không giới hạn', 'Phản hồi AI nâng cao', 'Ghép cặp ưu tiên', 'Ghi chú buổi học'], popular: true },
-  { key: 'pro_plus', name: 'Pro+', price: '$19.99/tháng', features: ['Tất cả tính năng Pro', 'Phản hồi giọng nói TTS', 'Phân tích RAG chuyên sâu', 'Bảng xếp hạng'] },
+  { key: 'free', name: 'Free', price: '$0', featureKeys: ['subscription.feat_5_rooms_day', 'subscription.feat_basic_ai', 'subscription.feat_standard_matching'] },
+  { key: 'pro', name: 'Pro', priceKey: 'subscription.price_pro', featureKeys: ['subscription.feat_unlimited_rooms', 'subscription.feat_advanced_ai', 'subscription.feat_priority_matching', 'subscription.feat_session_notes'], popular: true },
+  { key: 'pro_plus', name: 'Pro+', priceKey: 'subscription.price_pro_plus', featureKeys: ['subscription.feat_all_pro', 'subscription.feat_tts_voice', 'subscription.feat_expert_rag', 'subscription.feat_leaderboard'] },
 ];
 
-function getSessionTitle(session) {
-  return session.topic || session.room?.topic || session.title || 'Buổi luyện nói';
+function getSessionTitle(session, t) {
+  return session.topic || session.room?.topic || session.title || t('sessions.practice_session');
 }
 
-function getSessionDate(session) {
+function getSessionDate(session, t) {
   const raw = session.created_at || session.started_at || session.updated_at || session.timestamp;
-  if (!raw) return 'Không có ngày';
+  if (!raw) return t('sessions.no_date');
   return new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(raw));
 }
 
@@ -67,6 +68,7 @@ function formatDuration(seconds) {
 }
 
 function ProfileSidebar({ activeSection, onSelect, user, sessionsCount, tier }) {
+  const { t } = useTranslation();
   const initials = (user.display_name || user.email || 'U').slice(0, 1).toUpperCase();
 
   return (
@@ -74,7 +76,7 @@ function ProfileSidebar({ activeSection, onSelect, user, sessionsCount, tier }) 
       <div className="profile-sidebar__identity">
         <div className="profile-avatar">{initials}</div>
         <div className="profile-sidebar__identity-text">
-          <strong>{user.display_name || 'Người học E-Room'}</strong>
+          <strong>{user.display_name || t('common.eroom_learner')}</strong>
           <span>{user.email}</span>
         </div>
       </div>
@@ -91,30 +93,34 @@ function ProfileSidebar({ activeSection, onSelect, user, sessionsCount, tier }) 
 }
 
 function SidebarButton({ section, active, onSelect }) {
+  const { t } = useTranslation();
   const Icon = section.icon;
   return (
     <button type="button" className={`profile-sidebar__btn${active ? ' is-active' : ''}`} onClick={() => onSelect(section.key)} aria-current={active ? 'page' : undefined}>
       <Icon size={18} />
-      <span>{section.label}</span>
+      <span>{t(section.labelKey)}</span>
     </button>
   );
 }
 
 function ProfileHeader({ user, sessionsCount, tier, activeSection }) {
-  const sectionTitle = [...sections, ...accountSections].find((section) => section.key === activeSection)?.label || 'Bảng điều khiển';
+  const { t } = useTranslation();
+  const sectionTitle = [...sections, ...accountSections].find((section) => section.key === activeSection)?.labelKey || 'common.dashboard';
   return (
     <header className="profile-header">
-      <h1>{sectionTitle}</h1>
+      <h1>{t(sectionTitle)}</h1>
       <div className="profile-header__stats">
-        <span><strong>{sessionsCount}</strong> Buổi học</span>
-        <span><strong>{tier === 'pro_plus' ? 'Pro+' : tier === 'pro' ? 'Pro' : 'Free'}</strong> Gói</span>
-        <span><strong>{user.display_name ? 'Sẵn sàng' : 'Thiết lập'}</strong> Hồ sơ</span>
+        <span><strong>{sessionsCount}</strong> {t('common.sessions_count')}</span>
+        <span><strong>{tier === 'pro_plus' ? 'Pro+' : tier === 'pro' ? 'Pro' : 'Free'}</strong> {t('common.plan')}</span>
+        <span><strong>{user.display_name ? t('common.ready') : t('common.setup')}</strong> {t('nav.profile')}</span>
       </div>
     </header>
   );
 }
 
 function UserInfoSection({ user, displayName, setDisplayName, editing, setEditing, saveMutation }) {
+  const { t } = useTranslation();
+
   function cancelEdit() {
     setDisplayName(user.display_name || '');
     setEditing(false);
@@ -123,25 +129,25 @@ function UserInfoSection({ user, displayName, setDisplayName, editing, setEditin
   return (
     <section className="profile-section">
       <div className="profile-section__head">
-        <h2>Thông tin cá nhân</h2>
-        {!editing && <Button variant="outline-primary" onClick={() => setEditing(true)}><HiPencil size={16} /> Chỉnh sửa</Button>}
+        <h2>{t('common.personal_info')}</h2>
+        {!editing && <Button variant="outline-primary" onClick={() => setEditing(true)}><HiPencil size={16} /> {t('common.edit')}</Button>}
       </div>
 
       <div className="profile-form-grid">
         <Form.Group>
-          <Form.Label>Tên hiển thị</Form.Label>
+          <Form.Label>{t('auth.display_name')}</Form.Label>
           <Form.Control value={displayName} onChange={(event) => setDisplayName(event.target.value)} disabled={!editing} />
         </Form.Group>
         <Form.Group>
-          <Form.Label>Địa chỉ Email</Form.Label>
+          <Form.Label>{t('auth.email_label')}</Form.Label>
           <Form.Control type="email" value={user.email || ''} disabled />
         </Form.Group>
         <Form.Group>
-          <Form.Label>Trình độ tiếng Anh</Form.Label>
-          <Form.Control value={user.english_level || 'Chưa thiết lập'} disabled />
+          <Form.Label>{t('learning.level_label')}</Form.Label>
+          <Form.Control value={user.english_level || t('common.not_set_up')} disabled />
         </Form.Group>
         <Form.Group>
-          <Form.Label>Ngôn ngữ ưa thích</Form.Label>
+          <Form.Label>{t('common.preferred_language')}</Form.Label>
           <Form.Select disabled={!editing} defaultValue="Vietnamese">
             <option>Vietnamese</option>
             <option>English</option>
@@ -152,9 +158,9 @@ function UserInfoSection({ user, displayName, setDisplayName, editing, setEditin
       {editing && (
         <div className="profile-actions">
           <Button variant="primary" disabled={saveMutation.isPending || !displayName.trim()} onClick={() => saveMutation.mutate({ display_name: displayName.trim() })}>
-            {saveMutation.isPending ? <><Spinner animation="border" size="sm" /> Đang lưu...</> : <><HiCheckCircle size={16} /> Lưu thay đổi</>}
+            {saveMutation.isPending ? <><Spinner animation="border" size="sm" /> {t('onboarding.saving')}</> : <><HiCheckCircle size={16} /> {t('common.save_changes')}</>}
           </Button>
-          <Button variant="outline-secondary" onClick={cancelEdit}>Hủy</Button>
+          <Button variant="outline-secondary" onClick={cancelEdit}>{t('common.cancel')}</Button>
         </div>
       )}
     </section>
@@ -162,26 +168,27 @@ function UserInfoSection({ user, displayName, setDisplayName, editing, setEditin
 }
 
 function SessionsSection({ sessions, isLoading, isError, onRetry }) {
+  const { t } = useTranslation();
   return (
     <section className="profile-section">
       <div className="profile-section__head">
-        <h2>Lịch sử buổi học</h2>
-        <Button as={Link} to="/learning" variant="outline-primary">Tìm phòng luyện tập</Button>
+        <h2>{t('common.session_history')}</h2>
+        <Button as={Link} to="/learning" variant="outline-primary">{t('sessions.find_room')}</Button>
       </div>
 
       {isLoading && <LoadingRows />}
-      {isError && <ErrorState title="Không thể tải lịch sử buổi học" text="Làm mới bảng này để thử lại yêu cầu lịch sử buổi học." onRetry={onRetry} />}
+      {isError && <ErrorState title={t('sessions.load_failed')} text={t('sessions.load_failed_desc')} onRetry={onRetry} />}
       {!isLoading && !isError && sessions.length === 0 && (
-        <EmptyState title="Chưa có buổi học nào hoàn thành" text="Tham gia một phòng luyện tập và lịch sử buổi học sẽ hiển thị tại đây." action={<Button as={Link} to="/learning" variant="primary">Mở phòng</Button>} />
+        <EmptyState title={t('sessions.none_completed')} text={t('sessions.none_completed_desc')} action={<Button as={Link} to="/learning" variant="primary">{t('common.open_room')}</Button>} />
       )}
       {!isLoading && !isError && sessions.length > 0 && (
         <div className="profile-session-list">
           {sessions.map((session) => (
-            <article className="profile-session" key={session.id || `${getSessionTitle(session)}-${getSessionDate(session)}`}>
-              <div className="profile-session__duration"><strong>{formatDuration(session.duration_seconds)}</strong><span>thời lượng</span></div>
+            <article className="profile-session" key={session.id || `${getSessionTitle(session, t)}-${getSessionDate(session, t)}`}>
+              <div className="profile-session__duration"><strong>{formatDuration(session.duration_seconds)}</strong><span>{t('sessions.duration')}</span></div>
               <div>
-                <h3>{getSessionTitle(session)}</h3>
-                <p>{getSessionDate(session)}</p>
+                <h3>{getSessionTitle(session, t)}</h3>
+                <p>{getSessionDate(session, t)}</p>
                 <div className="profile-session__tags">
                   {(session.tags || session.room?.tags || []).slice(0, 3).map((tag) => <span key={tag}>#{typeof tag === 'string' ? tag : tag.name}</span>)}
                 </div>
@@ -196,37 +203,40 @@ function SessionsSection({ sessions, isLoading, isError, onRetry }) {
 }
 
 function NotesSection() {
+  const { t } = useTranslation();
   return (
     <section className="profile-section">
       <div className="profile-section__head">
-        <h2>Ghi chú</h2>
-        <Button as={Link} to="/notes" variant="outline-primary">Mở ghi chú</Button>
+        <h2>{t('notes.title')}</h2>
+        <Button as={Link} to="/notes" variant="outline-primary">{t('common.open_notes')}</Button>
       </div>
-      <EmptyState title="Ghi chú buổi học nằm tại đây" text="Sau khi phòng tạo ghi chú, bảng điều khiển này giúp bạn truy cập nhanh hơn." action={<Button as={Link} to="/notes" variant="primary">Đến Ghi chú</Button>} />
+      <EmptyState title={t('notes.here_title')} text={t('notes.here_desc')} action={<Button as={Link} to="/notes" variant="primary">{t('notes.go_to_notes')}</Button>} />
     </section>
   );
 }
 
 function ScheduleSection({ onCreateRoom }) {
+  const { t } = useTranslation();
   return (
     <section className="profile-section">
       <div className="profile-section__head">
-        <h2>Lên lịch phòng</h2>
+        <h2>{t('common.schedule_rooms')}</h2>
       </div>
       <div className="profile-schedule">
-        <h3>Chuẩn bị phòng luyện nói tiếp theo</h3>
-        <p>Tạo phòng với chủ đề, trình độ, số người tham gia và thẻ. Lịch hẹn theo lịch chưa được bật ở API hiện tại, nên bảng này giữ luồng tạo phòng tức thì ổn định.</p>
-        <Button variant="primary" onClick={onCreateRoom}><HiPlusCircle size={18} /> Tạo phòng</Button>
+        <h3>{t('common.prepare_next_room')}</h3>
+        <p>{t('common.schedule_desc')}</p>
+        <Button variant="primary" onClick={onCreateRoom}><HiPlusCircle size={18} /> {t('learning.create_room')}</Button>
       </div>
     </section>
   );
 }
 
 function SubscriptionSection({ tier }) {
+  const { t } = useTranslation();
   return (
     <section className="profile-section">
       <div className="profile-section__head">
-        <h2>Gói đăng ký</h2>
+        <h2>{t('common.subscription')}</h2>
       </div>
       <div className="profile-plan-grid">
         {plans.map((plan) => {
@@ -235,15 +245,15 @@ function SubscriptionSection({ tier }) {
             <article className={`profile-plan${plan.popular ? ' is-popular' : ''}`} key={plan.key}>
               <div className="profile-plan__top">
                 <h3>{plan.name}</h3>
-                {current && <Badge bg="success">Hiện tại</Badge>}
-                {plan.popular && !current && <Badge bg="primary">Phổ biến</Badge>}
+                {current && <Badge bg="success">{t('common.current')}</Badge>}
+                {plan.popular && !current && <Badge bg="primary">{t('subscription.popular')}</Badge>}
               </div>
-              <strong className="profile-plan__price">{plan.price}</strong>
-              <ul>{plan.features.map((feature) => <li key={feature}><HiCheckCircle size={14} /> {feature}</li>)}</ul>
+              <strong className="profile-plan__price">{plan.priceKey ? t(plan.priceKey) : plan.price}</strong>
+              <ul>{plan.featureKeys.map((featureKey) => <li key={featureKey}><HiCheckCircle size={14} /> {t(featureKey)}</li>)}</ul>
               {plan.key === 'free' ? (
-                <Button variant="outline-secondary" className="w-100" disabled={current}>Gói miễn phí</Button>
+                <Button variant="outline-secondary" className="w-100" disabled={current}>{t('subscription.free_plan')}</Button>
               ) : (
-                <Button as={Link} to={`/payment?plan=${plan.key}`} variant={plan.popular ? 'primary' : 'outline-primary'} className="w-100">{current ? 'Quản lý gói' : 'Nâng cấp'}</Button>
+                <Button as={Link} to={`/payment?plan=${plan.key}`} variant={plan.popular ? 'primary' : 'outline-primary'} className="w-100">{current ? t('subscription.manage_subscription') : t('subscription.upgrade')}</Button>
               )}
             </article>
           );
@@ -254,44 +264,45 @@ function SubscriptionSection({ tier }) {
 }
 
 function SettingsSection({ logout, onLogout }) {
+  const { t } = useTranslation();
   const { theme, toggleTheme } = useTheme();
   return (
     <section className="profile-section">
       <div className="profile-section__head">
-        <h2>Cài đặt</h2>
+        <h2>{t('nav.settings')}</h2>
       </div>
       <div className="profile-settings-list">
         <div className="profile-settings-item">
           <HiBell size={18} />
           <div className="profile-settings-item__body">
-            <h3>Thông báo</h3>
-            <Form.Check type="switch" id="match-notifications" label="Thông báo phòng ghép cặp" defaultChecked />
-            <Form.Check type="switch" id="session-reminders" label="Nhắc nhở buổi học" defaultChecked />
-            <Form.Check type="switch" id="email-updates" label="Cập nhật qua Email" />
+            <h3>{t('common.notifications')}</h3>
+            <Form.Check type="switch" id="match-notifications" label={t('common.notif_match')} defaultChecked />
+            <Form.Check type="switch" id="session-reminders" label={t('common.notif_session')} defaultChecked />
+            <Form.Check type="switch" id="email-updates" label={t('common.notif_email')} />
           </div>
         </div>
         <div className="profile-settings-item">
           <HiShieldCheck size={18} />
           <div className="profile-settings-item__body">
-            <h3>Quyền riêng tư</h3>
-            <Form.Check type="switch" id="show-profile" label="Hiển thị hồ sơ trong phòng" defaultChecked />
-            <Form.Check type="switch" id="show-leaderboard" label="Hiển thị trên bảng xếp hạng" defaultChecked />
+            <h3>{t('common.privacy')}</h3>
+            <Form.Check type="switch" id="show-profile" label={t('common.privacy_show_profile')} defaultChecked />
+            <Form.Check type="switch" id="show-leaderboard" label={t('common.privacy_show_leaderboard')} defaultChecked />
           </div>
         </div>
         <div className="profile-settings-item">
           <HiSparkles size={18} />
           <div className="profile-settings-item__body">
-            <h3>Giao diện</h3>
-            <p>Giao diện hiện tại: {theme}</p>
-            <Button variant="outline-primary" onClick={toggleTheme}>Đổi giao diện</Button>
+            <h3>{t('common.appearance')}</h3>
+            <p>{t('common.current_theme', { theme })}</p>
+            <Button variant="outline-primary" onClick={toggleTheme}>{t('common.change_theme')}</Button>
           </div>
         </div>
         <div className="profile-settings-item">
           <HiExclamationTriangle size={18} />
           <div className="profile-settings-item__body">
-            <h3>Truy cập tài khoản</h3>
-            <p>Đăng xuất khỏi thiết bị này khi hoàn tất luyện tập.</p>
-            <Button variant="outline-danger" onClick={() => { logout(); onLogout(); }}><HiArrowRightOnRectangle size={16} /> Đăng xuất</Button>
+            <h3>{t('common.account_access')}</h3>
+            <p>{t('common.logout_desc')}</p>
+            <Button variant="outline-danger" onClick={() => { logout(); onLogout(); }}><HiArrowRightOnRectangle size={16} /> {t('nav.logout')}</Button>
           </div>
         </div>
       </div>
@@ -300,11 +311,13 @@ function SettingsSection({ logout, onLogout }) {
 }
 
 function LoadingRows() {
-  return <div className="profile-loading" aria-busy="true" aria-label="Đang tải lịch sử buổi học">{[0, 1, 2].map((item) => <span key={item} />)}</div>;
+  const { t } = useTranslation();
+  return <div className="profile-loading" aria-busy="true" aria-label={t('sessions.loading_history')}>{[0, 1, 2].map((item) => <span key={item} />)}</div>;
 }
 
 function ErrorState({ title, text, onRetry }) {
-  return <div className="profile-empty"><h3>{title}</h3><p>{text}</p><Button variant="outline-primary" onClick={onRetry}>Thử lại</Button></div>;
+  const { t } = useTranslation();
+  return <div className="profile-empty"><h3>{title}</h3><p>{text}</p><Button variant="outline-primary" onClick={onRetry}>{t('common.retry')}</Button></div>;
 }
 
 function EmptyState({ title, text, action }) {
@@ -313,6 +326,7 @@ function EmptyState({ title, text, action }) {
 
 export function ProfilePage() {
   const { user, logout } = useAuth();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('overview');
   const [displayName, setDisplayName] = useState(user?.display_name || '');
@@ -337,10 +351,10 @@ export function ProfilePage() {
       queryClient.invalidateQueries({ queryKey: ['me'] });
       queryClient.invalidateQueries({ queryKey: ['user'] });
       setEditing(false);
-      setMessage({ type: 'success', text: 'Đã cập nhật hồ sơ thành công.' });
+      setMessage({ type: 'success', text: t('common.profile_updated') });
       setTimeout(() => setMessage(null), 3000);
     },
-    onError: (err) => setMessage({ type: 'danger', text: err?.message || 'Không thể cập nhật hồ sơ.' }),
+    onError: (err) => setMessage({ type: 'danger', text: err?.message || t('common.profile_update_failed') }),
   });
 
   const content = useMemo(() => {
@@ -355,7 +369,7 @@ export function ProfilePage() {
   }, [activeSection, displayName, editing, logout, navigate, saveMutation, sessions, sessionsQuery.isError, sessionsQuery.isLoading, sessionsQuery.refetch, tier, user]);
 
   if (!user) {
-    return <Container className="py-5 text-center"><Spinner animation="border" variant="primary" /><p className="text-muted mt-2">Đang tải hồ sơ...</p></Container>;
+    return <Container className="py-5 text-center"><Spinner animation="border" variant="primary" /><p className="text-muted mt-2">{t('common.loading_profile')}</p></Container>;
   }
 
   function handleRoomCreated(room) {
@@ -372,7 +386,7 @@ export function ProfilePage() {
         <div className={`profile-dashboard__layout${sidebarOpen ? '' : ' is-collapsed'}`}>
           <div className="profile-dashboard__sidebar-wrap">
             <button type="button" className="profile-toggle" onClick={() => setSidebarOpen(prev => !prev)} aria-expanded={sidebarOpen}>
-              <HiBars3 size={18} /> {sidebarOpen ? 'Ẩn menu' : 'Hiện menu'}
+              <HiBars3 size={18} /> {sidebarOpen ? t('common.hide_menu') : t('common.show_menu')}
             </button>
             {sidebarOpen && <ProfileSidebar activeSection={activeSection} onSelect={setActiveSection} user={user} sessionsCount={sessionsCount} tier={tier} />}
           </div>

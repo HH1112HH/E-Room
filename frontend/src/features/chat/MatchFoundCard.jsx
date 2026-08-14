@@ -1,7 +1,9 @@
+import { useTranslation } from 'react-i18next';
 import { TagBadge } from '../../components/tags/TagBadge';
 import './MatchFoundCard.css';
 
 export function MatchFoundCard({ room, participants = [], onJoin, onDecline }) {
+  const { t } = useTranslation();
   if (!room) return null;
 
   const commonTags = room.tags || [];
@@ -15,17 +17,17 @@ export function MatchFoundCard({ room, participants = [], onJoin, onDecline }) {
         </div>
 
         <h4 className="fw-extrabold mb-1 match-found-heading">
-          Đã tìm thấy phòng!
+          {t('learning.match_found')}
         </h4>
         <p className="text-muted small mb-3">
-          {participants.length} người có chung sở thích với bạn
+          {t('learning.match_shared_interests', { n: participants.length })}
         </p>
 
         {/* Common tags */}
         {commonTags.length > 0 && (
           <div className="match-found-common-tags">
             <div className="text-muted fw-semibold small mb-2 match-found-common-label">
-              Sở thích chung
+              {t('learning.match_common_tags')}
             </div>
             <div className="match-found-tags-flex">
               {commonTags.map((tag) => (
@@ -56,7 +58,7 @@ export function MatchFoundCard({ room, participants = [], onJoin, onDecline }) {
         {/* Room info */}
         <div className="match-found-room-info">
           <div className="fw-bold match-found-room-topic">{room.topic || room.name}</div>
-          <div className="text-muted match-found-room-desc">{room.description || 'Bắt đầu cuộc trò chuyện của bạn'}</div>
+          <div className="text-muted match-found-room-desc">{room.description || t('learning.match_start_chat')}</div>
         </div>
 
         {/* Actions */}
@@ -68,14 +70,14 @@ export function MatchFoundCard({ room, participants = [], onJoin, onDecline }) {
               onMouseOver={(e) => { e.currentTarget.style.background = 'var(--color-bg-hover)'; }}
               onMouseOut={(e) => { e.currentTarget.style.background = 'var(--color-bg-surface)'; }}
             >
-              Bỏ qua
+              {t('learning.match_skip')}
             </button>
           )}
           <button
             onClick={onJoin}
             className="match-found-btn-join"
           >
-            Vào phòng
+            {t('learning.join_room')}
           </button>
         </div>
       </div>

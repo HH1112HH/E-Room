@@ -102,12 +102,12 @@ export function AppShell({ children }) {
                     onClick={() => setExpanded(false)}
                   >
                     <HiUserCircle size={18} />
-                    <span className="d-none d-md-inline">{user.display_name || 'Hồ sơ'}</span>
+                    <span className="d-none d-md-inline">{user.display_name || t('nav.profile')}</span>
                   </Nav.Link>
 
                   <Button variant="link" size="sm"
                     className="text-decoration-none rounded-pill px-2 d-none d-lg-flex align-items-center app-shell-signout-btn"
-                    onClick={handleLogout} title="Đăng xuất"
+                    onClick={handleLogout} title={t('nav.logout')}
                   >
                     <HiArrowRightOnRectangle size={18} />
                   </Button>

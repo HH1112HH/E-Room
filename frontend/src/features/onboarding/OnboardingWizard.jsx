@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 import Spinner from 'react-bootstrap/Spinner';
@@ -13,11 +14,11 @@ import { StepConfirm } from './StepConfirm';
 import '../../styles/OnboardingWizard.css';
 
 const STEPS = [
-  { key: 'level', title: 'Trình độ tiếng Anh', component: StepEnglishLevel },
-  { key: 'tags', title: 'Sở thích', component: StepTagPicker },
-  { key: 'job', title: 'Thông tin công việc', component: StepJobTitle },
-  { key: 'goal', title: 'Mục tiêu học tập', component: StepLearningGoal },
-  { key: 'confirm', title: 'Xác nhận', component: StepConfirm },
+  { key: 'level', titleKey: 'onboarding.step_level', component: StepEnglishLevel },
+  { key: 'tags', titleKey: 'onboarding.step_tags', component: StepTagPicker },
+  { key: 'job', titleKey: 'onboarding.step_job', component: StepJobTitle },
+  { key: 'goal', titleKey: 'onboarding.step_goal', component: StepLearningGoal },
+  { key: 'confirm', titleKey: 'onboarding.step_confirm', component: StepConfirm },
 ];
 
 const STORAGE_KEY = 'eroom-onboarding-progress';
@@ -36,6 +37,7 @@ function saveProgress(data) {
 export function OnboardingWizard() {
   const navigate = useNavigate();
   const { user, setUser } = useAuth();
+  const { t } = useTranslation();
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -82,7 +84,7 @@ export function OnboardingWizard() {
       setUser({ ...user, profile_completed: true, english_level: form.english_level });
       navigate('/', { replace: true });
     } catch (err) {
-      setError(err?.message || 'Không thể lưu hồ sơ');
+      setError(err?.message || t('onboarding.save_failed'));
     } finally {
       setSaving(false);
     }
@@ -102,8 +104,8 @@ export function OnboardingWizard() {
         <div className="onboarding-wizard__logo">E</div>
 
         <div className="onboarding-wizard__heading">
-          <h1>{step === 0 ? 'Chào mừng bạn đến với E-Room!' : STEPS[step].title}</h1>
-          <p>Bước {step + 1} trên {STEPS.length}</p>
+          <h1>{step === 0 ? t('onboarding.welcome') : t(STEPS[step].titleKey)}</h1>
+          <p>{t('onboarding.step')} {step + 1} {t('onboarding.of')} {STEPS.length}</p>
         </div>
 
         <CurrentStep form={form} updateField={updateField} error={error} />
@@ -114,7 +116,7 @@ export function OnboardingWizard() {
             className="px-4"
             onClick={() => step > 0 ? setStep(s => s - 1) : navigate('/')}
           >
-            {step === 0 ? 'Bỏ qua thiết lập' : 'Quay lại'}
+            {step === 0 ? t('onboarding.skip_setup') : t('onboarding.back')}
           </Button>
 
           {isLast ? (
@@ -125,8 +127,8 @@ export function OnboardingWizard() {
               disabled={saving}
             >
               {saving ? (
-                <><Spinner animation="border" size="sm" className="me-2" /> Đang lưu...</>
-              ) : 'Hoàn tất thiết lập'}
+                <><Spinner animation="border" size="sm" className="me-2" /> {t('onboarding.saving')}</>
+              ) : t('onboarding.complete')}
             </Button>
           ) : (
             <Button
@@ -135,7 +137,7 @@ export function OnboardingWizard() {
               onClick={() => canProceed() && setStep(s => s + 1)}
               disabled={!canProceed()}
             >
-              Tiếp tục
+              {t('onboarding.continue')}
             </Button>
           )}
         </div>

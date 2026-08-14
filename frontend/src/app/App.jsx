@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AuthProvider } from './AuthContext';
 import { AuthGuard } from './AuthGuard';
 import { ErrorBoundary } from '../components/ui/ErrorBoundary';
@@ -24,9 +25,10 @@ const BlogDetailPage = lazy(() => import('./pages/BlogDetailPage').then(m => ({ 
 const ContactPage = lazy(() => import('./pages/ContactPage').then(m => ({ default: m.ContactPage })));
 
 function PageLoader() {
+  const { t } = useTranslation();
   return (
     <div className="page-loader">
-      Đang tải...
+      {t('common.loading')}
     </div>
   );
 }

@@ -18,7 +18,7 @@ import { Logo } from '../../components/ui/Logo';
 import '../../styles/LoginPage.css';
 
 function getPasswordStrength(pw) {
-  if (!pw) return { score: 0, label: '', color: '' };
+  if (!pw) return { score: 0, labelKey: '', color: '' };
   let score = 0;
   if (pw.length >= 8) score++;
   if (pw.length >= 12) score++;
@@ -26,12 +26,12 @@ function getPasswordStrength(pw) {
   if (/[0-9]/.test(pw)) score++;
   if (/[^A-Za-z0-9]/.test(pw)) score++;
   const map = [
-    { score: 0, label: '', color: '' },
-    { score: 1, label: 'Yếu', color: '#ef4444' },
-    { score: 2, label: 'Khá', color: '#f59e0b' },
-    { score: 3, label: 'Tốt', color: '#16a34a' },
-    { score: 4, label: 'Mạnh', color: '#16a34a' },
-    { score: 5, label: 'Tuyệt vời', color: '#16a34a' },
+    { score: 0, labelKey: '', color: '' },
+    { score: 1, labelKey: 'weak', color: '#ef4444' },
+    { score: 2, labelKey: 'fair', color: '#f59e0b' },
+    { score: 3, labelKey: 'good', color: '#16a34a' },
+    { score: 4, labelKey: 'strong', color: '#16a34a' },
+    { score: 5, labelKey: 'excellent', color: '#16a34a' },
   ];
   return map[Math.min(score, 5)];
 }
@@ -60,7 +60,7 @@ export function LoginPage() {
     e.preventDefault();
     setError('');
     if (isRegister && !agreeTerms) {
-      setError('Vui lòng đồng ý với Điều khoản Dịch vụ và Chính sách Bảo mật.');
+      setError(t('auth.please_agree_terms'));
       return;
     }
     setBusy(true);
@@ -73,7 +73,7 @@ export function LoginPage() {
       }
       navigate('/', { replace: true });
     } catch (err) {
-      setError(err.message || 'Xác thực thất bại.');
+      setError(err.message || t('auth.auth_failed'));
     } finally {
       setBusy(false);
     }
@@ -91,10 +91,10 @@ export function LoginPage() {
         <div className="login-card__header">
           <div className="login-card__logo"><Logo size={44} /></div>
           <h1 className="login-card__title">
-            {isRegister ? 'Tạo tài khoản' : 'Chào mừng trở lại'}
+            {isRegister ? t('auth.register_title') : t('auth.login_title')}
           </h1>
           <p className="login-card__desc">
-            {isRegister ? 'Bắt đầu hành trình luyện nói tiếng Anh' : 'Đăng nhập để tiếp tục luyện tập'}
+            {isRegister ? t('auth.start_journey') : t('auth.sign_in_subtitle')}
           </p>
         </div>
 
@@ -103,7 +103,7 @@ export function LoginPage() {
           <button type="button" className="login-social-btn"><FaGithub size={20} /> GitHub</button>
         </div>
 
-        <div className="login-divider"><span>hoặc email</span></div>
+        <div className="login-divider"><span>{t('auth.or_email')}</span></div>
         {IS_DEMO_MODE && (
           <button
             type="button"
@@ -111,42 +111,42 @@ export function LoginPage() {
             style={{ background: 'var(--color-accent)', marginBottom: 12 }}
             onClick={() => { setBusy(true); login('demo@e-room.local', 'demo').then(() => navigate('/', { replace: true })).finally(() => setBusy(false)); }}
           >
-            Tiếp tục với Demo (bỏ qua đăng nhập)
+            {t('auth.demo_continue')}
           </button>
         )}
         <Form onSubmit={handleSubmit}>
           {isRegister && (
             <div className="login-name-row">
               <div className="login-field">
-                <label className="login-field__label">Tên</label>
+                <label className="login-field__label">{t('auth.first_name')}</label>
                 <div className="login-input-wrap">
                   <span className="login-input-icon"><HiUser size={16} /></span>
-                  <Form.Control type="text" value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="Tên" required className="login-input" />
+                  <Form.Control type="text" value={firstName} onChange={e => setFirstName(e.target.value)} placeholder={t('auth.first_name')} required className="login-input" />
                 </div>
               </div>
               <div className="login-field">
-                <label className="login-field__label">Họ</label>
+                <label className="login-field__label">{t('auth.last_name')}</label>
                 <div className="login-input-wrap">
                   <span className="login-input-icon"><HiUser size={16} /></span>
-                  <Form.Control type="text" value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Họ" required className="login-input" />
+                  <Form.Control type="text" value={lastName} onChange={e => setLastName(e.target.value)} placeholder={t('auth.last_name')} required className="login-input" />
                 </div>
               </div>
             </div>
           )}
 
           <div className="login-field">
-            <label className="login-field__label">Địa chỉ Email</label>
+            <label className="login-field__label">{t('auth.email_label')}</label>
             <div className="login-input-wrap">
               <span className="login-input-icon"><HiEnvelope size={16} /></span>
-              <Form.Control type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" autoFocus required className="login-input" />
+              <Form.Control type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder={t('auth.email_placeholder')} autoFocus required className="login-input" />
             </div>
           </div>
 
           <div className="login-field">
-            <label className="login-field__label">Mật khẩu</label>
+            <label className="login-field__label">{t('auth.password_label')}</label>
             <div className="login-input-wrap">
               <span className="login-input-icon"><HiLockClosed size={16} /></span>
-              <Form.Control type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="mật khẩu" required minLength={8} autoComplete="current-password" className="login-input" />
+              <Form.Control type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} placeholder={t('auth.password')} required minLength={8} autoComplete="current-password" className="login-input" />
               <button type="button" className="login-input-toggle" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}>
                 {showPassword ? <HiEyeSlash size={16} /> : <HiEye size={16} />}
               </button>
@@ -156,8 +156,8 @@ export function LoginPage() {
           {isRegister && password && (
             <div style={{ marginBottom: 16 }}>
               <div className="d-flex justify-content-between align-items-center mb-1">
-                <small className="login-strength-label">Độ mạnh mật khẩu</small>
-                <small className="fw-semibold login-strength-label" style={{ color: strength.color }}>{strength.label}</small>
+                <small className="login-strength-label">{t('auth.password_strength')}</small>
+                <small className="fw-semibold login-strength-label" style={{ color: strength.color }}>{strength.labelKey ? t(`auth.strength_${strength.labelKey}`) : ''}</small>
               </div>
               <ProgressBar
                 now={strength.score * 20}
@@ -166,13 +166,13 @@ export function LoginPage() {
               />
               <div className="d-flex flex-wrap gap-2 mt-2">
                 {[
-                  { ok: password.length >= 8, text: '8+ ký tự' },
-                  { ok: /[A-Z]/.test(password), text: 'Chữ hoa' },
-                  { ok: /[0-9]/.test(password), text: 'Số' },
-                  { ok: /[^A-Za-z0-9]/.test(password), text: 'Ký tự đặc biệt' },
+                  { ok: password.length >= 8, textKey: 'password_8_chars' },
+                  { ok: /[A-Z]/.test(password), textKey: 'password_uppercase' },
+                  { ok: /[0-9]/.test(password), textKey: 'password_number' },
+                  { ok: /[^A-Za-z0-9]/.test(password), textKey: 'password_symbol' },
                 ].map((r, i) => (
                   <small key={i} className={`login-check-item${r.ok ? ' login-check-item--ok' : ''}`}>
-                    <HiCheck size={12} style={{ opacity: r.ok ? 1 : 0.3 }} /> {r.text}
+                    <HiCheck size={12} style={{ opacity: r.ok ? 1 : 0.3 }} /> {t(`auth.${r.textKey}`)}
                   </small>
                 ))}
               </div>
@@ -181,7 +181,7 @@ export function LoginPage() {
 
           {!isRegister && (
             <div className="login-forgot">
-              <button type="button" className="login-link-btn">Quên mật khẩu?</button>
+              <button type="button" className="login-link-btn">{t('auth.forgot_password')}</button>
             </div>
           )}
 
@@ -189,7 +189,7 @@ export function LoginPage() {
             <div className="login-field">
               <Form.Check type="checkbox" id="agree-terms"
                 checked={agreeTerms} onChange={e => setAgreeTerms(e.target.checked)}
-                label={<span className="login-terms">Tôi đồng ý với <a href="#terms">Điều khoản Dịch vụ</a> và <a href="#privacy">Chính sách Bảo mật</a></span>}
+                label={<span className="login-terms">{t('auth.agree_terms_prefix')} <a href="#terms">{t('auth.terms_of_service')}</a> {t('auth.agree_terms_and')} <a href="#privacy">{t('auth.privacy_policy')}</a></span>}
               />
             </div>
           )}
@@ -202,14 +202,14 @@ export function LoginPage() {
           )}
 
           <button type="submit" className="login-submit" disabled={busy}>
-            {busy ? <><Spinner animation="border" size="sm" /> Vui lòng chờ...</> : <>{isRegister ? 'Tạo tài khoản' : 'Đăng nhập'} <HiArrowRight size={18} /></>}
+            {busy ? <><Spinner animation="border" size="sm" /> {t('auth.please_wait')}</> : <>{isRegister ? t('auth.register') : t('auth.login')} <HiArrowRight size={18} /></>}
           </button>
         </Form>
 
         <p className="login-footer">
-          {isRegister ? 'Bạn đã có tài khoản?' : 'Chưa có tài khoản?'}{' '}
+          {isRegister ? t('auth.already_have_account') : t('auth.dont_have_account')}{' '}
           <button type="button" className="login-link-btn fw-semibold" onClick={toggleMode}>
-            {isRegister ? 'Đăng nhập' : 'Tạo tài khoản miễn phí'}
+            {isRegister ? t('auth.sign_in_link') : t('auth.create_account')}
           </button>
         </p>
       </div>

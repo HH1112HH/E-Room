@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import Spinner from 'react-bootstrap/Spinner';
 import './QueueOverlay.css';
 
 export function QueueOverlay({ visible, tags = [], onCancel }) {
+  const { t } = useTranslation();
   const [dots, setDots] = useState('');
   const [elapsed, setElapsed] = useState(0);
 
@@ -40,12 +42,12 @@ export function QueueOverlay({ visible, tags = [], onCancel }) {
         </div>
 
         <h4 className="fw-extrabold mb-2 queue-overlay__heading">
-          Đang tìm phòng cho bạn{dots}
+          {t('learning.match_searching')}{dots}
         </h4>
 
         {tags.length > 0 && (
           <p className="mb-2 queue-overlay__tags-text">
-            Đang tìm người quan tâm đến
+            {t('learning.match_searching_tags')}
             <span className="queue-overlay__tags-highlight">
               {' '}{tags.join(', ')}
             </span>
@@ -54,22 +56,22 @@ export function QueueOverlay({ visible, tags = [], onCancel }) {
 
         <p className="queue-overlay__wait-text">
           {showFallback
-            ? 'Chưa tìm thấy phòng phù hợp. Đang mở rộng tìm kiếm...'
-            : `Dự kiến chờ: ~${remaining}s`}
+            ? t('learning.match_expanding')
+            : t('learning.match_eta', { seconds: remaining })}
         </p>
 
         {/* Fallback options */}
         {showFallback && (
           <div className="queue-overlay__fallback">
             <p className="small mb-2 queue-overlay__fallback-heading">
-              💡 Lâu hơn dự kiến
+              {t('learning.match_taking_longer')}
             </p>
             <div className="queue-overlay__fallback-actions">
               <span className="queue-overlay__badge-secondary">
-                🔄 Mở rộng thẻ
+                {t('learning.match_expand_tags')}
               </span>
               <span className="queue-overlay__badge-accent">
-                🤖 Luyện tập với AI
+                {t('learning.match_practice_ai')}
               </span>
             </div>
           </div>
@@ -81,7 +83,7 @@ export function QueueOverlay({ visible, tags = [], onCancel }) {
           onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
           onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; }}
         >
-          Hủy
+          {t('common.cancel')}
         </button>
       </div>
     </div>

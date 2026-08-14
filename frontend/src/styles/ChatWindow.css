@@ -157,6 +157,33 @@
 .chat-window__tts-label {
   letter-spacing: 0.02em;
 }
+.chat-window__bubble-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+.chat-window__translate-btn {
+  padding: 5px 12px;
+  border-radius: 99px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  color: #a1a1aa;
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-family: inherit;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.12s;
+  line-height: 1;
+}
+.chat-window__translate-btn:hover {
+  background: rgba(255,255,255,0.1);
+  color: #e4e4e7;
+  border-color: rgba(255,255,255,0.2);
+}
 .chat-window__message--has-tts .chat-window__bubble {
   border-bottom: 1px solid rgba(255,255,255,0.04);
   border-bottom-left-radius: 4px;

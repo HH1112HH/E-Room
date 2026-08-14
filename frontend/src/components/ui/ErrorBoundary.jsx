@@ -1,7 +1,8 @@
 import { Component } from 'react';
+import { withTranslation } from 'react-i18next';
 import '../../styles/ErrorBoundary.css';
 
-export class ErrorBoundary extends Component {
+class ErrorBoundaryBase extends Component {
   constructor(props) {
     super(props);
     this.state = { hasError: false, error: null };
@@ -22,7 +23,7 @@ export class ErrorBoundary extends Component {
       }
       return (
         <div className="error-boundary">
-          <h2>Đã xảy ra lỗi</h2>
+          <h2>{this.props.t('common.error')}</h2>
           <p className="error-boundary-message">
             {this.state.error?.message}
           </p>
@@ -30,7 +31,7 @@ export class ErrorBoundary extends Component {
             onClick={() => window.location.reload()}
             className="error-boundary-btn"
           >
-            Tải lại trang
+            {this.props.t('common.reload_page')}
           </button>
         </div>
       );
@@ -38,3 +39,5 @@ export class ErrorBoundary extends Component {
     return this.props.children;
   }
 }
+
+export const ErrorBoundary = withTranslation()(ErrorBoundaryBase);

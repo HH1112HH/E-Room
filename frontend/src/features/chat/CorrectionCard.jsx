@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HiSpeakerWave, HiCheckCircle, HiXCircle } from 'react-icons/hi2';
 import './CorrectionCard.css';
 
 export function CorrectionCard({ correction, onTTS }) {
+  const { t } = useTranslation();
   const [showExplanation, setShowExplanation] = useState(false);
 
   if (!correction) return null;
@@ -25,7 +27,7 @@ export function CorrectionCard({ correction, onTTS }) {
             {correction.corrected}
             {correction.severity === 'major' && (
               <span className="correction-card__severity">
-                QUAN TRỌNG
+                {t('room.major')}
               </span>
             )}
           </div>
@@ -40,7 +42,7 @@ export function CorrectionCard({ correction, onTTS }) {
             onClick={() => setShowExplanation(!showExplanation)}
             className="correction-card__explanation"
           >
-            {showExplanation ? correction.explanation : 'Tại sao? Chạm để mở rộng'}
+            {showExplanation ? correction.explanation : t('room.why_tap')}
           </div>
           {/* TTS button */}
           {onTTS && (
@@ -50,7 +52,7 @@ export function CorrectionCard({ correction, onTTS }) {
               onMouseOver={(e) => { e.currentTarget.style.background = 'var(--color-bg-hover)'; }}
               onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; }}
             >
-              <HiSpeakerWave size={14} /> Nghe phát âm chuẩn
+              <HiSpeakerWave size={14} /> {t('room.listen_pronunciation')}
             </button>
           )}
         </div>

@@ -1,8 +1,10 @@
 import { useEffect, useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HiSpeakerWave, HiPlay, HiPause } from 'react-icons/hi2';
 import './TTSPlayer.css';
 
 export function TTSPlayer({ text, onPlay, audioUrl }) {
+  const { t } = useTranslation();
   const [playing, setPlaying] = useState(false);
   const audioRef = useRef(null);
 
@@ -51,7 +53,7 @@ export function TTSPlayer({ text, onPlay, audioUrl }) {
       onMouseOut={(e) => { e.currentTarget.style.background = playing ? 'var(--color-accent-muted)' : 'var(--color-bg-surface)'; }}
     >
       {playing ? <HiPause size={16} /> : <HiSpeakerWave size={16} />}
-      {playing ? 'Đang phát...' : 'Nghe thử'}
+      {playing ? t('room.playing') : t('room.listen_sample')}
     </button>
   );
 }

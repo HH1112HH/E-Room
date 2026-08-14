@@ -1,14 +1,56 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
 import { useChatState } from './useChatState';
-import { HiPaperAirplane, HiSpeakerWave } from 'react-icons/hi2';
+import { HiPaperAirplane, HiSpeakerWave, HiLanguage } from 'react-icons/hi2';
 import '../../styles/ChatWindow.css';
 
 function getItemTime(item) {
   return new Date(item.time || item.createdAt || item.timestamp || item.created_at || Date.now()).getTime();
 }
 
+function ChatBubble({ item, isMine, onTTS }) {
+  const { t } = useTranslation();
+  const [showVi, setShowVi] = useState(false);
+  const text = item.text || item.content || '';
+  const hasTTS = item.ttsAudioBase64 || item.ttsAudioKey;
+  const hasTranslation = !!item.vi;
+
+  return (
+    <div className="chat-window__bubble">
+      <ReactMarkdown>{showVi && item.vi ? item.vi : text}</ReactMarkdown>
+      {(hasTranslation || hasTTS) && (
+        <div className="chat-window__bubble-actions">
+          {hasTranslation && (
+            <button
+              type="button"
+              className="chat-window__translate-btn"
+              onClick={() => setShowVi(v => !v)}
+              title={showVi ? t('room.show_original') : t('room.translate')}
+            >
+              <HiLanguage size={13} />
+              <span>{showVi ? t('room.show_original') : t('room.translate')}</span>
+            </button>
+          )}
+          {hasTTS && (
+            <button
+              type="button"
+              className="chat-window__tts-btn"
+              onClick={onTTS}
+              title={t('room.listen_pronunciation')}
+            >
+              <HiSpeakerWave size={14} />
+              <span className="chat-window__tts-label">{t('room.play')}</span>
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function ChatWindow({ roomId, visible, onToggle, wsSocket }) {
+  const { t } = useTranslation();
   const {
     transcripts, chatMessages,
     loadingHistory, input, setInput, inputRef, bottomRef,
@@ -23,14 +65,14 @@ export function ChatWindow({ roomId, visible, onToggle, wsSocket }) {
   }, [chatMessages, transcripts]);
 
   return (
-    <aside className={`chat-window ${visible ? '' : 'chat-window--hidden'}`} aria-label="Bảng trò chuyện phòng">
+    <aside className={`chat-window ${visible ? '' : 'chat-window--hidden'}`} aria-label={t('room.chat_panel_label')}>
       <div className="chat-window__feed">
         {loadingHistory ? (
-          <div className="chat-window__empty">Đang tải cuộc trò chuyện...</div>
+          <div className="chat-window__empty">{t('room.loading_chat')}</div>
         ) : feedItems.length === 0 ? (
           <div className="chat-window__empty">
-            <strong>Bắt đầu cuộc trò chuyện trong phòng</strong>
-            <span>Tin nhắn, lời nói trực tiếp và phản hồi sẽ xuất hiện trong cùng một dòng thời gian.</span>
+            <strong>{t('room.chat_start')}</strong>
+            <span>{t('room.chat_start_desc')}</span>
           </div>
         ) : (
           feedItems.map(({ type, item }, index) => {
@@ -38,7 +80,7 @@ export function ChatWindow({ roomId, visible, onToggle, wsSocket }) {
               const isMySpeech = item.userId && item.userId === currentUserId;
               return (
                 <div className={`chat-window__message ${isMySpeech ? 'is-mine' : ''}`} key={item.id || `speech-${index}`}>
-                  <span className="chat-window__sender">{isMySpeech ? 'Bạn' : (item.speaker || 'Người dùng')}</span>
+                  <span className="chat-window__sender">{isMySpeech ? t('room.you') : (item.speaker || t('room.user'))}</span>
                   <div className="chat-window__bubble"><ReactMarkdown>{item.text || item.content || ''}</ReactMarkdown></div>
                 </div>
               );
@@ -48,26 +90,20 @@ export function ChatWindow({ roomId, visible, onToggle, wsSocket }) {
             const hasTTS = item.ttsAudioBase64;
             return (
               <div className={`chat-window__message ${isMine ? 'is-mine' : ''} ${hasTTS ? 'chat-window__message--has-tts' : ''}`} key={item.id || `chat-${index}`}>
-                <span className="chat-window__sender">{isMine ? 'Bạn' : (item.senderId === 'assistant' ? 'Trợ lý' : item.sender)}</span>
-                <div className="chat-window__bubble"><ReactMarkdown>{item.text || ''}</ReactMarkdown></div>
-                {hasTTS ? (
-                  <button
-                    className="chat-window__tts-btn"
-                    onClick={() => {
-                      if (item.ttsAudioBase64) {
-                        new Audio(`data:audio/wav;base64,${item.ttsAudioBase64}`).play();
-                      } else if (item.ttsAudioKey) {
-                        fetch(`/api/v1/audio/${item.ttsAudioKey}`)
-                          .then(r => r.blob())
-                          .then(blob => { new Audio(URL.createObjectURL(blob)).play(); });
-                      }
-                    }}
-                    title="Nghe phát âm chuẩn"
-                  >
-                    <HiSpeakerWave size={14} />
-                    <span className="chat-window__tts-label">Phát</span>
-                  </button>
-                ) : null}
+                <span className="chat-window__sender">{isMine ? t('room.you') : (item.senderId === 'assistant' ? t('room.assistant') : item.sender)}</span>
+                <ChatBubble
+                  item={item}
+                  isMine={isMine}
+                  onTTS={() => {
+                    if (item.ttsAudioBase64) {
+                      new Audio(`data:audio/wav;base64,${item.ttsAudioBase64}`).play();
+                    } else if (item.ttsAudioKey) {
+                      fetch(`/api/v1/audio/${item.ttsAudioKey}`)
+                        .then(r => r.blob())
+                        .then(blob => { new Audio(URL.createObjectURL(blob)).play(); });
+                    }
+                  }}
+                />
               </div>
             );
           })
@@ -77,10 +113,10 @@ export function ChatWindow({ roomId, visible, onToggle, wsSocket }) {
 
       <form className="chat-window__composer" onSubmit={handleSend}>
         <input ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)}
-          placeholder="Nhắn tin cho phòng..."
-          aria-label="Nhắn tin cho phòng"
+          placeholder={t('room.chat_placeholder')}
+          aria-label={t('room.chat_placeholder')}
         />
-        <button type="submit" disabled={!input.trim()} aria-label="Gửi tin nhắn">
+        <button type="submit" disabled={!input.trim()} aria-label={t('room.send_message')}>
           <HiPaperAirplane size={15} />
         </button>
       </form>

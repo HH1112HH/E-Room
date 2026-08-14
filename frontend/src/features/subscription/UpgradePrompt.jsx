@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useSubscriptionStore } from '../../stores/subscriptionStore';
 import { HiRocketLaunch, HiXMark } from 'react-icons/hi2';
 import '../../styles/UpgradePrompt.css';
 
 export function UpgradePrompt({ feature = 'this feature', visible, onClose }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [selected, setSelected] = useState('pro');
 
@@ -12,38 +14,38 @@ export function UpgradePrompt({ feature = 'this feature', visible, onClose }) {
 
   const plans = [
     {
-      key: 'free', name: 'Free', price: '$0', features: [
-        '3 lần sửa lỗi AI mỗi buổi',
-        '1 Heartbeat mỗi phòng',
-        'Ghép cặp cơ bản',
-        'Tối đa 5 người tham gia',
+      key: 'free', name: t('subscription.free'), price: '$0', features: [
+        t('subscription.free_feat_corrections'),
+        t('subscription.free_feat_heartbeats'),
+        t('subscription.free_feat_matching'),
+        t('subscription.free_feat_max5'),
       ],
-      cta: 'Gói hiện tại',
+      cta: t('subscription.current_plan'),
       disabled: true,
     },
     {
-      key: 'pro', name: 'Pro', price: '$9.99', period: '/tháng', features: [
-        'Sửa lỗi không giới hạn',
-        '3 Heartbeat mỗi phòng',
-        'Web Search Expert',
-        'Luyện tập phòng AI',
-        'Tối đa 5 người tham gia',
+      key: 'pro', name: t('subscription.pro'), price: '$9.99', period: t('subscription.per_month'), features: [
+        t('subscription.pro_feat_unlimited'),
+        t('subscription.free_feat_heartbeats'),
+        t('subscription.pro_feat_web'),
+        t('subscription.pro_feat_ai_room'),
+        t('subscription.free_feat_max5'),
       ],
-      cta: 'Nâng cấp lên Pro',
+      cta: `${t('subscription.upgrading_to')} ${t('subscription.pro')}`,
       highlighted: true,
     },
     {
-      key: 'pro_plus', name: 'Pro+', price: '$19.99', period: '/tháng', features: [
-        'Mọi tính năng của Pro',
-        '5 Heartbeat mỗi phòng',
-        'Đầy đủ RAG + Web Expert',
-        'Phát âm TTS',
-        'Ghi chú buổi học tự động',
-        'Chuỗi phòng',
-        'Bảng xếp hạng',
-        'Tối đa 15 người tham gia',
+      key: 'pro_plus', name: t('subscription.pro_plus'), price: '$19.99', period: t('subscription.per_month'), features: [
+        t('subscription.pro_plus_feat_everything'),
+        t('subscription.pro_plus_feat_heartbeats'),
+        t('subscription.pro_plus_feat_rag'),
+        t('subscription.tts'),
+        t('subscription.pro_plus_feat_notes'),
+        t('subscription.pro_plus_feat_series'),
+        t('subscription.pro_plus_feat_leaderboard'),
+        t('subscription.pro_plus_feat_max15'),
       ],
-      cta: 'Chọn Pro+',
+      cta: `${t('subscription.choose')} ${t('subscription.pro_plus')}`,
     },
   ];
 
@@ -57,10 +59,10 @@ export function UpgradePrompt({ feature = 'this feature', visible, onClose }) {
         <div className="text-center mb-4">
           <HiRocketLaunch size={36} className="upgrade-prompt__icon" />
           <h4 className="fw-extrabold mt-2 mb-1">
-            Mở khóa {feature}
+            {t('subscription.unlock')} {feature}
           </h4>
           <p className="text-muted small mb-0">
-            Bạn đã đạt giới hạn cho {feature}. Nâng cấp để tiếp tục.
+            {t('subscription.you_reached_limit')} {feature}. {t('subscription.upgrade_to_continue')}
           </p>
         </div>
 
@@ -86,7 +88,7 @@ export function UpgradePrompt({ feature = 'this feature', visible, onClose }) {
               >
                 {plan.highlighted && (
                   <div className="upgrade-prompt__plan-badge">
-                    PHỔ BIẾN
+                    {t('subscription.popular')}
                   </div>
                 )}
                 <div className="fw-bold mb-2 upgrade-prompt__plan-name">{plan.name}</div>
@@ -113,7 +115,7 @@ export function UpgradePrompt({ feature = 'this feature', visible, onClose }) {
         </div>
 
         <p className="text-muted text-center mt-3 mb-0 upgrade-prompt__footer">
-          7 ngày dùng thử miễn phí • Hủy bất cứ lúc nào • Thanh toán an toàn
+          {t('subscription.free_trial')} • {t('subscription.cancel_anytime')} • {t('subscription.secure_payment')}
         </p>
       </div>
     </div>

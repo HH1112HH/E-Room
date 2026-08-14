@@ -40,12 +40,12 @@ export function SessionsPage() {
   return (
     <Container className="sessions-page py-4">
       <div className="sessions-page__header">
-        <h1>Buổi học của bạn</h1>
-        <p className="sessions-page__subtitle">Mọi phòng bạn đã tham gia, kèm điểm số, thời lượng và phản hồi đánh giá.</p>
+        <h1>{t('sessions.your_sessions')}</h1>
+        <p className="sessions-page__subtitle">{t('sessions.subtitle')}</p>
       </div>
 
       <div className="sessions-page__stats">
-        {sessions.length} buổi học — điểm TB {avgScore} — hiện {filtered.length}
+        {t('sessions.stats', { total: sessions.length, avg: avgScore, shown: filtered.length })}
       </div>
 
       <div className="sessions-page__toolbar">
@@ -55,15 +55,15 @@ export function SessionsPage() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Tìm theo chủ đề hoặc thẻ..."
+            placeholder={t('sessions.search')}
             className="sessions-page__search-input"
           />
         </div>
         <div className="sessions-page__filters">
           {[
-            { key: 'all', label: 'Tất cả' },
-            { key: 'recent', label: 'Tuần này' },
-            { key: 'reviewed', label: 'Đã đánh giá' },
+            { key: 'all', label: t('sessions.all') },
+            { key: 'recent', label: t('marketing.leaderboard_this_week') },
+            { key: 'reviewed', label: t('sessions.reviewed_label') },
           ].map(({ key, label }) => (
             <button
               key={key}
@@ -79,13 +79,13 @@ export function SessionsPage() {
       {isLoading ? (
         <div className="sessions-page__loading">
           <Spinner animation="border" variant="primary" />
-          <span>Đang tải buổi học...</span>
+          <span>{t('sessions.loading')}</span>
         </div>
       ) : filtered.length === 0 ? (
         <div className="sessions-page__empty">
           <HiClock size={24} />
-          <p>Chưa có buổi học nào</p>
-          <Button as={Link} to="/learning" variant="primary" className="px-3">Mở phòng</Button>
+          <p>{t('sessions.no_sessions')}</p>
+          <Button as={Link} to="/learning" variant="primary" className="px-3">{t('sessions.find_room')}</Button>
         </div>
       ) : (
         <div className="sessions-page__list">
@@ -94,12 +94,12 @@ export function SessionsPage() {
             return (
               <Link key={session.id} to={`/sessions/${session.id}`} className="sessions-page__row">
                 <div className="sessions-page__row-main">
-                  <div className="sessions-page__row-title">{session.topic || session.name || session.room_name || 'Buổi luyện tập'}</div>
+                  <div className="sessions-page__row-title">{session.topic || session.name || session.room_name || t('sessions.practice_session')}</div>
                   <div className="sessions-page__row-meta">
                     <span>{formatDate(session.created_at)}</span>
                     <span className="sessions-page__meta-sep"> &middot; </span>
                     <span>{formatDuration(session.duration)}</span>
-                    {session.review && <><span className="sessions-page__meta-sep"> &middot; </span><span className="sessions-page__reviewed">Đã đánh giá</span></>}
+                    {session.review && <><span className="sessions-page__meta-sep"> &middot; </span><span className="sessions-page__reviewed">{t('sessions.reviewed_label')}</span></>}
                   </div>
                 </div>
                 <div className="sessions-page__row-score">{score != null ? Math.round(score) : '--'}</div>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { fetchJson } from '../../lib/api';
 import { TagBadge } from './TagBadge';
 import '../../styles/TagSuggestions.css';
@@ -16,6 +17,7 @@ const CAREER_TAGS = {
 const FALLBACK_TAGS = Object.values(CAREER_TAGS).flat();
 
 export function TagSuggestions({ careerField, jobTitle, selected = [], onToggle }) {
+  const { t } = useTranslation();
   const [showAll, setShowAll] = useState(false);
 
   const suggestedTags = CAREER_TAGS[careerField] || [];
@@ -26,7 +28,7 @@ export function TagSuggestions({ careerField, jobTitle, selected = [], onToggle 
   return (
     <div>
       <div className="text-muted fw-semibold small mb-2 tag-suggestions-label">
-        {suggestedTags.length > 0 ? `Gợi ý cho ${careerField || 'bạn'}` : 'Thẻ phổ biến'}
+        {suggestedTags.length > 0 ? t('common.suggestions_for', { field: careerField || t('common.you') }) : t('common.popular_tags')}
       </div>
       <div className="tag-suggestions-list">
         {displayTags.map((tag) => (
@@ -52,7 +54,7 @@ export function TagSuggestions({ careerField, jobTitle, selected = [], onToggle 
             onClick={() => setShowAll(true)}
             className="tag-suggestions-more"
           >
-            +{suggestedTags.length - 12} thêm
+            {t('common.more_count', { count: suggestedTags.length - 12 })}
           </button>
         )}
       </div>

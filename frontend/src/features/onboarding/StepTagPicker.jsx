@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import Spinner from 'react-bootstrap/Spinner';
 import { fetchJson } from '../../lib/api';
 import { TagBadge } from '../../components/tags/TagBadge';
@@ -7,13 +8,30 @@ import { HiTag } from 'react-icons/hi2';
 import '../../styles/OnboardingWizard.css';
 
 const FALLBACK_TAGS = [
-  'Kinh doanh', 'Công nghệ', 'Du lịch', 'Giáo dục', 'IELTS',
-  'Đời sống hằng ngày', 'Phát âm', 'Phỏng vấn', 'Văn hóa', 'Khoa học',
-  'Ẩm thực', 'Âm nhạc', 'Gaming', 'Thể thao', 'Phim ảnh', 'Thời trang',
-  'Sức khỏe', 'Khởi nghiệp', 'Marketing', 'Tài chính',
+  { id: 'Business', labelKey: 'onboarding.tag_business' },
+  { id: 'Technology', labelKey: 'onboarding.tag_technology' },
+  { id: 'Travel', labelKey: 'onboarding.tag_travel' },
+  { id: 'Education', labelKey: 'onboarding.tag_education' },
+  { id: 'IELTS', labelKey: 'onboarding.tag_ielts' },
+  { id: 'Daily Life', labelKey: 'onboarding.tag_daily_life' },
+  { id: 'Pronunciation', labelKey: 'onboarding.tag_pronunciation' },
+  { id: 'Interview', labelKey: 'onboarding.tag_interview' },
+  { id: 'Culture', labelKey: 'onboarding.tag_culture' },
+  { id: 'Science', labelKey: 'onboarding.tag_science' },
+  { id: 'Food', labelKey: 'onboarding.tag_food' },
+  { id: 'Music', labelKey: 'onboarding.tag_music' },
+  { id: 'Gaming', labelKey: 'onboarding.tag_gaming' },
+  { id: 'Sports', labelKey: 'onboarding.tag_sports' },
+  { id: 'Movies', labelKey: 'onboarding.tag_movies' },
+  { id: 'Fashion', labelKey: 'onboarding.tag_fashion' },
+  { id: 'Health', labelKey: 'onboarding.tag_health' },
+  { id: 'Startup', labelKey: 'onboarding.tag_startup' },
+  { id: 'Marketing', labelKey: 'onboarding.tag_marketing' },
+  { id: 'Finance', labelKey: 'onboarding.tag_finance' },
 ];
 
 export function StepTagPicker({ form, updateField }) {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [customTag, setCustomTag] = useState('');
 
@@ -31,8 +49,18 @@ export function StepTagPicker({ form, updateField }) {
   const tags = popularTags.length > 0 ? popularTags : FALLBACK_TAGS;
   const selected = form.tagIds || [];
 
+  function tagId(tag) {
+    return typeof tag === 'string' ? tag : tag.id || tag.name || tag;
+  }
+
+  function tagLabel(tag) {
+    if (typeof tag === 'string') return tag;
+    if (tag.labelKey) return t(tag.labelKey);
+    return tag.name || tag.id || tag;
+  }
+
   function toggleTag(tag) {
-    const id = typeof tag === 'string' ? tag : tag.id || tag.name || tag;
+    const id = tagId(tag);
     const updated = selected.includes(id)
       ? selected.filter((t) => t !== id)
       : [...selected, id];
@@ -51,13 +79,13 @@ export function StepTagPicker({ form, updateField }) {
     <div>
       <div className="text-center mb-3">
         <HiTag size={36} className="onboarding-wizard__step-icon" />
-        <h4 className="fw-bold mt-2 mb-1">Bạn quan tâm chủ đề nào?</h4>
+        <h4 className="fw-bold mt-2 mb-1">{t('onboarding.tags_title')}</h4>
         <p className="text-muted small mb-0">
-          Chọn ít nhất một thẻ để chúng tôi ghép bạn với những người học cùng sở thích.
+          {t('onboarding.tags_sub')}
         </p>
         {selected.length === 0 && (
           <p className="small mt-1 onboarding-wizard__step-warning">
-            ⚠️ Bạn có thể bỏ qua, nhưng tự động ghép cặp sẽ không khả dụng cho đến khi bạn thêm thẻ.
+            {t('onboarding.tags_warning')}
           </p>
         )}
       </div>
@@ -80,7 +108,7 @@ export function StepTagPicker({ form, updateField }) {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Tìm kiếm thẻ..."
+          placeholder={t('onboarding.tags_search_placeholder')}
           className="onboarding-wizard__search-input"
         />
         {search.length > 1 && searchResults.length > 0 && (
@@ -109,8 +137,8 @@ export function StepTagPicker({ form, updateField }) {
       ) : (
         <div className="onboarding-wizard__tag-cloud">
           {tags.map((tag) => {
-            const id = typeof tag === 'string' ? tag : tag.id || tag.name || tag;
-            const name = typeof tag === 'string' ? tag : tag.name || tag;
+            const id = tagId(tag);
+            const name = tagLabel(tag);
             const active = selected.includes(id);
             return (
               <button
@@ -132,7 +160,7 @@ export function StepTagPicker({ form, updateField }) {
           value={customTag}
           onChange={(e) => setCustomTag(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCustomTag(); } }}
-          placeholder="Hoặc nhập thẻ tùy chỉnh..."
+          placeholder={t('onboarding.custom_tag_placeholder')}
           className="onboarding-wizard__custom-input"
         />
         <button
@@ -141,7 +169,7 @@ export function StepTagPicker({ form, updateField }) {
           disabled={!customTag.trim()}
           className={`onboarding-wizard__custom-btn${customTag.trim() ? ' onboarding-wizard__custom-btn--active' : ''}`}
         >
-          + Thêm
+          {t('onboarding.add')}
         </button>
       </div>
     </div>

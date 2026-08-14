@@ -39,7 +39,7 @@ export function LeaderboardPage() {
             <Button variant="primary" onClick={() => setShowUpgrade(true)}>{t('marketing.leaderboard_upgrade_btn')}</Button>
           </div>
         </Container>
-        <UpgradePrompt feature="Bảng xếp hạng" visible={showUpgrade} onClose={() => setShowUpgrade(false)} />
+        <UpgradePrompt feature={t('leaderboard.title')} visible={showUpgrade} onClose={() => setShowUpgrade(false)} />
       </>
     );
   }
@@ -60,7 +60,7 @@ export function LeaderboardPage() {
             onClick={() => setPeriod(p)}
             className={`leaderboard-page__filter${period === p ? ' is-active' : ''}`}
           >
-            {p === 'weekly' ? t('marketing.leaderboard_this_week') : p === 'monthly' ? t('marketing.leaderboard_this_month') : t('marketing.leaderboard_all_time')}
+            {p === 'weekly' ? t('leaderboard.period_weekly') : p === 'monthly' ? t('leaderboard.period_monthly') : t('leaderboard.period_all_time')}
           </button>
         ))}
       </div>

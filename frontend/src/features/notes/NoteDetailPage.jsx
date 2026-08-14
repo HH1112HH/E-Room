@@ -29,7 +29,7 @@ export function NoteDetailPage() {
       <Container className="note-detail-page py-4">
         <div className="note-detail-page__loading">
           <Spinner animation="border" variant="primary" />
-          <span>Đang tải ghi chú...</span>
+          <span>{t('notes.loading')}</span>
         </div>
       </Container>
     );
@@ -40,9 +40,9 @@ export function NoteDetailPage() {
       <Container className="note-detail-page py-4">
         <div className="note-detail-page__error">
           <HiBookOpen size={48} />
-          <h3>Không tìm thấy ghi chú</h3>
-          <p>{error?.message || 'Ghi chú này có thể đã bị xóa.'}</p>
-          <Link to="/notes"><Button variant="outline-primary" className="px-3">Quay lại ghi chú</Button></Link>
+          <h3>{t('notes.not_found')}</h3>
+          <p>{error?.message || t('notes.deleted')}</p>
+          <Link to="/notes"><Button variant="outline-primary" className="px-3">{t('notes.back_to_notes')}</Button></Link>
         </div>
       </Container>
     );
@@ -51,11 +51,11 @@ export function NoteDetailPage() {
   return (
     <Container className="note-detail-page py-4">
       <Link to="/notes" className="note-detail-page__back">
-        Quay lại ghi chú
+        {t('notes.back_to_notes')}
       </Link>
 
       <div className="note-detail-page__header">
-        <h1>{note.title || 'Tóm tắt buổi học'}</h1>
+        <h1>{note.title || t('notes.session_summary')}</h1>
         <div className="note-detail-page__meta">
           <span>{formatDateTime(note.created_at)}</span>
           {note.session_topic && <><span className="note-detail-page__meta-sep"> &middot; </span><span>{note.session_topic}</span></>}
@@ -71,23 +71,23 @@ export function NoteDetailPage() {
 
       <div className="note-detail-page__actions">
         <Button variant="outline-secondary" size="sm" className="note-detail-page__action-btn">
-          <HiPencil size={14} /> Chỉnh sửa
+          <HiPencil size={14} /> {t('notes.edit')}
         </Button>
         <Button variant="outline-secondary" size="sm" className="note-detail-page__action-btn note-detail-page__action-btn--danger">
-          <HiTrash size={14} /> Xóa
+          <HiTrash size={14} /> {t('common.delete')}
         </Button>
         {note.session_id && (
           <Button as={Link} to={`/sessions/${note.session_id}`} variant="outline-primary" size="sm" className="note-detail-page__action-btn">
-            <HiLink size={14} /> Mở buổi học gốc
+            <HiLink size={14} /> {t('notes.open_session')}
           </Button>
         )}
       </div>
 
       <div className="note-detail-page__content-wrapper">
         <div className="note-detail-page__content-header">
-          <span>Nội dung ghi chú</span>
+          <span>{t('notes.note_content')}</span>
           <button className="note-detail-page__copy-btn" onClick={handleCopyContent}>
-            <HiClipboardDocument size={14} /> Sao chép
+            <HiClipboardDocument size={14} /> {t('notes.copy')}
           </button>
         </div>
         {note.content && (
@@ -96,21 +96,21 @@ export function NoteDetailPage() {
       </div>
 
       <div className="note-detail-page__info">
-        <h2>Thông tin ghi chú</h2>
+        <h2>{t('notes.info')}</h2>
         <div className="note-detail-page__info-grid">
           <div className="note-detail-page__info-item">
-            <span className="note-detail-page__info-label">Ngày tạo</span>
+            <span className="note-detail-page__info-label">{t('notes.created_at')}</span>
             <span className="note-detail-page__info-value">{formatDate(note.created_at)}</span>
           </div>
           {note.session_topic && (
             <div className="note-detail-page__info-item">
-              <span className="note-detail-page__info-label">Chủ đề buổi học</span>
+              <span className="note-detail-page__info-label">{t('notes.session_topic')}</span>
               <span className="note-detail-page__info-value">{note.session_topic}</span>
             </div>
           )}
           {note.tags && note.tags.length > 0 && (
             <div className="note-detail-page__info-item">
-              <span className="note-detail-page__info-label">Thẻ</span>
+              <span className="note-detail-page__info-label">{t('notes.tags')}</span>
               <span className="note-detail-page__info-value">{note.tags.join(', ')}</span>
             </div>
           )}
@@ -119,14 +119,14 @@ export function NoteDetailPage() {
 
       {note.session_topic && (
         <div className="note-detail-page__context">
-          <h2>Ngữ cảnh buổi học</h2>
-          <p><span>Chủ đề:</span> {note.session_topic}</p>
-          <p><span>Ngày tạo:</span> {formatDate(note.created_at)}</p>
+          <h2>{t('notes.session_context')}</h2>
+          <p><span>{t('notes.session_topic')}:</span> {note.session_topic}</p>
+          <p><span>{t('notes.created_at')}:</span> {formatDate(note.created_at)}</p>
         </div>
       )}
 
       <div className="note-detail-page__cta">
-        <Link to="/notes">Quay lại ghi chú</Link>
+        <Link to="/notes">{t('notes.back_to_notes')}</Link>
       </div>
     </Container>
   );

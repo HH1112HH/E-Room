@@ -31,6 +31,19 @@ FALLBACK_QUESTIONS = [
     "What is the difference between machine learning and traditional programming?",
 ]
 
+FALLBACK_QUESTIONS_VI = {
+    "What is one AI tool you use regularly and how does it help you?": "Bạn thường dùng một công cụ AI nào và nó giúp bạn ra sao?",
+    "Do you think AI will replace human jobs or create new ones? Why or why not?": "Bạn nghĩ AI sẽ thay thế việc làm của con người hay tạo ra công việc mới? Vì sao?",
+    "What is the most impressive thing you have seen AI do recently?": "Điều ấn tượng nhất mà bạn thấy AI làm được gần đây là gì?",
+    "How do you think AI will change education in the next 5 years?": "Bạn nghĩ AI sẽ thay đổi giáo dục thế nào trong 5 năm tới?",
+    "What ethical concerns do you have about AI development?": "Bạn có lo ngại về đạo đức nào đối với sự phát triển của AI không?",
+    "If you could build an AI to solve one problem, what would it be?": "Nếu có thể xây một AI để giải quyết một vấn đề, bạn sẽ chọn vấn đề gì?",
+    "How do large language models like GPT actually work in simple terms?": "Các mô hình ngôn ngữ lớn như GPT thực sự hoạt động thế nào một cách đơn giản?",
+    "What is your opinion on using AI for creative work like art or music?": "Quan điểm của bạn về việc dùng AI cho công việc sáng tạo như nghệ thuật hay âm nhạc?",
+    "Should AI systems be required to explain their decisions? Why or why not?": "Hệ thống AI có nên bị yêu cầu giải thích quyết định của mình không? Vì sao?",
+    "What is the difference between machine learning and traditional programming?": "Sự khác biệt giữa máy học và lập trình truyền thống là gì?",
+}
+
 
 async def generate_heartbeat_question(room_id: str, context: str) -> dict[str, Any]:
     t0 = time.monotonic()
@@ -65,7 +78,6 @@ async def generate_heartbeat_question(room_id: str, context: str) -> dict[str, A
             "question": random.choice(FALLBACK_QUESTIONS),
             "answers": [],
         }
-
 
 def parse_heartbeat_response(content: str) -> dict[str, Any]:
     if not content or not content.strip():

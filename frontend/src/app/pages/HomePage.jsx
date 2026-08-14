@@ -15,6 +15,7 @@ import {
 import '../../styles/HomePage.css';
 
 function useMatchMutation() {
+  const { t } = useTranslation();
   const [showQuickMatch, setShowQuickMatch] = useState(false);
   const [quickJoining, setQuickJoining] = useState(false);
   const [matchResult, setMatchResult] = useState(null);
@@ -29,7 +30,7 @@ function useMatchMutation() {
       if (result.status === 'matched') {
         return await fetchJson(`/rooms/${result.roomId}`);
       }
-      throw new Error(result.message || 'Không tìm thấy phòng phù hợp');
+      throw new Error(result.message || t('learning.no_match'));
     },
     onSuccess: (room) => { setMatchResult(room); setQuickJoining(false); },
     onError: () => { setQuickJoining(false); setMatchResult(null); },
@@ -91,10 +92,10 @@ const FAQS = [
 ];
 
 const ROOM_CATEGORIES = [
-  { icon: HiChatBubbleOvalLeft, titleKey: 'cat_1_title', descKey: 'cat_1_desc', color: '#f1f5f9', iconColor: '#6699FF', count: '12 phòng' },
-  { icon: HiBriefcase, titleKey: 'cat_2_title', descKey: 'cat_2_desc', color: '#f8fafc', iconColor: '#336699', count: '8 phòng' },
-  { icon: HiSpeakerWave, titleKey: 'cat_3_title', descKey: 'cat_3_desc', color: '#f1f5f9', iconColor: '#FF9966', count: '6 phòng' },
-  { icon: HiBookOpen, titleKey: 'cat_4_title', descKey: 'cat_4_desc', color: '#f8fafc', iconColor: '#33CC99', count: '10 phòng' },
+  { icon: HiChatBubbleOvalLeft, titleKey: 'cat_1_title', descKey: 'cat_1_desc', color: '#f1f5f9', iconColor: '#6699FF', count: 12 },
+  { icon: HiBriefcase, titleKey: 'cat_2_title', descKey: 'cat_2_desc', color: '#f8fafc', iconColor: '#336699', count: 8 },
+  { icon: HiSpeakerWave, titleKey: 'cat_3_title', descKey: 'cat_3_desc', color: '#f1f5f9', iconColor: '#FF9966', count: 6 },
+  { icon: HiBookOpen, titleKey: 'cat_4_title', descKey: 'cat_4_desc', color: '#f8fafc', iconColor: '#33CC99', count: 10 },
 ];
 
 const TRUST_LOGOS = [
@@ -151,7 +152,7 @@ export function HomePage() {
             <div className="hp-glass">
             <div className="hp-glass-header">
               <div className="hp-glass-dots"><span /><span /><span /></div>
-              <span className="hp-glass-header-label">Practice Room</span>
+              <span className="hp-glass-header-label">{t('landing.practice_room')}</span>
             </div>
             <div className="hp-glass-chat">
               <div className="hp-glass-bubble hp-glass-bubble--in">
@@ -166,7 +167,7 @@ export function HomePage() {
               <div className="hp-glass-typing"><span /><span /><span /></div>
             </div>
             <div className="hp-glass-footer">
-              <span className="hp-glass-chip">AI Analyzing &mdash; 92% fluency</span>
+              <span className="hp-glass-chip">{t('landing.analyzing')}</span>
             </div>
           </div>
         </div>
@@ -249,7 +250,7 @@ export function HomePage() {
                 <span className="hp-category-icon" style={{ color: cat.iconColor }}><cat.icon size={22} /></span>
                 <h3>{t(`landing.${cat.titleKey}`)}</h3>
                 <p>{t(`landing.${cat.descKey}`)}</p>
-                <span className="hp-category-count">{cat.count}</span>
+                <span className="hp-category-count">{t('landing.rooms_count', { count: cat.count })}</span>
               </div>
             ))}
           </div>
@@ -258,13 +259,13 @@ export function HomePage() {
               {rooms.slice(0, 3).map((room) => (
                 <div key={room.id} className="hp-room-card" onClick={() => navigate(`/rooms/${room.id}`)}>
                   <div className="hp-room-card-top">
-                    <span className="hp-room-card-topic">{room.topic || 'Chung'}</span>
-                    <span className="hp-room-card-level">{room.level || 'Mọi trình độ'}</span>
+                    <span className="hp-room-card-topic">{room.topic || t('landing.room_topic_general')}</span>
+                    <span className="hp-room-card-level">{room.level || t('landing.all_levels')}</span>
                   </div>
                   <h4>{room.name}</h4>
                   <p>{room.description}</p>
                   <div className="hp-room-card-meta">
-                    <span>{room.participant_count || 0} đang nói</span>
+                    <span>{t('landing.participants_speaking', { count: room.participant_count || 0 })}</span>
                     <HiArrowRight size={14} />
                   </div>
                 </div>

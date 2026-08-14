@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { API_BASE_URL, clearTokens, getTokens, setTokens } from '../lib/api';
 import { useSubscriptionStore } from '../stores/subscriptionStore';
+import i18n from '../i18n';
 
 const AuthContext = createContext(null);
 
@@ -65,7 +66,7 @@ export function AuthProvider({ children }) {
       const detail = Array.isArray(body.detail)
         ? body.detail.map((e) => e.msg).join('; ')
         : body.detail;
-      throw new Error(detail || 'Đăng nhập thất bại');
+      throw new Error(detail || i18n.t('auth.auth_failed'));
     }
     const data = await response.json();
     setTokens(data.access_token, data.refresh_token);
@@ -98,7 +99,7 @@ export function AuthProvider({ children }) {
       const detail = Array.isArray(body.detail)
         ? body.detail.map((e) => e.msg).join('; ')
         : body.detail;
-      throw new Error(detail || 'Đăng ký thất bại');
+      throw new Error(detail || i18n.t('auth.auth_failed'));
     }
     return response.json();
   }, []);

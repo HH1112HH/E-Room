@@ -90,7 +90,7 @@ export function BlogDetailPage() {
 
           <div className="blog-detail__share">
             <span>{t('marketing.blog_share')}</span>
-            <button className="blog-detail__share-btn" onClick={handleCopyLink} title="Sao chép liên kết">
+            <button className="blog-detail__share-btn" onClick={handleCopyLink} title={t('marketing.blog_copy_link')}>
               {copied ? <><HiCheckCircle size={15} /> {t('marketing.blog_copied')}</> : <><HiLink size={15} /> {t('marketing.blog_copy_link')}</>}
             </button>
             <a
@@ -98,7 +98,7 @@ export function BlogDetailPage() {
               href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`}
               target="_blank"
               rel="noopener noreferrer"
-              title="Chia sẻ lên Twitter/X"
+              title={t('marketing.blog_share_twitter')}
             >
               X
             </a>
@@ -107,7 +107,7 @@ export function BlogDetailPage() {
               href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`}
               target="_blank"
               rel="noopener noreferrer"
-              title="Chia sẻ lên LinkedIn"
+              title={t('marketing.blog_share_linkedin')}
             >
               in
             </a>

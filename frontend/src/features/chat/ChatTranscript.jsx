@@ -1,7 +1,9 @@
 import { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import './ChatTranscript.css';
 
 export function ChatTranscript({ messages = [], loading }) {
+  const { t } = useTranslation();
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -9,15 +11,15 @@ export function ChatTranscript({ messages = [], loading }) {
   }, [messages]);
 
   if (loading) {
-    return <div className="text-muted text-center py-4 chat-transcript-loading">Đang tải lời thoại...</div>;
+    return <div className="text-muted text-center py-4 chat-transcript-loading">{t('room.loading_transcript')}</div>;
   }
 
   if (messages.length === 0) {
     return (
       <div className="text-center py-5 chat-transcript-empty">
         <div className="chat-transcript-empty-emoji">🎙️</div>
-        <div className="chat-transcript-empty-title">Chưa có lời nói</div>
-        <div className="chat-transcript-empty-desc">Bắt đầu nói — lời thoại sẽ hiện tại đây ngay lập tức</div>
+        <div className="chat-transcript-empty-title">{t('room.no_speech')}</div>
+        <div className="chat-transcript-empty-desc">{t('room.no_speech_desc')}</div>
       </div>
     );
   }
@@ -31,7 +33,7 @@ export function ChatTranscript({ messages = [], loading }) {
           <span className="fw-bold chat-transcript-speaker" style={{
             color: msg.speakerColor || 'var(--color-accent)',
           }}>
-            {msg.speaker || 'Bạn'}
+            {msg.speaker || t('room.you')}
           </span>
           <span className="chat-transcript-text" style={{
             color: msg.status === 'interim' ? 'var(--color-text-muted)' : 'var(--color-text-primary)',

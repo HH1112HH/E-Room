@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card } from '../../components/ui/Card';
 import { createRoomSocket } from '../../lib/websocket';
 
 export function RoomSocketPreview() {
+  const { t } = useTranslation();
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
@@ -20,8 +22,8 @@ export function RoomSocketPreview() {
   }, []);
 
   return (
-    <Card title="Xem trước WebSocket phòng" subtitle="Kênh sự kiện thời gian thực theo hợp đồng">
-      {events.length === 0 ? <p>Đang chờ sự kiện phòng...</p> : null}
+    <Card title={t('room.socket_preview_title')} subtitle={t('room.socket_preview_sub')}>
+      {events.length === 0 ? <p>{t('room.waiting_events')}</p> : null}
       <ul className="simple-list">
         {events.map((event, index) => (
           <li key={`${event.type}-${index}`}>

@@ -128,13 +128,22 @@ async def generate_expert_reply(
             return
         try:
             with Session(engine) as session:
-                save_message(session, room_id, None, answer, MessageType.AI_EXPERT, "assistant")
+                save_message(
+                    session,
+                    room_id,
+                    None,
+                    answer,
+                    MessageType.AI_EXPERT,
+                    "assistant",
+                    extra_payload={"vi": result.get("vi", "")},
+                )
         except Exception:
             log.warning("Luu expert reply vao DB that bai", exc_info=True)
         msg = json.dumps(
             {
                 "type": "chat_message",
                 "content": answer,
+                "vi": result.get("vi", ""),
                 "sender_id": "assistant",
                 "display_name": "assistant",
                 "sources": result.get("sources", []),
@@ -274,6 +283,10 @@ async def process_speech(pcm_data: bytes, user_id: str, room_id: str) -> None:
                     )
 
                     tts_display_text = (
+                        f"You might have mispronounced the word **\"{text}\"**. "
+                        "Listen to the correct pronunciation of this sentence."
+                    )
+                    tts_display_vi = (
                         f"Bạn có thể đã phát âm chưa chính xác từ **\"{text}\"**. "
                         "Hãy nghe cách phát âm chuẩn của câu này."
                     )
@@ -281,6 +294,7 @@ async def process_speech(pcm_data: bytes, user_id: str, room_id: str) -> None:
                     chat_msg: dict[str, object] = {
                         "type": "chat_message",
                         "content": tts_display_text,
+                        "vi": tts_display_vi,
                         "sender_id": "assistant",
                         "display_name": "assistant",
                         "timestamp": now(),
@@ -445,7 +459,8 @@ async def handle_room_ws(ws: WebSocket, room_id: str) -> None:
         welcome_msg = json.dumps(
             {
                 "type": "chat_message",
-                "content": "👋 Chào mừng đến với phòng! Hãy luyện nói, mình sẽ giúp bạn cải thiện phát âm. Thử nói một câu nhé!",
+                "content": "👋 Welcome to the room! Start speaking and I will help you improve your pronunciation. Try saying a sentence!",
+                "vi": "👋 Chào mừng đến với phòng! Hãy luyện nói, mình sẽ giúp bạn cải thiện phát âm. Thử nói một câu nhé!",
                 "sender_id": "assistant",
                 "display_name": "assistant",
                 "timestamp": now(),

@@ -38,12 +38,12 @@ export function SeriesPage() {
       <>
         <Container className="series-page py-4 text-center">
           <div className="series-page__upgrade">
-            <h3>Chuỗi phòng là tính năng Pro+</h3>
-            <p>Tạo lịch phòng định kỳ theo chủ đề, đặt mục tiêu học tập và xây dựng thói quen nói đều đặn.</p>
-            <Button variant="primary" onClick={() => setShowUpgrade(true)}>Nâng cấp lên Pro+</Button>
+            <h3>{t('series.pro_feature_title')}</h3>
+            <p>{t('series.pro_feature_desc')}</p>
+            <Button variant="primary" onClick={() => setShowUpgrade(true)}>{t('series.upgrade_btn')}</Button>
           </div>
         </Container>
-        <UpgradePrompt feature="Chuỗi phòng" visible={showUpgrade} onClose={() => setShowUpgrade(false)} />
+        <UpgradePrompt feature={t('series.upgrade_title')} visible={showUpgrade} onClose={() => setShowUpgrade(false)} />
       </>
     );
   }
@@ -52,24 +52,24 @@ export function SeriesPage() {
     <Container className="series-page py-4 fade-in">
       <div className="series-page__top">
         <div>
-          <h1>Chuỗi phòng</h1>
-          <p className="series-page__subtitle">Lên lịch chuỗi phòng theo chủ đề lặp lại đều đặn để bạn không bỏ lỡ ngày luyện tập.</p>
+          <h1>{t('series.title')}</h1>
+          <p className="series-page__subtitle">{t('series.subtitle')}</p>
         </div>
         <Button variant="primary" onClick={() => setShowCreate(true)}>
-          Tạo chuỗi
+          {t('series.create')}
         </Button>
       </div>
 
       {isLoading ? (
         <div className="series-page__loading">
           <Spinner animation="border" variant="primary" />
-          <span>Đang tải chuỗi phòng...</span>
+          <span>{t('series.loading')}</span>
         </div>
       ) : series.length === 0 ? (
         <div className="series-page__empty">
-          <h3>Chưa có chuỗi nào</h3>
-          <p>Tạo chuỗi phòng định kỳ đầu tiên và xây dựng thói quen luyện nói đều đặn.</p>
-          <Button variant="primary" onClick={() => setShowCreate(true)}>Tạo chuỗi</Button>
+          <h3>{t('series.no_series')}</h3>
+          <p>{t('series.no_series_desc')}</p>
+          <Button variant="primary" onClick={() => setShowCreate(true)}>{t('series.create')}</Button>
         </div>
       ) : (
         <div className="series-page__list">
@@ -82,17 +82,17 @@ export function SeriesPage() {
                     <div className="series-page__row-title">{s.title}</div>
                     <div className="series-page__row-meta">
                       {s.tag_id && tagMap[s.tag_id] ? <TagBadge label={tagMap[s.tag_id]} /> : s.tag_id ? <span className="series-page__tag-placeholder">{s.tag_id.slice(0, 8)}</span> : null}
-                      <span>{totalSessions} buổi</span>
+                      <span>{totalSessions} {t('series.sessions_count')}</span>
                     </div>
                   </div>
                   <div className="series-page__row-actions">
-                    <span className="series-page__active-label">Đang hoạt động</span>
-                    <button onClick={() => deleteMutation.mutate(s.id)} className="series-page__delete-btn">Xóa</button>
+                    <span className="series-page__active-label">{t('series.active')}</span>
+                    <button onClick={() => deleteMutation.mutate(s.id)} className="series-page__delete-btn">{t('common.delete')}</button>
                   </div>
                 </div>
                 <div className="series-page__progress">
                   <div className="series-page__progress-track"><div className="series-page__progress-fill" style={{ width: '0%' }} /></div>
-                  <span className="series-page__progress-text">0/{totalSessions} buổi</span>
+                  <span className="series-page__progress-text">0/{totalSessions} {t('series.sessions_count')}</span>
                 </div>
               </div>
             );
@@ -123,38 +123,38 @@ function CreateSeriesModal({ visible, onClose, onCreated }) {
   return (
     <Modal show={visible} onHide={onClose} centered>
       <Modal.Body className="series-page__modal-body">
-        <h2 className="series-page__modal-title">Tạo chuỗi phòng</h2>
+        <h2 className="series-page__modal-title">{t('series.modal_title')}</h2>
         <Form onSubmit={handleSubmit}>
           <Form.Group className="mb-3">
-            <Form.Label className="series-page__modal-label">Tiêu đề</Form.Label>
-            <Form.Control type="text" placeholder="vd. Tiếng Anh thương mại hàng tuần" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
+            <Form.Label className="series-page__modal-label">{t('series.form_title')}</Form.Label>
+            <Form.Control type="text" placeholder={t('series.form_title_placeholder')} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
           </Form.Group>
           <Form.Group className="mb-3">
-            <Form.Label className="series-page__modal-label">Thẻ chủ đề</Form.Label>
+            <Form.Label className="series-page__modal-label">{t('series.form_topic_tag')}</Form.Label>
             <Form.Select value={form.tag_id} onChange={(e) => setForm({ ...form, tag_id: e.target.value })} required>
-              <option value="">Chọn thẻ</option>
+              <option value="">{t('series.form_select_tag')}</option>
               {(popularTags || []).map((t) => (
                 <option key={t.id || t} value={t.id || t}>{t.name || t}</option>
               ))}
             </Form.Select>
           </Form.Group>
           <Form.Group className="mb-3">
-            <Form.Label className="series-page__modal-label">Tổng số buổi</Form.Label>
+            <Form.Label className="series-page__modal-label">{t('series.form_sessions')}</Form.Label>
             <Form.Control type="number" min={1} max={20} value={form.total_sessions} onChange={(e) => setForm({ ...form, total_sessions: parseInt(e.target.value) || 4 })} />
           </Form.Group>
           <Form.Group className="mb-3">
-            <Form.Label className="series-page__modal-label">Lịch trình</Form.Label>
+            <Form.Label className="series-page__modal-label">{t('series.form_schedule')}</Form.Label>
             <Form.Select value={form.schedule_cron} onChange={(e) => setForm({ ...form, schedule_cron: e.target.value })}>
-              <option value="0 0 * * *">Hàng ngày</option>
-              <option value="0 0 * * 1">Hàng tuần</option>
-              <option value="0 0 1,15 * *">Hai tuần một lần</option>
-              <option value="0 0 1 * *">Hàng tháng</option>
+              <option value="0 0 * * *">{t('series.form_daily')}</option>
+              <option value="0 0 * * 1">{t('series.form_weekly')}</option>
+              <option value="0 0 1,15 * *">{t('series.form_biweekly')}</option>
+              <option value="0 0 1 * *">{t('series.form_monthly')}</option>
             </Form.Select>
           </Form.Group>
           <div className="series-page__modal-actions">
-            <Button variant="outline-secondary" onClick={onClose} className="flex-fill">Hủy</Button>
+            <Button variant="outline-secondary" onClick={onClose} className="flex-fill">{t('common.cancel')}</Button>
             <Button type="submit" variant="primary" disabled={createMutation.isPending} className="flex-fill">
-              {createMutation.isPending ? 'Đang tạo...' : 'Tạo chuỗi'}
+              {createMutation.isPending ? t('series.creating') : t('series.create')}
             </Button>
           </div>
         </Form>

@@ -26,7 +26,7 @@ export function SessionDetailPage() {
       <Container className="session-detail-page py-4">
         <div className="session-detail-page__loading">
           <Spinner animation="border" variant="primary" />
-          <span>Đang tải buổi học...</span>
+          <span>{t('sessions.loading')}</span>
         </div>
       </Container>
     );
@@ -37,9 +37,9 @@ export function SessionDetailPage() {
       <Container className="session-detail-page py-4">
         <div className="session-detail-page__error">
           <HiAcademicCap size={48} />
-          <h3>Không tìm thấy buổi học</h3>
-          <p>Buổi học này có thể đã bị xóa hoặc không còn khả dụng.</p>
-          <Link to="/sessions"><Button variant="outline-primary" className="px-3">Quay lại buổi học</Button></Link>
+          <h3>{t('sessions.not_found')}</h3>
+          <p>{t('sessions.session_deleted')}</p>
+          <Link to="/sessions"><Button variant="outline-primary" className="px-3">{t('sessions.back_to_sessions')}</Button></Link>
         </div>
       </Container>
     );
@@ -54,11 +54,11 @@ export function SessionDetailPage() {
   return (
     <Container className="session-detail-page py-4">
       <Link to="/sessions" className="session-detail-page__back">
-        Quay lại buổi học
+        {t('sessions.back_to_sessions')}
       </Link>
 
       <div className="session-detail-page__header">
-        <h1>{session.topic || session.name || 'Buổi luyện tập'}</h1>
+        <h1>{session.topic || session.name || t('sessions.practice_session')}</h1>
         <div className="session-detail-page__meta">
           <span>{formatDuration(session.duration)}</span>
           <span className="session-detail-page__meta-sep"> &middot; </span>
@@ -66,12 +66,12 @@ export function SessionDetailPage() {
           {session.participants && (
             <>
               <span className="session-detail-page__meta-sep"> &middot; </span>
-              <span>{session.participants} người tham gia</span>
+              <span>{session.participants} {t('sessions.participants')}</span>
             </>
           )}
         </div>
         {score != null && (
-          <div className="session-detail-page__score">Điểm: {Math.round(score)}/10</div>
+          <div className="session-detail-page__score">{t('sessions.score')}: {Math.round(score)}/10</div>
         )}
         {tags.length > 0 && (
           <div className="session-detail-page__tags">
@@ -84,10 +84,10 @@ export function SessionDetailPage() {
 
       {review && (
         <div className="session-detail-page__section">
-          <h2>Đánh giá của AI</h2>
+          <h2>{t('sessions.ai_review')}</h2>
           {review.strengths && review.strengths.length > 0 && (
             <div>
-              <span className="session-detail-page__section-label">Điểm mạnh</span>
+              <span className="session-detail-page__section-label">{t('sessions.strengths')}</span>
               <ul>
                 {review.strengths.map((s, i) => <li key={i}>{s}</li>)}
               </ul>
@@ -95,7 +95,7 @@ export function SessionDetailPage() {
           )}
           {review.improvements && review.improvements.length > 0 && (
             <div>
-              <span className="session-detail-page__section-label">Cần cải thiện</span>
+              <span className="session-detail-page__section-label">{t('sessions.improvements')}</span>
               <ul>
                 {review.improvements.map((imp, i) => <li key={i}>{imp}</li>)}
               </ul>
@@ -106,7 +106,7 @@ export function SessionDetailPage() {
 
       {corrections.length > 0 && (
         <div className="session-detail-page__section">
-          <h2>Sửa lỗi ({corrections.length})</h2>
+          <h2>{t('sessions.corrections')} ({corrections.length})</h2>
           {corrections.map((c, i) => (
             <CorrectionCard key={c.id || i} correction={c} />
           ))}
@@ -115,7 +115,7 @@ export function SessionDetailPage() {
 
       {expertResponses.length > 0 && (
         <div className="session-detail-page__section">
-          <h2>Câu trả lời chuyên gia ({expertResponses.length})</h2>
+          <h2>{t('sessions.expert_answers')} ({expertResponses.length})</h2>
           {expertResponses.map((r, i) => (
             <ExpertResponse key={r.id || i} response={r} />
           ))}
@@ -124,17 +124,17 @@ export function SessionDetailPage() {
 
       {session.transcript && (
         <div className="session-detail-page__section">
-          <h2>Lời thoại</h2>
+          <h2>{t('sessions.transcript')}</h2>
           <div className="session-detail-page__transcript">
             {typeof session.transcript === 'string' ? session.transcript :
               Array.isArray(session.transcript) ? session.transcript.map(m => `[${m.speaker || '?'}] ${m.text}`).join('\n') :
-              'Không có lời thoại'}
+              t('sessions.no_transcript')}
           </div>
         </div>
       )}
 
       <div className="session-detail-page__cta">
-        <Link to="/learning">Tìm phòng khác</Link>
+        <Link to="/learning">{t('sessions.find_another_room')}</Link>
       </div>
     </Container>
   );

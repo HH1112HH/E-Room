@@ -267,4 +267,8 @@ async def match_room(
     if matching:
         best = matching[0]
         return {"status": "matched", "roomId": str(best.id), "roomName": best.livekit_room_name}
-    return {"status": "queued", "message": "Không có phòng nào trống lúc này"}
+    return {
+        "status": "queued",
+        "message": "No available rooms right now",
+        "vi": "Không có phòng nào trống lúc này",
+    }

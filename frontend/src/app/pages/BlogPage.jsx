@@ -9,7 +9,7 @@ import '../../styles/MarketingPages.css';
 
 export function BlogPage() {
   const { t } = useTranslation();
-  const [activeCategory, setActiveCategory] = useState('Tất cả');
+  const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
   const posts = blogPosts.map((p) => ({
@@ -23,10 +23,10 @@ export function BlogPage() {
     content: t(p.contentKey, { returnObjects: true }),
   }));
 
-  const categories = ['Tất cả', ...new Set(posts.map((p) => p.category))];
+  const categories = ['all', ...new Set(posts.map((p) => p.category))];
 
   const filtered = posts.filter((post) => {
-    const matchCategory = activeCategory === 'Tất cả' || post.category === activeCategory;
+    const matchCategory = activeCategory === 'all' || post.category === activeCategory;
     const q = searchQuery.toLowerCase();
     const matchSearch = !q || post.title.toLowerCase().includes(q) || post.excerpt.toLowerCase().includes(q);
     return matchCategory && matchSearch;
@@ -50,7 +50,7 @@ export function BlogPage() {
                 className={`blog-filter-btn${activeCategory === cat ? ' blog-filter-btn--active' : ''}`}
                 onClick={() => setActiveCategory(cat)}
               >
-                {cat}
+                {cat === 'all' ? t('marketing.blog_all') : cat}
               </button>
             ))}
           </div>
@@ -70,7 +70,7 @@ export function BlogPage() {
             <p>{t('marketing.blog_empty')}</p>
           </div>
         ) : (
-          <section className="blog-layout" aria-label="Bài viết mới nhất">
+          <section className="blog-layout" aria-label={t('marketing.blog_latest_articles')}>
             {lead && (
               <article className="blog-lead">
                 <div className="blog-lead__body">
