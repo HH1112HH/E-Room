@@ -1,0 +1,10 @@
+[build]
+  base = "frontend"
+  command = "npm ci && npm run build"
+  publish = "build"
+
+[build.environment]
+  REACT_APP_DEMO_MODE = "false"
+  REACT_APP_API_BASE_URL = "https://e-room-api.onrender.com/api/v1"
+  REACT_APP_WS_BASE_URL = "wss://e-room-api.onrender.com"
+  VITE_WS_BASE_URL = "wss://e-room-api.onrender.com"
