@@ -40,6 +40,9 @@ class AuthMiddleware(BaseHTTPMiddleware):
         if path in PUBLIC_PATHS or path.startswith("/ws/"):
             return await call_next(request)
 
+        if request.method == "GET" and (path == "/api/v1/rooms" or path.startswith("/api/v1/rooms/")):
+            return await call_next(request)
+
         token = request.cookies.get("access_token") or request.headers.get("authorization", "").replace("Bearer ", "")
 
         if not token:

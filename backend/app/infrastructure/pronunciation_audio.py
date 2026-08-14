@@ -2,53 +2,32 @@ from __future__ import annotations
 
 import asyncio
 import base64
-import os
-import subprocess
-import tempfile
 from typing import Any
 from uuid import uuid4
 
-from app.infrastructure.minio import MinioCRUD, get_minio_client
+from app.infrastructure.minio import MinioCRUD
 from app.log import get_logger
 
 logger = get_logger(__name__)
 
 
-def _synthesize(text: str) -> bytes:
-    with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
-        tmp_path = tmp.name
-    ps_script = (
-        "Add-Type -AssemblyName System.Speech; "
-        "$synth = New-Object System.Speech.Synthesis.SpeechSynthesizer; "
-        f'$synth.SetOutputToWaveFile("{tmp_path}"); '
-        f"$synth.Speak('{text.replace(chr(39), chr(39)+chr(39))}'); "
-        "$synth.Dispose()"
-    )
+def _synthesize(text: str, lang: str = "en") -> bytes:
     try:
-        subprocess.run(
-            ["powershell", "-NoProfile", "-Command", ps_script],
-            check=True,
-            capture_output=True,
-            timeout=30,
-        )
-        with open(tmp_path, "rb") as f:
-            return f.read()
-    except subprocess.TimeoutExpired:
-        logger.warning("TTS timeout cho '%s'", text[:30])
+        from io import BytesIO
+
+        from gtts import gTTS
+
+        buf = BytesIO()
+        gTTS(text=text, lang=lang).write_to_fp(buf)
+        return buf.getvalue()
+    except Exception:
+        logger.warning("TTS that bai cho '%s'", text[:30], exc_info=True)
         return b""
-    except subprocess.CalledProcessError as e:
-        logger.warning("TTS that bai: %s", e.stderr.decode(errors="replace")[:200])
-        return b""
-    finally:
-        try:
-            os.unlink(tmp_path)
-        except Exception:
-            pass
 
 
 async def generate_audio_base64(text: str, lang: str = "en") -> str | None:
     try:
-        wav_bytes = await asyncio.get_running_loop().run_in_executor(None, _synthesize, text)
+        wav_bytes = await asyncio.get_running_loop().run_in_executor(None, _synthesize, text, lang)
         if not wav_bytes:
             return None
         encoded = base64.b64encode(wav_bytes).decode("ascii")
@@ -67,17 +46,17 @@ async def generate_pronunciation_audio(errors: list[dict[str, Any]]) -> list[dic
             continue
         audio_b64 = await generate_audio_base64(corrected)
         if audio_b64:
-            result.append({"word": corrected, "audio_base64": audio_b64, "mime": "audio/wav"})
+            result.append({"word": corrected, "audio_base64": audio_b64, "mime": "audio/mpeg"})
     return result
 
 
 async def save_audio_to_minio(wav_bytes: bytes, room_id: str) -> str | None:
     try:
-        key = f"audio/tts/{room_id}/{uuid4()}.wav"
+        key = f"audio/tts/{room_id}/{uuid4()}.mp3"
         crud = MinioCRUD()
         loop = asyncio.get_running_loop()
         await loop.run_in_executor(None, crud.ensure_bucket)
-        await loop.run_in_executor(None, crud.put_object, key, wav_bytes, "audio/wav")
+        await loop.run_in_executor(None, crud.put_object, key, wav_bytes, "audio/mpeg")
         logger.info("Da upload TTS audio len MinIO: %s", key)
         return key
     except Exception:
@@ -86,7 +65,7 @@ async def save_audio_to_minio(wav_bytes: bytes, room_id: str) -> str | None:
 
 
 async def generate_tts_with_storage(text: str, room_id: str, lang: str = "en") -> tuple[str | None, str | None]:
-    wav_bytes = await asyncio.get_running_loop().run_in_executor(None, _synthesize, text)
+    wav_bytes = await asyncio.get_running_loop().run_in_executor(None, _synthesize, text, lang)
     if not wav_bytes:
         return None, None
     audio_b64 = base64.b64encode(wav_bytes).decode("ascii")

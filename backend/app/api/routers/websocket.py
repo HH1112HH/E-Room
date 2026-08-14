@@ -519,7 +519,7 @@ async def handle_room_ws(ws: WebSocket, room_id: str) -> None:
                 log.info("WS phong nhan yeu cau TTS", extra={"room_id": room_id, "user_id": user_id, "text": tts_text})
                 audio_b64 = await generate_audio_base64(tts_text)
                 if audio_b64:
-                    tts_msg = json.dumps({"type": "tts_audio", "audio_base64": audio_b64, "mime": "audio/wav", "text": tts_text})
+                    tts_msg = json.dumps({"type": "tts_audio", "audio_base64": audio_b64, "mime": "audio/mpeg", "text": tts_text})
                     try:
                         await ws.send_text(tts_msg)
                     except Exception:

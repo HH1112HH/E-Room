@@ -30,8 +30,8 @@ frontend/build/
 .codegraph/
 .opencode/
 
-# model weights
-backend/app/weight/
+# model weights (committed so the Docker image ships them — no runtime HF downloads)
+backend/app/weight/huggingface/
 
 # temp files
 temp.json

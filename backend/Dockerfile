@@ -11,7 +11,7 @@ RUN pip install uv
 COPY pyproject.toml uv.lock ./
 
 # Layer 3 — install dependencies (cached unless pyproject/uv.lock change)
-RUN uv sync --frozen
+RUN uv sync --frozen --no-dev
 
 # Layer 4 — application code (changes most often, goes last)
 COPY . .

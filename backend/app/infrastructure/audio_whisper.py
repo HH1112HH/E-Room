@@ -55,8 +55,8 @@ def transcribe_whisper(pcm_data: bytes, sample_rate: int) -> tuple[str, list[dic
     segments, info = model.transcribe(
         audio_array,
         language="en",
-        beam_size=3,
-        best_of=3,
+        beam_size=1,
+        best_of=1,
         temperature=0.0,
         vad_filter=False,
         condition_on_previous_text=False,
