@@ -1,9 +1,5 @@
 from __future__ import annotations
 
-import io
-import struct
-import wave
-
 from fastapi import APIRouter, HTTPException
 
 from app.config import settings

@@ -23,6 +23,7 @@ PUBLIC_PATHS = {
     "/api/v1/infra/status",
     "/api/v1/infra/health",
     "/api/v1/infra/health/live",
+    "/api/v1/audio/test-transcribe",
 
     "/docs",
     "/openapi.json",
