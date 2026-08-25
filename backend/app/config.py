@@ -47,6 +47,11 @@ class Settings(BaseSettings):
     embedding_model: str = ""
     brave_search_api_key: str = ""
 
+    # ─── Groq (Whisper STT) ─────────────────────────
+    groq_api_key: str = ""
+    whisper_model: str = "whisper-large-v3-turbo"
+    whisper_language: str = "en"
+
     # ─── Stripe (Subscription) ─────────────────────
     stripe_secret_key: str = ""
     stripe_webhook_secret: str = ""

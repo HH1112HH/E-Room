@@ -28,6 +28,12 @@ services:
         sync: false
       - key: BRAVE_SEARCH_API_KEY
         sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: WHISPER_MODEL
+        value: whisper-large-v3-turbo
+      - key: WHISPER_LANGUAGE
+        value: en
       - key: LIVEKIT_URL
         value: wss://project-e-room-egbiumj8.livekit.cloud
       - key: LIVEKIT_API_KEY
