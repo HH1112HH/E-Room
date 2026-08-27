@@ -34,7 +34,6 @@ dependencies = [
     "stripe>=15.1.0",
     "numpy>=2.0.0",
     "soundfile>=0.13.1",
-    "groq>=0.13.0",
     "gtts>=2.5.4",
 ]
 

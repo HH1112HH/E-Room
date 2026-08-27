@@ -47,18 +47,10 @@ class Settings(BaseSettings):
     embedding_model: str = ""
     brave_search_api_key: str = ""
 
-    # ─── Whisper STT ─────────────────────────────────
-    # "local" = faster-whisper trên máy local (cần worker WebSocket kết nối)
-    # "groq"  = Groq API (cần GROQ_API_KEY)
-    whisper_mode: str = "groq"
+    # ─── Whisper STT (Local Worker) ──────────────────
     whisper_language: str = "en"
     whisper_local_timeout: int = 30
-    whisper_fallback_groq: bool = True
     whisper_worker_secret: str = ""
-
-    # ─── Groq (fallback) ────────────────────────────
-    groq_api_key: str = ""
-    whisper_model: str = "whisper-large-v3-turbo"
 
     # ─── Stripe (Subscription) ─────────────────────
     stripe_secret_key: str = ""

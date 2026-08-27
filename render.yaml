@@ -28,18 +28,10 @@ services:
         sync: false
       - key: BRAVE_SEARCH_API_KEY
         sync: false
-      - key: GROQ_API_KEY
-        sync: false
-      - key: WHISPER_MODE
-        value: groq
-      - key: WHISPER_MODEL
-        value: whisper-large-v3-turbo
       - key: WHISPER_LANGUAGE
         value: en
       - key: WHISPER_LOCAL_TIMEOUT
         value: "30"
-      - key: WHISPER_FALLBACK_GROQ
-        value: "true"
       - key: WHISPER_WORKER_SECRET
         sync: false
       - key: LIVEKIT_URL
