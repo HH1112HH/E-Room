@@ -2,8 +2,7 @@
 """Local Whisper Worker — kết nối WebSocket đến Render API, chạy faster-whisper large-v3.
 
 Usage:
-    export WHISPER_SERVER_URL="wss://e-room-api.onrender.com/ws/whisper-worker"
-    export WHISPER_WORKER_SECRET="your-secret"
+    cd E-Room
     python scripts/whisper_worker.py
 """
 
@@ -18,7 +17,17 @@ import signal
 import sys
 import time
 import wave
+from pathlib import Path
 from urllib.parse import urlencode
+
+from dotenv import load_dotenv
+
+env_path = Path(__file__).parent / ".env.worker"
+if env_path.exists():
+    load_dotenv(env_path)
+    print(f"Loaded env from {env_path}")
+else:
+    print(f"No .env.worker found at {env_path}, using system env vars")
 
 RECONNECT_DELAYS = [1, 2, 4, 8, 16, 32, 60]
 
