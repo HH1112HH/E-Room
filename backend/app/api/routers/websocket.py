@@ -560,3 +560,41 @@ async def handle_room_ws(ws: WebSocket, room_id: str) -> None:
             except Exception:
                 pass
         log.info("Ngat ket noi WebSocket phong", extra={"room_id": room_id, "user_id": user_id})
+
+
+async def handle_whisper_worker(ws: WebSocket) -> None:
+    from uuid import uuid4
+
+    from app.config import settings
+    from app.infrastructure.whisper_manager import whisper_manager
+
+    secret = ws.query_params.get("secret", "")
+    if not settings.whisper_worker_secret or secret != settings.whisper_worker_secret:
+        log.warning("Whisper worker auth failed: invalid secret")
+        await ws.close(code=4001, reason="Invalid secret")
+        return
+
+    await ws.accept()
+    worker_id = str(uuid4())
+    whisper_manager.register(worker_id, ws)
+    log.info("Whisper worker connected: %s (total=%d)", worker_id, whisper_manager.worker_count)
+
+    try:
+        while True:
+            raw = await ws.receive_text()
+            data = json.loads(raw)
+            msg_type = data.get("type", "")
+
+            if msg_type == "heartbeat":
+                whisper_manager.heartbeat(worker_id)
+
+            elif msg_type == "transcribe_result":
+                whisper_manager.complete_task(data.get("task_id", ""), data)
+
+    except WebSocketDisconnect:
+        pass
+    except Exception:
+        log.warning("Whisper worker error", exc_info=True)
+    finally:
+        whisper_manager.unregister(worker_id)
+        log.info("Whisper worker disconnected: %s (total=%d)", worker_id, whisper_manager.worker_count)

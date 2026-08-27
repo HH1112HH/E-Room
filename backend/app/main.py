@@ -9,7 +9,7 @@ from sqlmodel import Session, text
 
 from app.api import api_router
 from app.api.middleware import AuthMiddleware, LoggingMiddleware
-from app.api.routers.websocket import handle_audio_ws, handle_room_ws
+from app.api.routers.websocket import handle_audio_ws, handle_room_ws, handle_whisper_worker
 from app.config import settings
 from app.database import create_db_and_tables, engine
 from app.infrastructure.event_bus import event_bus
@@ -63,6 +63,7 @@ app.include_router(api_router, prefix="/api/v1")
 
 app.add_api_websocket_route("/ws/rooms/{room_id}", handle_room_ws)
 app.add_api_websocket_route("/ws/audio/{room_id}", handle_audio_ws)
+app.add_api_websocket_route("/ws/whisper-worker", handle_whisper_worker)
 
 
 @app.get("/", tags=["root"])
