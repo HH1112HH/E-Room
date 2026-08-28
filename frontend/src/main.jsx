@@ -6,6 +6,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './styles/theme.css';
 import './i18n';
 import { ThemeProvider } from './context/ThemeContext';
+import ToastProvider from './components/ui/Toast';
 import { App } from './app/App';
 
 const rootElement = document.getElementById('root');
@@ -15,7 +16,9 @@ try {
     <React.StrictMode>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
-          <App />
+          <ToastProvider>
+            <App />
+          </ToastProvider>
         </ThemeProvider>
       </QueryClientProvider>
     </React.StrictMode>
