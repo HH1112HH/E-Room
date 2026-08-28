@@ -94,6 +94,7 @@ async def create_room(
         max_participants=payload.max_participants,
         is_public=payload.is_public,
         status=RoomStatus.MATCHING,
+        creator_user_id=UUID(current_user["id"]),
     )
     saved_room = room_service.save(room)
 
@@ -256,17 +257,27 @@ async def match_room(
     current_user: dict = Depends(get_current_user),
 ) -> dict:
     room_service = RoomService(session)
-    rooms = room_service.list_all()
-    open_rooms = [r for r in rooms if r.status in {RoomStatus.MATCHING, RoomStatus.IDLE}]
+    open_rooms = room_service.list_open_rooms()
+
+    open_rooms = [
+        r for r in open_rooms
+        if r.current_participants < r.max_participants
+        and str(r.creator_user_id) != current_user["id"]
+    ]
+
     if payload.tag_ids:
         matching = [r for r in open_rooms if any(tag in (r.tags or []) for tag in payload.tag_ids)]
     else:
         matching = open_rooms
+
     if not matching and open_rooms:
         matching = open_rooms[:1]
+
     if matching:
-        best = matching[0]
+        import random
+        best = random.choice(matching)
         return {"status": "matched", "roomId": str(best.id), "roomName": best.livekit_room_name}
+
     return {
         "status": "queued",
         "message": "No available rooms right now",

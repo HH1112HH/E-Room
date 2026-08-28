@@ -8,7 +8,7 @@ from sqlmodel import Session
 from app.database import get_session
 
 
-def get_pagination_params(skip: int = Query(0, ge=0), limit: int = Query(10, ge=1, le=100)) -> tuple[int, int]:
+def get_pagination_params(skip: int = Query(0, ge=0), limit: int = Query(50, ge=1, le=100)) -> tuple[int, int]:
     return skip, limit
 
 

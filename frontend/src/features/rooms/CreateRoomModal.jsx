@@ -16,7 +16,7 @@ const ENGLISH_LEVELS = [
   { value: 'C2', label: 'C2', descIndex: 5 },
 ];
 
-const PARTICIPANT_OPTS = [2, 3, 4, 5, 6, 8, 10, 15];
+const PARTICIPANT_OPTS = [2, 3, 4];
 
 const FALLBACK_TAGS = [
   'AI/ML', 'Technology', 'Python', 'Prompt Engineering',
@@ -32,7 +32,7 @@ export function CreateRoomModal({ onClose, onRoomCreated }) {
   const [description, setDescription] = useState('');
   const [tagIds, setTagIds] = useState('');
   const [level, setLevel] = useState('');
-  const [maxParticipants, setMaxParticipants] = useState(5);
+  const [maxParticipants, setMaxParticipants] = useState(4);
   const [popularTags, setPopularTags] = useState([]);
   const [saving, setSaving] = useState(false);
   const levelDescs = t('learning.create_room_level_descs', { returnObjects: true });

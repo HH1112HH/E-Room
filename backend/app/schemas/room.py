@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 class RoomCreateRequest(BaseModel):
     topic: str = Field(min_length=3, max_length=200)
     tag_ids: list[str] = Field(default_factory=list)
-    max_participants: int = Field(default=5, ge=2, le=50)
+    max_participants: int = Field(default=4, ge=2, le=4)
     is_public: bool = True
 
 
@@ -26,7 +26,7 @@ class RoomResponse(BaseModel):
     agent_level: str = "basic"
     english_level: str = "any"
     status: str = "MATCHING"
-    max_participants: int = 5
+    max_participants: int = 4
     current_participants: int = 0
     is_public: bool = True
     session_duration_seconds: int = 900
@@ -44,7 +44,7 @@ class RoomUpdateRequest(BaseModel):
     topic: str | None = None
     english_level: str | None = None
     agent_level: str | None = None
-    max_participants: int | None = Field(default=None, ge=2, le=10)
+    max_participants: int | None = Field(default=None, ge=2, le=4)
     session_duration_seconds: int | None = Field(default=None, ge=60, le=3600)
     is_public: bool | None = None
     enable_heartbeat: bool | None = None

@@ -18,7 +18,15 @@ class RoomService(CRUDRepository):
         return self.get_one(self.session, id=id)
 
     def list_all(self, skip: int = 0, limit: int | None = None) -> list[Room]:
-        return self.get_many(self.session, skip=skip, limit=limit)
+        return self.get_many(self.session, skip=skip, limit=limit, order_by="created_at", desc=True)
+
+    def list_open_rooms(self) -> list[Room]:
+        from sqlmodel import select
+        stmt = select(Room).where(
+            Room.status.in_([RoomStatus.MATCHING, RoomStatus.IDLE]),
+            Room.is_public == True,
+        )
+        return self.session.exec(stmt).all()
 
     def list_active_rooms(self) -> list[Room]:
         return self.get_many(self.session, status=RoomStatus.ACTIVE)

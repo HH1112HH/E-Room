@@ -4,6 +4,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { fetchJson } from '../../lib/api';
 import { useAuth } from '../../app/AuthContext';
+import { useToast } from '../../components/ui/Toast';
 import { QueueOverlay } from '../../features/chat/QueueOverlay';
 import { MatchFoundCard } from '../../features/chat/MatchFoundCard';
 import {
@@ -16,6 +17,7 @@ import '../../styles/HomePage.css';
 
 function useMatchMutation() {
   const { t } = useTranslation();
+  const { addToast } = useToast();
   const [showQuickMatch, setShowQuickMatch] = useState(false);
   const [quickJoining, setQuickJoining] = useState(false);
   const [matchResult, setMatchResult] = useState(null);
@@ -25,15 +27,18 @@ function useMatchMutation() {
     mutationFn: async (tagIds) => {
       const result = await fetchJson('/rooms/match', {
         method: 'POST',
-        body: JSON.stringify({ tag_ids: tagIds }),
+        body: JSON.stringify({ tag_ids: tagIds || [] }),
       });
       if (result.status === 'matched') {
         return await fetchJson(`/rooms/${result.roomId}`);
       }
-      throw new Error(result.message || t('learning.no_match'));
+      throw new Error(result.vi || result.message || t('learning.no_match'));
     },
     onSuccess: (room) => { setMatchResult(room); setQuickJoining(false); },
-    onError: () => { setQuickJoining(false); setMatchResult(null); },
+    onError: (err) => {
+      setQuickJoining(false); setMatchResult(null);
+      addToast(err.message, 'error');
+    },
   });
 
   const handleQuickJoin = useCallback((tags) => {
@@ -136,7 +141,7 @@ export function HomePage() {
               <HiPlay size={18} />
               {t('landing.see_how')}
             </button>
-            <button className="hp-btn hp-btn-ghost" onClick={() => user ? handleQuickJoin(user.tags?.map(t => t.id) || []) : navigate('/login')}>
+            <button className="hp-btn hp-btn-ghost" onClick={() => user ? handleQuickJoin([]) : navigate('/login')}>
               {t('landing.start_free')}
               <HiArrowRight size={18} />
             </button>

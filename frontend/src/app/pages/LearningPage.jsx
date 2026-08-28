@@ -25,6 +25,7 @@ import { CreateRoomModal } from '../../features/rooms/CreateRoomModal';
 import '../../styles/LearningPage.css';
 const STATUS_ICON = {
   ACTIVE: { icon: HiPlayCircle, color: 'var(--color-success)', badge: 'success', labelKey: 'learning.live' },
+  MATCHING: { icon: HiClock, color: 'var(--color-warning, #d97706)', badge: 'warning', labelKey: 'learning.status_matching' },
   IDLE: { icon: HiClock, color: 'var(--color-text-muted)', badge: 'info', labelKey: 'learning.waiting' },
 };
 
@@ -35,7 +36,7 @@ function RoomCard({ room }) {
   const level = room.english_level || 'any';
   const tags = room.tags || [];
   const current = room.current_participants || 0;
-  const max = room.max_participants || 5;
+  const max = room.max_participants || 4;
 
   return (
     <Card className="h-100 border-0 room-card-v2 fade-in">
@@ -230,7 +231,8 @@ export function LearningPage() {
     if (filter !== 'all') {
       const rStatus = (r.status || '').toUpperCase();
       if (filter === 'ACTIVE' && rStatus !== 'ACTIVE') return false;
-      if (filter === 'IDLE' && rStatus === 'ACTIVE') return false;
+      if (filter === 'MATCHING' && rStatus !== 'MATCHING') return false;
+      if (filter === 'IDLE' && rStatus !== 'IDLE') return false;
     }
     if (search && !r.topic?.toLowerCase().includes(search.toLowerCase())
       && !r.description?.toLowerCase().includes(search.toLowerCase())) return false;
@@ -254,13 +256,14 @@ export function LearningPage() {
   const filters = [
     { key: 'all', labelKey: 'learning.filter_all', icon: HiGlobeAlt },
     { key: 'ACTIVE', labelKey: 'learning.filter_live', icon: HiPlayCircle },
+    { key: 'MATCHING', labelKey: 'learning.status_matching', icon: HiClock },
     { key: 'IDLE', labelKey: 'learning.filter_waiting', icon: HiClock },
   ];
 
   const stats = [
     { labelKey: 'learning.total_rooms', value: (rooms || []).length, icon: HiGlobeAlt, color: 'var(--color-accent)' },
     { labelKey: 'learning.live_now', value: (rooms || []).filter(r => r.status === 'ACTIVE').length, icon: HiPlayCircle, color: 'var(--color-success)' },
-    { labelKey: 'learning.waiting_label', value: (rooms || []).filter(r => r.status === 'IDLE').length, icon: HiClock, color: 'var(--color-text-muted)' },
+    { labelKey: 'learning.waiting_label', value: (rooms || []).filter(r => r.status === 'IDLE' || r.status === 'MATCHING').length, icon: HiClock, color: 'var(--color-text-muted)' },
     { labelKey: 'learning.your_sessions', value: '0', icon: HiAcademicCap, color: 'var(--color-text-muted)' },
   ];
 

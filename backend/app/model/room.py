@@ -15,7 +15,7 @@ class RoomBase(SQLModel):
     agent_level: AgentLevel = AgentLevel.BASIC
     english_level: EnglishLevel | None = None
     status: RoomStatus = RoomStatus.IDLE
-    max_participants: int = Field(default=5, ge=3, le=5)
+    max_participants: int = Field(default=4, ge=2, le=4)
     current_participants: int = 0
     session_duration_seconds: int = Field(default=900, ge=300, le=3600)
     is_private: bool = False
