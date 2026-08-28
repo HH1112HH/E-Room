@@ -36,20 +36,8 @@ def transcribe_whisper(pcm_data: bytes, sample_rate: int) -> tuple[str, list[dic
     wav_data = _pcm_to_wav(pcm_data, sample_rate)
     logger.info("Gui audio den local worker (%d bytes WAV)", len(wav_data))
 
-    try:
-        import asyncio
-
-        loop = asyncio.get_running_loop()
-        future = asyncio.ensure_future(whisper_manager.send_audio(wav_data, settings.whisper_language, timeout=settings.whisper_local_timeout))
-
-        import concurrent.futures
-
-        with concurrent.futures.ThreadPoolExecutor() as pool:
-            result = pool.submit(asyncio.run, future).result()
-    except RuntimeError:
-        result = asyncio.run(whisper_manager.send_audio(wav_data, settings.whisper_language, timeout=settings.whisper_local_timeout))
-
-    text = result.get("text", "")
-    words = result.get("words", [])
+    text, words = whisper_manager.send_audio_sync(
+        wav_data, settings.whisper_language, timeout=settings.whisper_local_timeout
+    )
     logger.info("Worker tra ve: text=%r, words=%d", text[:80], len(words))
     return text, words

@@ -95,6 +95,27 @@ export function useChatState(roomId, wsSocket, visible) {
       });
     });
 
+    on('ai_correction', (data) => {
+      setChatMessages((prev) => {
+        const msg = {
+          id: data.id || Date.now(),
+          senderId: 'assistant',
+          sender: 'AI Coach',
+          text: '',
+          time: new Date(data.timestamp || Date.now()),
+          correction: {
+            original: data.original || '',
+            corrected: data.corrected || '',
+            errors: data.errors || [],
+            pronunciation_feedback: data.pronunciation_feedback || '',
+            explanation: data.explanation || '',
+            score: data.score || 0,
+          },
+        };
+        return [...prev, msg];
+      });
+    });
+
     return () => listeners.forEach((fn) => fn?.());
   }, [wsSocket]);
 
@@ -116,7 +137,22 @@ export function useChatState(roomId, wsSocket, visible) {
               if (p.tts_audio_key) item.ttsAudioKey = p.tts_audio_key;
               chats.push(item);
             } else if (m.message_type === 'ai_correction') {
-              continue;
+              const p = m.payload || {};
+              chats.push({
+                id: m.id || Date.now() + Math.random(),
+                senderId: 'assistant',
+                sender: 'AI Coach',
+                text: '',
+                time: new Date(m.created_at || Date.now()),
+                correction: {
+                  original: p.original || m.content || '',
+                  corrected: p.corrected || '',
+                  errors: p.errors || [],
+                  pronunciation_feedback: p.pronunciation_feedback || '',
+                  explanation: p.explanation || '',
+                  score: p.score || 0,
+                },
+              });
             } else if (m.message_type === 'transcript') {
               speech.push({ id: m.id, speaker: m.payload?.display_name || 'You', userId: m.user_id, text: m.content, status: 'final', time: new Date(m.created_at) });
             } else {

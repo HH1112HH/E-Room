@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
 import { useChatState } from './useChatState';
+import { CorrectionCard } from './CorrectionCard';
 import { HiPaperAirplane, HiSpeakerWave, HiLanguage } from 'react-icons/hi2';
 import '../../styles/ChatWindow.css';
 
@@ -54,7 +55,7 @@ export function ChatWindow({ roomId, visible, onToggle, wsSocket }) {
   const {
     transcripts, chatMessages,
     loadingHistory, input, setInput, inputRef, bottomRef,
-    handleSend, currentUserId,
+    handleSend, handleTTS, currentUserId,
   } = useChatState(roomId, wsSocket, visible);
 
   const feedItems = useMemo(() => {
@@ -82,6 +83,15 @@ export function ChatWindow({ roomId, visible, onToggle, wsSocket }) {
                 <div className={`chat-window__message ${isMySpeech ? 'is-mine' : ''}`} key={item.id || `speech-${index}`}>
                   <span className="chat-window__sender">{isMySpeech ? t('room.you') : (item.speaker || t('room.user'))}</span>
                   <div className="chat-window__bubble"><ReactMarkdown>{item.text || item.content || ''}</ReactMarkdown></div>
+                </div>
+              );
+            }
+
+            if (item.correction) {
+              return (
+                <div className="chat-window__message" key={item.id || `correction-${index}`}>
+                  <span className="chat-window__sender">{item.sender}</span>
+                  <CorrectionCard correction={item.correction} onTTS={handleTTS} />
                 </div>
               );
             }

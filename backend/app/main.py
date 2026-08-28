@@ -15,6 +15,7 @@ from app.database import create_db_and_tables, engine
 from app.infrastructure.event_bus import event_bus
 from app.log import get_logger
 from app.seed import seed_all
+from app.infrastructure.whisper_manager import whisper_manager
 from app.service.heartbeat import heartbeat_loop
 from app.service.model_warmup import warmup_models
 
@@ -35,9 +36,11 @@ async def lifespan(app: FastAPI):
     await warmup_models()
     await event_bus.start()
     hb_task = asyncio.create_task(heartbeat_loop())
+    whisper_queue_task = asyncio.create_task(whisper_manager.process_queue())
     log.info("%s đã khởi động", settings.app_name)
     yield
     hb_task.cancel()
+    whisper_queue_task.cancel()
     await event_bus.stop()
     log.info("%s đã tắt", settings.app_name)
 

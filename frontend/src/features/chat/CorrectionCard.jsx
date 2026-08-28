@@ -1,13 +1,17 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { HiSpeakerWave, HiCheckCircle, HiXCircle } from 'react-icons/hi2';
+import { HiSpeakerWave, HiCheckCircle, HiXCircle, HiStar } from 'react-icons/hi2';
 import './CorrectionCard.css';
 
 export function CorrectionCard({ correction, onTTS }) {
   const { t } = useTranslation();
-  const [showExplanation, setShowExplanation] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
 
   if (!correction) return null;
+
+  const errors = correction.errors || [];
+  const score = correction.score || 0;
+  const hasErrors = errors.length > 0;
 
   return (
     <div className="correction-card">
@@ -16,34 +20,55 @@ export function CorrectionCard({ correction, onTTS }) {
           <HiCheckCircle size={14} className="correction-card__icon" />
         </div>
         <div className="correction-card__content">
+          {/* Score badge */}
+          <div className="correction-card__score-row">
+            <HiStar size={14} className="correction-card__score-icon" />
+            <span className="correction-card__score">{score}/10</span>
+          </div>
+
           {/* Original */}
           <div className="correction-card__original">
             <span className="correction-card__original-text">
               {correction.original}
             </span>
           </div>
+
           {/* Corrected */}
           <div className="correction-card__corrected">
             {correction.corrected}
-            {correction.severity === 'major' && (
-              <span className="correction-card__severity">
-                {t('room.major')}
-              </span>
-            )}
           </div>
-          {/* Type badge */}
-          <div className="correction-card__type-row">
-            <span className="correction-card__type-badge">
-              {correction.type}
-            </span>
-          </div>
-          {/* Explanation toggle */}
-          <div
-            onClick={() => setShowExplanation(!showExplanation)}
-            className="correction-card__explanation"
-          >
-            {showExplanation ? correction.explanation : t('room.why_tap')}
-          </div>
+
+          {/* Errors list */}
+          {hasErrors && (
+            <div className="correction-card__errors">
+              {errors.map((err, i) => (
+                <div key={i} className="correction-card__error-item">
+                  <span className="correction-card__error-original">
+                    <HiXCircle size={12} /> {err.original}
+                  </span>
+                  <span className="correction-card__error-corrected">
+                    → {err.corrected}
+                  </span>
+                  {err.explanation && (
+                    <div className="correction-card__error-explanation">
+                      {err.explanation}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Pronunciation feedback toggle */}
+          {correction.pronunciation_feedback && (
+            <div
+              onClick={() => setShowDetails(!showDetails)}
+              className="correction-card__explanation"
+            >
+              {showDetails ? correction.pronunciation_feedback : t('room.why_tap')}
+            </div>
+          )}
+
           {/* TTS button */}
           {onTTS && (
             <button

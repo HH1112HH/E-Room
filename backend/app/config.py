@@ -40,8 +40,8 @@ class Settings(BaseSettings):
     refresh_token_expires_days: int = 7
 
     # ─── AI / LLM ──────────────────────────────────
-    llm_base_url: str = "http://127.0.0.1:1234/v1"
-    llm_model: str = "nvidia/nemotron-3-ultra-550b-a55b:free"
+    llm_base_url: str = "https://openrouter.ai/api/v1"
+    llm_model: str = "google/gemini-2.0-flash-001"
     llm_api_key: str = ""
     embedding_base_url: str = ""
     embedding_model: str = ""
@@ -72,7 +72,7 @@ class Settings(BaseSettings):
     minio_secure: bool = False
 
     # ─── Heartbeat ──────────────────────────────────
-    heartbeat_interval_seconds: int = 45
+    heartbeat_interval_seconds: int = 15
 
     # ─── Logging ────────────────────────────────────
     log_level: str = "INFO"

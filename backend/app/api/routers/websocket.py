@@ -28,6 +28,7 @@ correction_semaphore = asyncio.Semaphore(1)
 room_connections: dict[str, set[WebSocket]] = {}
 processing_speech: set[str] = set()
 vad_cooldown: dict[str, float] = {}
+room_last_speech: dict[str, float] = {}
 audio_vad_tasks: dict[str, asyncio.Task] = {}
 
 
@@ -122,7 +123,22 @@ async def generate_expert_reply(
     question: str,
 ) -> None:
     try:
-        result = await ask_expert(question, room_id)
+        topic = None
+        try:
+            from app.model import Room as RoomModel
+            from sqlmodel import select as sql_select
+
+            with Session(engine) as session:
+                room_db = session.exec(sql_select(RoomModel).where(RoomModel.id == UUID(room_id))).first()
+                if room_db:
+                    topic = getattr(room_db, "topic", None)
+                    tags = getattr(room_db, "tags", None)
+                    if tags and not topic:
+                        topic = ", ".join(tags) if isinstance(tags, list) else str(tags)
+        except Exception:
+            pass
+
+        result = await ask_expert(question, room_id, topic=topic)
         answer = result.get("answer", "")
         if not answer:
             return
@@ -164,6 +180,7 @@ MAX_AUDIO_SECONDS = 20
 
 async def process_speech(pcm_data: bytes, user_id: str, room_id: str) -> None:
     processing_speech.add(user_id)
+    room_last_speech[room_id] = time.time()
     t0 = time.monotonic()
     pcm_secs = round(len(pcm_data) / 16000 / 2, 2)
     log.info("Bat dau xu ly giong noi", extra={"user_id": user_id, "room_id": room_id, "pcm_bytes": len(pcm_data), "pcm_seconds": pcm_secs})
@@ -300,6 +317,19 @@ async def process_speech(pcm_data: bytes, user_id: str, room_id: str) -> None:
                         "timestamp": now(),
                     }
 
+                    correction_msg: dict[str, object] = {
+                        "type": "ai_correction",
+                        "user_id": user_id,
+                        "display_name": speaker_name,
+                        "original": text,
+                        "corrected": corrected_text,
+                        "errors": correction.get("errors", []),
+                        "pronunciation_feedback": correction.get("pronunciation_feedback", ""),
+                        "explanation": correction.get("explanation", ""),
+                        "score": correction.get("score", 0),
+                        "timestamp": now(),
+                    }
+
                     if corrected_text:
                         tts_audio_b64, tts_audio_key = await generate_tts_with_storage(corrected_text, room_id, lang="en")
                         if tts_audio_b64:
@@ -365,6 +395,7 @@ async def process_speech(pcm_data: bytes, user_id: str, room_id: str) -> None:
                     for ws in list(room_connections.get(room_id, set())):
                         try:
                             asyncio.create_task(ws.send_text(chat_msg_json))
+                            asyncio.create_task(ws.send_text(json.dumps(correction_msg)))
                         except Exception:
                             pass
             except Exception:

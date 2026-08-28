@@ -28,6 +28,23 @@
   min-width: 0;
 }
 
+.correction-card__score-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.correction-card__score-icon {
+  color: var(--color-warning, #f59e0b);
+}
+
+.correction-card__score {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-warning, #f59e0b);
+}
+
 .correction-card__original {
   font-size: 0.82rem;
   color: var(--color-danger);
@@ -54,6 +71,46 @@
   background: var(--color-danger-muted);
   color: var(--color-danger);
   font-weight: 700;
+}
+
+.correction-card__errors {
+  margin: 6px 0;
+  padding: 8px;
+  background: var(--color-bg-hover);
+  border-radius: 8px;
+}
+
+.correction-card__error-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 4px;
+  font-size: 0.78rem;
+}
+
+.correction-card__error-item:last-child {
+  margin-bottom: 0;
+}
+
+.correction-card__error-original {
+  color: var(--color-danger);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.correction-card__error-corrected {
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+.correction-card__error-explanation {
+  width: 100%;
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  padding-left: 16px;
+  margin-top: 2px;
 }
 
 .correction-card__type-row {

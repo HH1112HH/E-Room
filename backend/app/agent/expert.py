@@ -60,7 +60,7 @@ async def web_search(query: str, tag: str | None = None) -> tuple[str, list[str]
         return "", []
 
 
-async def answer_expert(question: str, room_id: str, tags: list[str] | None = None) -> dict[str, Any]:
+async def answer_expert(question: str, room_id: str, tags: list[str] | None = None, topic: str | None = None) -> dict[str, Any]:
     logger.info("Bắt đầu trả lời chuyên gia", extra={"room_id": room_id, "question": question[:80]})
 
     tag_str = ", ".join(tags) if tags else None
@@ -88,8 +88,10 @@ async def answer_expert(question: str, room_id: str, tags: list[str] | None = No
     else:
         combined = "No relevant documents or web results found."
 
+    topic_context = f"Room topic: {topic}\n\n" if topic else ""
+
     system_prompt = EXPERT_SYSTEM_TEMPLATE
-    user_prompt = f"Question: {question}\n\nContext:\n{combined}\n\nProvide a helpful answer. If from the web, mention source URLs."
+    user_prompt = f"{topic_context}Question: {question}\n\nContext:\n{combined}\n\nProvide a helpful answer in the context of this room's topic. If from the web, mention source URLs."
 
     messages = [
         SystemMessage(content=system_prompt),
