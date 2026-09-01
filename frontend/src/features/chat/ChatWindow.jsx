@@ -50,13 +50,13 @@ function ChatBubble({ item, isMine, onTTS }) {
   );
 }
 
-export function ChatWindow({ roomId, visible, onToggle, wsSocket }) {
+export function ChatWindow({ roomId, visible, onToggle, wsSocket, webrtcChannel }) {
   const { t } = useTranslation();
   const {
     transcripts, chatMessages,
     loadingHistory, input, setInput, inputRef, bottomRef,
     handleSend, handleTTS, currentUserId,
-  } = useChatState(roomId, wsSocket, visible);
+  } = useChatState(roomId, wsSocket, visible, webrtcChannel);
 
   const feedItems = useMemo(() => {
     const chat = chatMessages.map((message) => ({ type: 'chat', item: message, time: getItemTime(message) }));

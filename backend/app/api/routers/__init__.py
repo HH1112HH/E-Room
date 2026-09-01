@@ -12,3 +12,4 @@ from app.api.routers.series import router as series
 from app.api.routers.subscription import router as subscription
 from app.api.routers.tag import router as tag
 from app.api.routers.user import router as user
+from app.api.routers.webrtc import router as webrtc

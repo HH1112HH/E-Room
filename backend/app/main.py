@@ -64,6 +64,7 @@ app.add_middleware(AuthMiddleware)
 
 app.include_router(api_router, prefix="/api/v1")
 
+# Legacy WebSocket routes — kept for backward compat, prefer WebRTC via LiveKit (see /api/v1/webrtc)
 app.add_api_websocket_route("/ws/rooms/{room_id}", handle_room_ws)
 app.add_api_websocket_route("/ws/audio/{room_id}", handle_audio_ws)
 app.add_api_websocket_route("/ws/whisper-worker", handle_whisper_worker)

@@ -15,6 +15,7 @@ from app.api.routers import (
     subscription,
     tag,
     user,
+    webrtc,
 )
 
 api_router = APIRouter()
@@ -32,3 +33,4 @@ api_router.include_router(notification, prefix="/notifications", tags=["notifica
 api_router.include_router(audio, prefix="", tags=["audio"])
 api_router.include_router(infra, prefix="/infra", tags=["infra"])
 api_router.include_router(subscription, prefix="/subscriptions", tags=["subscriptions"])
+api_router.include_router(webrtc, prefix="/webrtc", tags=["webrtc"])

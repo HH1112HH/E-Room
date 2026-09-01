@@ -6,6 +6,8 @@ import '@livekit/components-styles';
 import { Track } from 'livekit-client';
 import { fetchJson, ApiClient, API_BASE_URL, getTokens } from '../../lib/api';
 import { createAudioCapture } from '../../lib/audioCapture';
+import { createAudioWebRTC } from '../../lib/audioWebRTC';
+import { LiveKitChannel } from '../../lib/webrtc';
 import { ChatWindow } from '../chat/ChatWindow';
 import { useAuth } from '../../app/AuthContext';
 import '../../styles/RoomPage.css';
@@ -258,6 +260,22 @@ function RemoteAudioRenderer() {
       ))}
     </>
   );
+}
+
+// WebRTC migration helper — captures LiveKit Room instance for DataChannel
+function LiveKitRoomBinder({ roomRef, channelRef }) {
+  const room = useRoomContext();
+  useEffect(() => {
+    if (room) {
+      roomRef.current = room;
+      // If channel was created without room, attach now
+      if (channelRef.current && typeof channelRef.current.attachRoom === 'function') {
+        try { channelRef.current.attachRoom(room); } catch {}
+      }
+    }
+    return () => { /* keep ref for cleanup in parent */ };
+  }, [room, roomRef, channelRef]);
+  return null;
 }
 
 function WaitingForOthers() {
@@ -569,6 +587,11 @@ export function RoomPage() {
   const [wsParticipants, setWsParticipants] = useState(0);
   const [retrySignal, setRetrySignal] = useState(0);
   const joinedRef = useRef(false);
+  // WebRTC migration — LiveKit DataChannel replaces WS for chat & signaling
+  const USE_WEBRTC = import.meta.env.VITE_USE_WEBRTC !== 'false'; // default true
+  const [webrtcChannel, setWebrtcChannel] = useState(null);
+  const webrtcChannelRef = useRef(null);
+  const livekitRoomRef = useRef(null);
 
   const handleDisconnected = useCallback(() => {
     if (!hasLeftRef.current) {
@@ -678,9 +701,55 @@ export function RoomPage() {
     if (phase === 'left' && elapsed > 0) setSavedElapsed(elapsed);
   }, [phase, elapsed]);
 
+  // WebRTC chat channel — replaces WS /ws/rooms when USE_WEBRTC=true
+  // We create LiveKitChannel that uses LiveKit DataChannel (room from LiveKitContext)
+  // For pages without LiveKit room yet, we fallback to legacy WS for backward compat.
   useEffect(() => {
     if (phase !== 'connected') return;
     const authToken = getTokens()?.access || '';
+
+    if (USE_WEBRTC) {
+      // Try to attach to LiveKit room if available; otherwise fallback to REST-only channel
+      // livekitRoomRef is set via RoomChannelBinder inside LiveKitRoom
+      const lkRoom = livekitRoomRef.current;
+      if (lkRoom) {
+        const ch = new LiveKitChannel(lkRoom, roomId, authToken, {
+          onEvent: (type, msg) => {
+            // presence handling via LiveKit participant events is done via ParticipantTracker,
+            // but we still handle system events if server broadcasts them
+            if (type === 'system' && msg.event) {
+              if (msg.event === 'user_joined' || msg.event === 'user_left') {
+                setWsParticipants(msg.participant_count || 0);
+              }
+            }
+          },
+        });
+        webrtcChannelRef.current = ch;
+        setWebrtcChannel(ch);
+        // No WS needed in WebRTC mode
+        return () => {
+          ch.close();
+          webrtcChannelRef.current = null;
+          setWebrtcChannel(null);
+        };
+      } else {
+        // REST-only channel (still WebRTC transport, no LiveKit room yet -> uses fetchJson fallback)
+        const ch = new LiveKitChannel(null, roomId, authToken, {
+          onEvent: (type, msg) => {
+            if (type === 'system' && msg.event) setWsParticipants(msg.participant_count || 0);
+          },
+        });
+        webrtcChannelRef.current = ch;
+        setWebrtcChannel(ch);
+        return () => {
+          ch.close();
+          webrtcChannelRef.current = null;
+          setWebrtcChannel(null);
+        };
+      }
+    }
+
+    // Legacy WS fallback (when USE_WEBRTC=false or for backward compat testing)
     const loc = window.location;
     const wsBase = import.meta.env.VITE_WS_BASE_URL || `${loc.protocol === 'https:' ? 'wss:' : 'ws:'}//${loc.host}`;
 
@@ -707,7 +776,7 @@ export function RoomPage() {
       wsRef.current = null;
       setWsSocket(null);
     };
-  }, [phase, roomId]);
+  }, [phase, roomId, token, livekitUrl]);
 
   useEffect(() => {
     if (phase !== 'connected') {
@@ -719,14 +788,22 @@ export function RoomPage() {
     }
     const authToken = getTokens()?.access || '';
     if (!authToken) return;
-    const capture = createAudioCapture(roomId, authToken, audioWsRef, undefined, { enabled: micEnabledRef.current });
+    let capture;
+    if (USE_WEBRTC) {
+      // WebRTC audio: POST chunks to /webrtc/rooms/{id}/audio/chunk via HTTP (over WebRTC session)
+      // Also tries LiveKit DataChannel if room available
+      const lkRoom = livekitRoomRef.current;
+      capture = createAudioWebRTC(roomId, authToken, { room: lkRoom, enabled: micEnabledRef.current, useDataChannel: !!lkRoom }, undefined);
+    } else {
+      capture = createAudioCapture(roomId, authToken, audioWsRef, undefined, { enabled: micEnabledRef.current });
+    }
     audioCaptureRef.current = capture;
     capture.start();
     return () => {
       capture.stop();
       audioCaptureRef.current = null;
     };
-  }, [phase, roomId]);
+  }, [phase, roomId, token, livekitUrl]);
 
   const handleMicToggle = useCallback((enabled) => {
     micEnabledRef.current = enabled;
@@ -845,6 +922,7 @@ export function RoomPage() {
         <div className={`meet-video ${showSidebar ? 'with-chat' : 'full'}`}>
           <LiveKitRoom token={token} serverUrl={livekitUrl} video={true} audio={true} onDisconnected={handleDisconnected}
             className="room-page__livekit" data-lk-theme="default">
+            <LiveKitRoomBinder roomRef={livekitRoomRef} channelRef={webrtcChannelRef} />
             <RemoteAudioRenderer />
             <MeetControls onLeave={handleLeave} togglePanel={togglePanel} activePanel={activePanel}
               handRaised={handRaised} setHandRaised={setHandRaised}
@@ -862,7 +940,8 @@ export function RoomPage() {
           roomId={roomId}
           visible={activePanel === 'chat'}
           onToggle={() => setActivePanel(null)}
-          wsSocket={wsSocket}
+          wsSocket={USE_WEBRTC ? null : wsSocket}
+          webrtcChannel={USE_WEBRTC ? webrtcChannel : null}
         />
         {activePanel === 'participants' && (
           <aside className="meet-chat-panel"><ParticipantsPanel participants={participantsList} onClose={() => setActivePanel(null)} /></aside>

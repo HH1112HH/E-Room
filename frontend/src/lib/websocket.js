@@ -1,5 +1,9 @@
 
-
+/**
+ * @deprecated — WebSocket transport is legacy. Prefer `webrtc.js` (LiveKit DataChannel + REST).
+ * Kept for backward compat when VITE_USE_WEBRTC=false or during migration.
+ * See frontend/src/lib/webrtc.js for WebRTC replacement.
+ */
 const loc = typeof window !== 'undefined' ? window.location : { protocol: 'http:', host: 'localhost:3000' };
 const WS_BASE = import.meta.env.VITE_WS_BASE_URL || `${loc.protocol === 'https:' ? 'wss:' : 'ws:'}//${loc.host}`;
 const PING_INTERVAL = 30_000;

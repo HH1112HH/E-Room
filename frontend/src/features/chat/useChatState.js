@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { fetchJson } from '../../lib/api';
 import { useAuth } from '../../app/AuthContext';
 
-export function useChatState(roomId, wsSocket, visible) {
+export function useChatState(roomId, wsSocket, visible, webrtcChannel = null) {
   const { user } = useAuth();
   const currentUser = user?.display_name || 'You';
   const currentUserId = user?.id || 'me';
@@ -13,31 +13,41 @@ export function useChatState(roomId, wsSocket, visible) {
   const [input, setInput] = useState('');
 
   const wsRef = useRef(wsSocket);
+  const webrtcRef = useRef(webrtcChannel);
   const inputRef = useRef(null);
   const bottomRef = useRef(null);
 
   useEffect(() => { wsRef.current = wsSocket; }, [wsSocket]);
+  useEffect(() => { webrtcRef.current = webrtcChannel; }, [webrtcChannel]);
 
-  // WebSocket listeners
+  // Unified listeners — supports both legacy WebSocket and WebRTC LiveKit DataChannel
   useEffect(() => {
     const ws = wsRef.current;
-    if (!ws) return;
+    const rtc = webrtcRef.current;
+    // Prefer WebRTC channel if available, otherwise fallback to ws
+    const active = rtc || ws;
+    if (!active) return;
 
-    const isRaw = typeof ws.addEventListener === 'function';
+    const isRaw = typeof active.addEventListener === 'function';
+    const isWebRTC = !!rtc && active === rtc;
     const listeners = [];
 
-    function on(wsEvent, callback) {
-      if (isRaw) {
+    function on(eventName, callback) {
+      if (isWebRTC) {
+        // LiveKitChannel uses .on(event, cb) emitter
+        const unsub = active.on(eventName, callback);
+        listeners.push(unsub);
+      } else if (isRaw) {
         const handler = (e) => {
           try {
             const msg = JSON.parse(e.data);
-            if (msg.type === wsEvent) callback(msg);
+            if (msg.type === eventName) callback(msg);
           } catch {}
         };
-        ws.addEventListener('message', handler);
-        listeners.push(() => ws.removeEventListener('message', handler));
+        active.addEventListener('message', handler);
+        listeners.push(() => active.removeEventListener('message', handler));
       } else {
-        const unsub = ws.on(wsEvent, callback);
+        const unsub = active.on(eventName, callback);
         listeners.push(unsub);
       }
     }
@@ -117,7 +127,7 @@ export function useChatState(roomId, wsSocket, visible) {
     });
 
     return () => listeners.forEach((fn) => fn?.());
-  }, [wsSocket]);
+  }, [wsSocket, webrtcChannel]);
 
   // Load chat history
   useEffect(() => {
@@ -190,10 +200,14 @@ export function useChatState(roomId, wsSocket, visible) {
       id: Date.now(), senderId: currentUserId, sender: currentUser, text, time: new Date(),
     }]);
 
+    const rtc = webrtcRef.current;
     const ws = wsRef.current;
-    if (ws && typeof ws.send === 'function') {
+    const payload = { type: 'chat', text, room_id: roomId, display_name: currentUser, timestamp: new Date().toISOString() };
+    // Prefer WebRTC
+    if (rtc && typeof rtc.send === 'function') {
+      rtc.send(payload);
+    } else if (ws && typeof ws.send === 'function') {
       const isRaw = typeof ws.addEventListener === 'function';
-      const payload = { type: 'chat', text, room_id: roomId, display_name: currentUser, timestamp: new Date().toISOString() };
       if (isRaw) {
         ws.send(JSON.stringify(payload));
       } else {
@@ -204,6 +218,11 @@ export function useChatState(roomId, wsSocket, visible) {
   }, [input, currentUserId, currentUser, roomId]);
 
   const handleTTS = useCallback((text) => {
+    const rtc = webrtcRef.current;
+    if (rtc && typeof rtc.send === 'function') {
+      rtc.send({ type: 'request_tts', text, room_id: roomId });
+      return;
+    }
     const ws = wsRef.current;
     if (ws && typeof ws.send === 'function') {
       const isRaw = typeof ws.addEventListener === 'function';

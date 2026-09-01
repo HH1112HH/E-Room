@@ -155,17 +155,33 @@ async def generate_expert_reply(
                 )
         except Exception:
             log.warning("Luu expert reply vao DB that bai", exc_info=True)
-        msg = json.dumps(
-            {
-                "type": "chat_message",
-                "content": answer,
-                "vi": result.get("vi", ""),
-                "sender_id": "assistant",
-                "display_name": "assistant",
-                "sources": result.get("sources", []),
-                "timestamp": now(),
-            }
-        )
+        payload = {
+            "type": "chat_message",
+            "content": answer,
+            "vi": result.get("vi", ""),
+            "sender_id": "assistant",
+            "display_name": "assistant",
+            "sources": result.get("sources", []),
+            "timestamp": now(),
+        }
+        # WebRTC primary broadcast (LiveKit) + WS fallback
+        try:
+            from app.infrastructure.webrtc_manager import webrtc_manager
+            from app.model import Room as RoomModel
+            from sqlmodel import select as _sel
+
+            lk_name = None
+            try:
+                with Session(engine) as _s:
+                    r = _s.exec(_sel(RoomModel).where(RoomModel.id == UUID(room_id))).first()
+                    lk_name = getattr(r, "livekit_room_name", None) if r else None
+            except Exception:
+                pass
+            await webrtc_manager.broadcast(room_id, payload, livekit_room_name=lk_name)
+        except Exception:
+            pass
+        # legacy fallback keep
+        msg = json.dumps(payload)
         for ws_client in list(room_connections.get(room_id, set())):
             try:
                 asyncio.create_task(ws_client.send_text(msg))
@@ -237,23 +253,38 @@ async def process_speech(pcm_data: bytes, user_id: str, room_id: str) -> None:
         except Exception:
             log.warning("Luu transcript vao DB that bai", exc_info=True)
 
-        transcript_msg = json.dumps(
-            {
-                "type": "transcript",
-                "text": text,
-                "user_id": user_id,
-                "display_name": speaker_name,
-                "status": "final",
-                "created_at": now(),
-            }
-        )
+        transcript_payload = {
+            "type": "transcript",
+            "text": text,
+            "user_id": user_id,
+            "display_name": speaker_name,
+            "status": "final",
+            "created_at": now(),
+        }
+        # WebRTC primary broadcast
+        try:
+            from app.infrastructure.webrtc_manager import webrtc_manager
+            from app.model import Room as _Room
+            from sqlmodel import select as _sel
+
+            _lk = None
+            try:
+                with Session(engine) as _s:
+                    _r = _s.exec(_sel(_Room).where(_Room.id == UUID(room_id))).first()
+                    _lk = getattr(_r, "livekit_room_name", None) if _r else None
+            except Exception:
+                pass
+            await webrtc_manager.broadcast(room_id, transcript_payload, livekit_room_name=_lk)
+        except Exception:
+            pass
+        transcript_msg = json.dumps(transcript_payload)
         for ws in list(room_connections.get(room_id, set())):
             try:
                 asyncio.create_task(ws.send_text(transcript_msg))
             except Exception:
                 pass
         log.info(
-            "Da gui transcript qua WebSocket",
+            "Da gui transcript qua WebRTC+WebSocket",
             extra={"user_id": user_id, "room_id": room_id, "text_len": len(text), "elapsed_s": round(time.monotonic() - t0, 2)},
         )
 
@@ -369,6 +400,7 @@ async def process_speech(pcm_data: bytes, user_id: str, room_id: str) -> None:
                             log.warning("Luu ket qua sua loi vao DB that bai", exc_info=True)
 
                     chat_msg_json = json.dumps(chat_msg)
+                    correction_msg_json = json.dumps(correction_msg)
 
                     try:
                         with Session(engine) as session:
@@ -392,10 +424,27 @@ async def process_speech(pcm_data: bytes, user_id: str, room_id: str) -> None:
                                 log.warning("AI_EXPERT save_message tra ve None", extra={"room_id": room_id})
                     except Exception:
                         log.warning("Luu tin nhan hien thi assistant vao DB that bai", exc_info=True)
+                    # WebRTC primary broadcast for AI messages
+                    try:
+                        from app.infrastructure.webrtc_manager import webrtc_manager
+                        from app.model import Room as _Room2
+                        from sqlmodel import select as _sel2
+
+                        _lk2 = None
+                        try:
+                            with Session(engine) as _s2:
+                                _r2 = _s2.exec(_sel2(_Room2).where(_Room2.id == UUID(room_id))).first()
+                                _lk2 = getattr(_r2, "livekit_room_name", None) if _r2 else None
+                        except Exception:
+                            pass
+                        await webrtc_manager.broadcast(room_id, chat_msg, livekit_room_name=_lk2)
+                        await webrtc_manager.broadcast(room_id, correction_msg, livekit_room_name=_lk2)
+                    except Exception:
+                        pass
                     for ws in list(room_connections.get(room_id, set())):
                         try:
                             asyncio.create_task(ws.send_text(chat_msg_json))
-                            asyncio.create_task(ws.send_text(json.dumps(correction_msg)))
+                            asyncio.create_task(ws.send_text(correction_msg_json))
                         except Exception:
                             pass
             except Exception:

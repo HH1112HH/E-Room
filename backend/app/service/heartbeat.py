@@ -108,24 +108,36 @@ async def heartbeat_loop() -> None:
                         except Exception:
                             log.warning("Luu heartbeat vao DB that bai", exc_info=True)
 
-                        from app.api.routers.websocket import room_connections
+                        # WebRTC primary: broadcast via LiveKit DataChannel + WS fallback
+                        heartbeat_payload = {
+                            "type": "chat_message",
+                            "content": question_text,
+                            "vi": question_vi,
+                            "sender_id": "assistant",
+                            "display_name": "assistant",
+                            "question_id": data.get("question_id", ""),
+                            "answers": data.get("answers", []),
+                            "timestamp": datetime.now(timezone.utc).isoformat(),
+                        }
+                        try:
+                            from app.infrastructure.webrtc_manager import webrtc_manager
 
-                        heartbeat_msg = json.dumps(
-                            {
-                                "type": "chat_message",
-                                "content": question_text,
-                                "vi": question_vi,
-                                "sender_id": "assistant",
-                                "display_name": "assistant",
-                                "question_id": data.get("question_id", ""),
-                                "answers": data.get("answers", []),
-                                "timestamp": datetime.now(timezone.utc).isoformat(),
-                            },
-                            default=str,
-                        )
-                        for ws in list(room_connections.get(room_id_str, set())):
+                            livekit_room_name = getattr(room, "livekit_room_name", None)
+                            await webrtc_manager.broadcast(
+                                room_id_str, heartbeat_payload, livekit_room_name=livekit_room_name
+                            )
+                        except Exception:
+                            log.warning("heartbeat webrtc broadcast failed", exc_info=True)
+                            # fallback to legacy WS
                             try:
-                                asyncio.create_task(ws.send_text(heartbeat_msg))
+                                from app.api.routers.websocket import room_connections
+
+                                heartbeat_msg = json.dumps(heartbeat_payload, default=str)
+                                for ws in list(room_connections.get(room_id_str, set())):
+                                    try:
+                                        asyncio.create_task(ws.send_text(heartbeat_msg))
+                                    except Exception:
+                                        pass
                             except Exception:
                                 pass
 

@@ -5,7 +5,10 @@ import basicSsl from '@vitejs/plugin-basic-ssl';
 import path from 'path';
 
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), 'REACT_APP_');
+  // Load both REACT_APP_* (legacy CRA) and VITE_* (Vite native) so process.env fallback still works
+  const reactEnv = loadEnv(mode, process.cwd(), 'REACT_APP_');
+  const viteEnv = loadEnv(mode, process.cwd(), 'VITE_');
+  const env = { ...reactEnv, ...viteEnv };
   const processEnv = {};
   Object.keys(env).forEach((key) => {
     processEnv[`process.env.${key}`] = JSON.stringify(env[key]);
