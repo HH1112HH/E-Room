@@ -257,25 +257,30 @@ async def match_room(
     current_user: dict = Depends(get_current_user),
 ) -> dict:
     room_service = RoomService(session)
-    open_rooms = room_service.list_open_rooms()
+    my_id = str(current_user["id"])
 
-    open_rooms = [
-        r for r in open_rooms
+    def norm(tags) -> set[str]:
+        return {str(t).strip().lower() for t in (tags or []) if str(t).strip()}
+
+    wanted = norm(payload.tag_ids)
+    candidates = [
+        r for r in room_service.list_open_rooms()
         if r.current_participants < r.max_participants
-        and str(r.creator_user_id) != current_user["id"]
     ]
 
-    if payload.tag_ids:
-        matching = [r for r in open_rooms if any(tag in (r.tags or []) for tag in payload.tag_ids)]
-    else:
-        matching = open_rooms
+    # Không lọc tag ở pool — sort_key đã xếp đúng thứ tự ưu tiên,
+    # nên luôn trả phòng tốt nhất thay vì queued khi còn phòng trống.
+    def sort_key(r: Room):
+        # Ưu tiên 1: phòng đang có người (vào là nói được ngay)
+        occupied = 0 if r.current_participants > 0 else 1
+        # Ưu tiên 2: trùng sở thích (số tag chung nhiều nhất)
+        overlap = len(wanted & norm(r.tags)) if wanted else 0
+        own = 1 if str(r.creator_user_id) == my_id else 0  # phòng tự tạo để cuối
+        free = r.max_participants - r.current_participants
+        return (occupied, -overlap, own, -free, str(r.id))
 
-    if not matching and open_rooms:
-        matching = open_rooms[:1]
-
-    if matching:
-        import random
-        best = random.choice(matching)
+    if candidates:
+        best = sorted(candidates, key=sort_key)[0]
         return {"status": "matched", "roomId": str(best.id), "roomName": best.livekit_room_name}
 
     return {

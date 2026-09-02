@@ -16,6 +16,10 @@ class RoomJoinRequest(BaseModel):
 
 class RoomMatchRequest(BaseModel):
     tag_ids: list[str] = Field(default_factory=list)
+    # Frontend gửi thêm english_level (beginner/intermediate/advanced) nhưng
+    # Room lưu theo CERF (A1-C2) nên hiện tại chưa lọc theo level — nhận để
+    # không vỡ contract, sẽ map vocabulary ở bước sau.
+    english_level: str | None = None
 
 
 class RoomResponse(BaseModel):

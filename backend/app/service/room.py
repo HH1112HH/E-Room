@@ -21,9 +21,13 @@ class RoomService(CRUDRepository):
         return self.get_many(self.session, skip=skip, limit=limit, order_by="created_at", desc=True)
 
     def list_open_rooms(self) -> list[Room]:
+        # Phòng ghép được = public + chưa đóng. PHẢI gồm ACTIVE vì
+        # join_room chuyển phòng sang ACTIVE ngay khi có người đầu tiên —
+        # nếu loại ACTIVE thì phòng vừa có người sẽ biến mất khỏi pool
+        # và ghép phòng luôn trả "queued" dù phòng đang trống.
         from sqlmodel import select
         stmt = select(Room).where(
-            Room.status.in_([RoomStatus.MATCHING, RoomStatus.IDLE]),
+            Room.status.in_([RoomStatus.MATCHING, RoomStatus.IDLE, RoomStatus.ACTIVE]),
             Room.is_public == True,
         )
         return self.session.exec(stmt).all()
