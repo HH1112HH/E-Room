@@ -36,3 +36,4 @@ temp.json
 # local secrets (copy from *.example, never commit real values)
 backend/.env.docker
 backend/livekit.yaml
+stt.env

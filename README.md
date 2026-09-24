@@ -95,6 +95,16 @@ E-Room/
 | redis | 6379 | Queue + presence + heartbeat |
 | minio | 9000 | S3 files |
 | ai-worker / ai-observer / ai-transcriber / ai-beat | — | Celery (code bind-mount, restart là nạp) |
+| stt-server (máy whisper riêng) | 8001 | faster-whisper-server `large-v3-turbo`, OpenAI-compatible — chạy bằng `scripts\stt-up.bat` + `docker-compose.stt.yml`, máy bạn chỉ cần trỏ `STT_SERVER_BASE_URL=http://<IP-máy-whisper>:8001/v1` |
+
+### Chạy 2 máy (khuyên dùng)
+
+| Phe | Máy | Lệnh |
+|---|---|---|
+| Whisper (bạn) | máy có GPU NVIDIA | `scripts\stt-up.bat` → server GPU lên ở `:8001` |
+| Full stack (bạn của bạn) | máy còn lại | `scripts\dev.bat`, rồi sửa `backend/.env.docker`: `STT_PROVIDER=whisper_server`, `STT_SERVER_BASE_URL=http://100.x.y.z:8001/v1` (IP Tailscale của máy whisper, xem bằng `tailscale ip -4`) |
+
+> 2 máy nối nhau qua **Tailscale** (cùng 1 tài khoản/tailnet): IP `100.x` là tĩnh vĩnh viễn, không lo DHCP đổi số, không cần mở port router hay set IP tĩnh. Chỉ cần cả 2 máy đều `tailscale up` là thấy nhau.
 
 ## Quick start
 

@@ -1,0 +1,108 @@
+# MAY AI (may co GPU NVIDIA): chay STT + TTS + Pronun scorer.
+# May kia (ban cua ban) chay full stack bang `docker-compose.yml`, khong can file nay.
+# May kia chi can tro 3 URL sang IP Tailscale cua may nay (xem bang `tailscale ip -4`):
+#   STT_SERVER_BASE_URL=http://100.x.y.z:8001/v1
+#   TTS_BASE_URL=http://100.x.y.z:8002/v1
+#   PRONUN_BASE_URL=http://100.x.y.z:8005
+#
+# Chay:
+#   docker compose -f docker-compose.stt.yml up -d
+# Tat:
+#   docker compose -f docker-compose.stt.yml down
+#
+# Kiem tra song:
+#   curl http://localhost:8001/health
+#   curl http://localhost:8001/v1/models
+#   curl http://localhost:8001/v1/audio/transcriptions -F "file=@demo/audio.wav" -F "language=en"
+#
+# Doi model: sua stt.env (copy tu stt.env.example) hoac bien moi truong WHISPER__MODEL.
+# Backend ben kia KHONG can doi gi ngoai STT_SERVER_MODEL neu muon goi ten model khac.
+#
+# Yeu cau: Docker Desktop + NVIDIA Container Toolkit (WSL2 backend).
+
+services:
+  stt-server:
+    image: fedirz/faster-whisper-server:latest-cuda
+    container_name: stt-server
+    restart: unless-stopped
+    ports:
+      - "${STT_PORT:-8001}:8000"
+    env_file:
+      - path: ./stt.env
+        required: false
+    environment:
+      WHISPER__MODEL: ${WHISPER__MODEL:-mobiuslabsgmbh/faster-whisper-large-v3-turbo}
+      WHISPER__INFERENCE_DEVICE: cuda
+      WHISPER__COMPUTE_TYPE: ${WHISPER__COMPUTE_TYPE:-float16}
+      # Bat Gradio UI de test truc tiep tren browser (:8001/).
+      # Nhe hon: tu unload model khi idle.
+      ENABLE_UI: "true"
+      WHISPER__TTL: ${WHISPER__TTL:-300}
+      # Image mac dinh chan mang (offline) — mo ra de tai model 1 lan duy nhat vao volume.
+      HF_HUB_OFFLINE: "0"
+      UVICORN_HOST: 0.0.0.0
+      UVICORN_PORT: 8000
+    volumes:
+      - whisper_cache:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 120s
+
+  # TTS Kokoro — giong tieng Anh, OpenAI-compatible (:8002).
+  # Test: chon voice o duoi, curl vi du o cuoi file.
+  tts-server:
+    image: ghcr.io/remsky/kokoro-fastapi-cpu:latest
+    container_name: tts-server
+    restart: unless-stopped
+    ports:
+      - "${TTS_PORT:-8002}:8880"
+    env_file:
+      - path: ./stt.env
+        required: false
+    volumes:
+      - kokoro_data:/app/api/src/models
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8880/v1/models')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 180s
+
+  # Pronun scorer (demo/pronun-app) — cham diem + feedback Nemotron (:8005).
+  # Backend may kia goi qua PRONUN_BASE_URL. Lan dau tai model ~1.6GB (wav2vec2
+  # + xlsr phoneme), giu volume de khoi tai lai. CPU-only (xem Dockerfile).
+  pronun:
+    build: ./demo/pronun-app
+    container_name: pronun
+    restart: unless-stopped
+    ports:
+      - "${PRONUN_PORT:-8005}:8005"
+    env_file:
+      - path: ./demo/pronun-app/.env
+        required: false
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8005
+    volumes:
+      - pronun_hf:/root/.cache/huggingface
+      - pronun_nltk:/root/nltk_data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8005/api/health')"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 240s
+
+volumes:
+  whisper_cache:
+  kokoro_data:
+  pronun_hf:
+  pronun_nltk:

@@ -14,7 +14,34 @@ from app.log import get_logger
 log = get_logger("app.ai.stt")
 
 _executor = ThreadPoolExecutor(max_workers=4, thread_name_prefix="stt_worker")
-_whisper_model_instance = None
+
+# Cong tac doi STT tu xa qua Redis (cho phep admin bat/tat whisper-server
+# ma khong can sua file env + restart worker tren may chay E-Room).
+#   SET config:stt_server_base_url http://100.105.201.65:8001/v1
+#   DEL config:stt_server_base_url   (tro ve STT_SERVER_BASE_URL trong env)
+STT_SERVER_URL_OVERRIDE_KEY = "config:stt_server_base_url"
+_STT_URL_CACHE: Dict[str, Any] = {"value": None, "expires": 0.0}
+STT_URL_CACHE_TTL = 30.0
+
+
+def get_stt_server_url_override() -> Optional[str]:
+    """Doc URL whisper-server tu Redis (cache 30s). Fail-open → None."""
+    import time
+
+    now = time.monotonic()
+    if now < float(_STT_URL_CACHE.get("expires", 0.0)):
+        return _STT_URL_CACHE.get("value")
+    value: Optional[str] = None
+    try:
+        from app.integration.redis import get as redis_get
+
+        raw = redis_get(STT_SERVER_URL_OVERRIDE_KEY)
+        value = raw.strip().rstrip("/") if raw and raw.strip() else None
+    except Exception as error:
+        log.warning("STT override read failed, using env | err=%s", error)
+    _STT_URL_CACHE["value"] = value
+    _STT_URL_CACHE["expires"] = now + STT_URL_CACHE_TTL
+    return value
 
 MIN_SEGMENT_LOGPROB = -1.0
 
@@ -128,130 +155,116 @@ def is_prompt_echo(text: str, prompt: str) -> bool:
     return len(text_words) >= 5 and joined_text in joined_prompt
 
 
-# ─── PROVIDER 1: FASTER-WHISPER LOCAL ─────────────────────────────────────
-def get_whisper_model():
-    global _whisper_model_instance
-    if _whisper_model_instance is None:
-        from faster_whisper import WhisperModel
-
-        log.info(
-            "Loading faster-whisper model | model=%s device=%s compute=%s threads=%s beam=%s",
-            settings.stt_model_size,
-            settings.stt_device,
-            settings.stt_compute_type,
-            settings.stt_cpu_threads,
-            settings.stt_beam_size,
-        )
-        _whisper_model_instance = WhisperModel(
-            settings.stt_model_size,
-            device=settings.stt_device,
-            compute_type=settings.stt_compute_type,
-            cpu_threads=settings.stt_cpu_threads,
-        )
-        log.info("Faster-whisper model loaded successfully")
-    return _whisper_model_instance
-
-
-def transcribe_faster_whisper(
+# ─── PROVIDER 1: FASTER-WHISPER-SERVER (OPENAI-COMPATIBLE, :8001) ─────────
+# E-Room backend chỉ là orchestrator — STT chạy service riêng
+# (fedirz/faster-whisper-server, GPU, model large-v3-turbo), expose:
+#   POST http://<host>:8001/v1/audio/transcriptions
+# Đổi model phía server bằng WHISPER__MODEL, backend chỉ cần đổi STT_SERVER_MODEL.
+# NOTE: path local faster-whisper (small, nhúng trong worker) đã XÓA —
+# worker không ôm model nữa nên image backend nhẹ đi (~2GB torch/CTranslate2).
+def transcribe_whisper_server(
     audio_data: np.ndarray | bytes,
     sample_rate: int = 16000,
-    model_override: Optional[Any] = None,
+    base_url: Optional[str] = None,
+    api_key: Optional[str] = None,
+    model_name: Optional[str] = None,
     language: Optional[str] = None,
     initial_prompt: Optional[str] = None,
 ) -> Optional[Dict[str, Any]]:
+    url = (base_url or get_stt_server_url_override() or settings.stt_server_base_url).rstrip("/")
+    key = api_key or settings.stt_server_api_key
+    model = model_name or settings.stt_server_model
+    resolved_language = resolve_stt_language(language or settings.stt_language)
+    resolved_prompt = initial_prompt or build_stt_prompt(resolved_language)
+
     try:
-        audio = convert_audio_to_float32(audio_data)
-        min_samples = int(sample_rate * settings.stt_vad_min_speech_seconds)
-        if len(audio) < min_samples:
+        wav_bytes = convert_audio_to_wav_bytes(audio_data, sample_rate)
+        duration = len(convert_audio_to_float32(audio_data)) / sample_rate
+
+        headers = {"Authorization": f"Bearer {key}"}
+        files = {"file": ("speech.wav", wav_bytes, "audio/wav")}
+        data: Dict[str, Any] = {
+            "model": model,
+            "response_format": "verbose_json",
+            "temperature": "0",
+        }
+        # Pin language để skip detect (~30% nhanh hơn). "auto" = để server tự detect.
+        if resolved_language in ("en", "vi"):
+            data["language"] = resolved_language
+        if resolved_prompt:
+            data["prompt"] = resolved_prompt[:1500]
+        # xin word timestamps cho pronunciation scoring + highlight
+        data["timestamp_granularities[]"] = ["word", "segment"]
+
+        endpoint = f"{url}/audio/transcriptions"
+        with httpx.Client(timeout=settings.stt_server_timeout) as client:
+            response = client.post(endpoint, headers=headers, files=files, data=data)
+
+        if response.status_code != 200:
+            log.error("Whisper-server STT failed | status=%s error=%s", response.status_code, response.text[:500])
             return None
 
-        model = model_override or get_whisper_model()
-        resolved_language = resolve_stt_language(language)
-        resolved_prompt = initial_prompt or build_stt_prompt(resolved_language)
+        result_json = response.json()
+        full_text = str(result_json.get("text", "")).strip()
+        if not full_text:
+            return None
 
-        transcribe_kwargs: Dict[str, Any] = {
-            "beam_size": settings.stt_beam_size,
-            "temperature": 0.0,
-            "initial_prompt": resolved_prompt,
-            "word_timestamps": True,
-        }
-
-        if resolved_language in ("en", "vi"):
-            transcribe_kwargs["language"] = resolved_language
-
-        segments, info = model.transcribe(
-            audio,
-            **transcribe_kwargs,
-            vad_filter=True,
-            vad_parameters={"min_silence_duration_ms": 500},
-            condition_on_previous_text=False,
-            compression_ratio_threshold=2.4,
-            no_speech_threshold=0.6,
-        )
-
-        full_text_list: List[str] = []
-        word_timings: List[Dict[str, Any]] = []
-        total_logprob = 0.0
-        segment_count = 0
-
-        for segment in segments:
-            text_clean = segment.text.strip()
-            if not text_clean:
-                continue
-
-            if segment.avg_logprob < MIN_SEGMENT_LOGPROB:
-                log.info(
-                    "Dropping low-confidence segment | logprob=%.2f text='%s'",
-                    segment.avg_logprob,
-                    text_clean[:80],
+        # verbose_json của faster-whisper-server: {text, language, duration, segments[], words[]}
+        # segments[] mỗi cái có avg_logprob -> dùng để tính confidence giống local.
+        words_data: List[Dict[str, Any]] = []
+        raw_words = result_json.get("words") or []
+        for seg in result_json.get("segments") or []:
+            for w in seg.get("words") or []:
+                words_data.append(
+                    {
+                        "word": str(w.get("word", "")).strip(),
+                        "start": float(w.get("start", 0.0)),
+                        "end": float(w.get("end", 0.0)),
+                        "probability": float(w.get("probability", 1.0)),
+                    }
                 )
-                continue
-            full_text_list.append(text_clean)
-            total_logprob += segment.avg_logprob
-            segment_count += 1
-
-            if segment.words:
-                for word_info in segment.words:
-                    word_timings.append(
+        if not words_data:
+            for w in raw_words:
+                if isinstance(w, dict):
+                    words_data.append(
                         {
-                            "word": word_info.word.strip(),
-                            "start": word_info.start,
-                            "end": word_info.end,
-                            "probability": word_info.probability,
+                            "word": str(w.get("word", "")).strip(),
+                            "start": float(w.get("start", 0.0)),
+                            "end": float(w.get("end", 0.0)),
+                            "probability": float(w.get("probability", 1.0)),
                         }
                     )
 
-        if not full_text_list:
+        logprobs = [
+            float(s.get("avg_logprob", 0.0))
+            for s in (result_json.get("segments") or [])
+            if isinstance(s, dict) and "avg_logprob" in s
+        ]
+        avg_logprob = sum(logprobs) / len(logprobs) if logprobs else 0.0
+        if avg_logprob < MIN_SEGMENT_LOGPROB:
+            log.info("Dropping low-confidence server segment | logprob=%.2f", avg_logprob)
+
+        if is_repetitive_hallucination(full_text) or is_prompt_echo(full_text, resolved_prompt):
+            log.info("Dropping hallucination/prompt-echo from server | text='%s'", full_text[:80])
             return None
 
-        full_text = " ".join(full_text_list)
-
-        if is_repetitive_hallucination(full_text):
-            log.info("Dropping repetitive hallucination | text='%s'", full_text[:80])
-            return None
-
-        if is_prompt_echo(full_text, resolved_prompt):
-            log.info("Dropping prompt echo | text='%s'", full_text[:80])
-            return None
-
-        avg_logprob = (total_logprob / segment_count) if segment_count > 0 else -1.0
-        confidence = float(min(max((avg_logprob + 2.0) / 2.0, 0.0), 1.0))
+        confidence = float(min(max((avg_logprob + 2.0) / 2.0, 0.0), 1.0)) if logprobs else 0.95
 
         return {
             "text": full_text,
-            "language": info.language,
-            "duration": float(info.duration),
+            "language": result_json.get("language", resolved_language),
+            "duration": float(result_json.get("duration", duration)),
             "avg_logprob": float(avg_logprob),
             "confidence": confidence,
-            "words": word_timings,
-            "provider": "faster_whisper",
+            "words": words_data,
+            "provider": f"whisper_server_{model}",
         }
     except Exception as error:
-        log.error("faster-whisper error: %s", error)
+        log.error("Whisper-server exception | err=%s", error)
         return None
 
 
-# ─── PROVIDER 2: WHISPER CLOUD (OPENAI / GROQ / CLOUD-API) ─────────────────
+# ─── PROVIDER 3: WHISPER CLOUD (OPENAI / GROQ) ────────────────────────────
 def transcribe_cloud_whisper(
     audio_data: np.ndarray | bytes,
     sample_rate: int = 16000,
@@ -264,8 +277,8 @@ def transcribe_cloud_whisper(
     model = model_name or settings.stt_cloud_model
 
     if not key:
-        log.warning("No STT Cloud API key configured. Falling back to local faster-whisper.")
-        return transcribe_faster_whisper(audio_data, sample_rate)
+        log.warning("No STT Cloud API key configured. Skipping cloud STT.")
+        return None
 
     try:
         wav_bytes = convert_audio_to_wav_bytes(audio_data, sample_rate)
@@ -325,8 +338,11 @@ def transcribe_cloud_whisper(
 
 
 # ─── DISPATCHER REGISTRY ──────────────────────────────────────────────────
+# "faster_whisper" giữ lại làm alias → whisper_server để .env cũ không vỡ.
 STT_PROVIDERS: Dict[str, Callable] = {
-    "faster_whisper": transcribe_faster_whisper,
+    "faster_whisper": transcribe_whisper_server,
+    "whisper_server": transcribe_whisper_server,
+    "server": transcribe_whisper_server,
     "openai": transcribe_cloud_whisper,
     "groq": transcribe_cloud_whisper,
     "cloud": transcribe_cloud_whisper,
@@ -340,9 +356,11 @@ def transcribe_audio(
     **kwargs: Any,
 ) -> Optional[Dict[str, Any]]:
     chosen_provider = (provider or settings.stt_provider).lower()
-    transcribe_fn = STT_PROVIDERS.get(chosen_provider, transcribe_faster_whisper)
+    transcribe_fn = STT_PROVIDERS.get(chosen_provider, transcribe_whisper_server)
 
-    if transcribe_fn is not transcribe_faster_whisper:
+    # whisper_server giữ language/initial_prompt (giống local).
+    # cloud/openai/groq dùng prompt cố định nên drop để khỏi lẫn.
+    if transcribe_fn is transcribe_cloud_whisper:
         kwargs.pop("language", None)
         kwargs.pop("initial_prompt", None)
 
@@ -353,7 +371,7 @@ def choose_stt_provider(provider: Optional[str], kwargs: Dict[str, Any], queued:
 
     if (
         queued >= 4
-        and (provider or settings.stt_provider).lower() == "faster_whisper"
+        and (provider or settings.stt_provider).lower() == "whisper_server"
         and str((kwargs or {}).get("language") or "en").lower() == "en"
         and settings.stt_cloud_api_key
     ):
