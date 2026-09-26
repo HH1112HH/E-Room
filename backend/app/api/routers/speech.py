@@ -11,7 +11,9 @@ Luồng chấm điểm raw -> sửa -> chấm:
 - GET  /rooms/{room_id}/speech-logs/summary   -> gộp sort theo giờ (cho mục summary)
 - PATCH /rooms/{room_id}/speech-logs/{message_id} -> sửa corrected_text của mình
 - POST /rooms/{room_id}/speech-logs/{message_id}/score -> chấm phát âm lại
-  (nhận xét AI chỉ có 1 cấp assessment: POST /sessions/{session_id}/feedback)
+- POST /rooms/{room_id}/speech-logs/{message_id}/feedback -> xin nhận xét AI
+  cho 1 lượt nói đã chấm (đọc ScoringReport đã lưu, không chấm lại).
+  Nhận xét cấp session vẫn có riêng: POST /sessions/{session_id}/feedback.
 """
 
 from typing import Any, Dict, List, Optional
@@ -19,8 +21,9 @@ from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlmodel import Session
 
-from app.ai.pronunciation import score_pronunciation
+from app.ai.pronunciation import request_pronun_feedback, score_pronunciation
 from app.ai.speech_log import (
+    attach_feedback,
     attach_pronunciation,
     get_room_transcript_for_summary,
     read_room_logs,
@@ -189,3 +192,60 @@ def rescore_utterance(
     except Exception as error:
         log.warning("score DB write-through failed | room=%s msg=%s err=%s", room_id, message_id, error)
     return SpeechUtterance(**(updated or {**entry, "pronunciation": score}))
+
+
+@router.post("/{room_id}/speech-logs/{message_id}/feedback", response_model=SpeechUtterance)
+def feedback_utterance(
+    room_id: int,
+    message_id: int,
+    request: Request,
+    body: Optional[SpeechFeedbackRequest] = None,
+    user_id: Optional[int] = None,
+    db: Session = Depends(get_session),
+    _: str = Depends(require_auth),
+) -> SpeechUtterance:
+    """Xin nhận xét AI cho 1 lượt nói đã chấm. Đọc ScoringReport đã lưu
+    (điểm cả lượt + word_details từng chữ), không chấm lại, không nhận audio.
+
+    An toàn:
+    - Chưa chấm (không có report, vd bản heuristic thiếu audio) -> 409.
+    - LLM chết -> request_pronun_feedback trả gợi ý theo quy tắc
+      (fallback từ word_details/top_errors), API vẫn 200.
+    """
+    _get_room_or_404(db, room_id, request)
+    current = request.state.current_user
+    target_uid: Any = user_id if user_id is not None else current.id
+    if target_uid != current.id and current.role != "admin":
+        db_room = room_crud.get_one(db, id=room_id)
+        if not db_room or db_room.host_id != current.id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized")
+
+    entries = read_user_log(room_id, target_uid)
+    entry = next((e for e in entries if e.get("message_id") == message_id), None)
+    if entry is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Utterance not found")
+
+    report = (entry.get("pronunciation") or {}).get("report")
+    if not report:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Chưa có điểm phát âm — chấm điểm trước (POST .../score).",
+        )
+    opts = body or SpeechFeedbackRequest()
+    # request_pronun_feedback không raise khi LLM chết (trả fallback
+    # rule-based từ word_details/top_errors) nên API luôn 200 khi đã có report.
+    feedback = request_pronun_feedback(
+        scoring_report=report,
+        model=opts.model or "",
+        temperature=opts.temperature if opts.temperature is not None else 0.6,
+        max_tokens=opts.max_tokens if opts.max_tokens is not None else 1200,
+    )
+    updated = attach_feedback(room_id, target_uid, message_id, feedback)
+    # Write-through feedback vào DB (khớp dòng điểm đã lưu ở POST .../score).
+    try:
+        row = pronunciation_score_crud.find_for_utterance(db, room_id, target_uid, message_id)
+        if row is not None:
+            pronunciation_score_crud.attach_feedback(db, row, feedback)
+    except Exception as error:
+        log.warning("feedback DB write-through failed | room=%s msg=%s err=%s", room_id, message_id, error)
+    return SpeechUtterance(**(updated or {**entry, "feedback": feedback}))
