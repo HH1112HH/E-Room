@@ -58,8 +58,7 @@ describe('ReadingScoreCard', () => {
     expect(table.textContent).toContain('/θ/ → /s/');
   });
 
-  it('nút Nhận xét AI mở panel riêng độc lập với bảng điểm', () => {
-    const onFeedback = vi.fn();
+  it('nút Nhận xét AI mở panel riêng độc lập với bảng điểm', () => {    const onFeedback = vi.fn();
     render(
       <ReadingScoreCard
         utterance={{
@@ -76,5 +75,24 @@ describe('ReadingScoreCard', () => {
     expect(screen.getByTestId('ai-feedback-panel').textContent).toContain('think');
     // Bảng điểm vẫn ẩn — 2 panel độc lập.
     expect(screen.queryByTestId('word-stats-table')).toBeNull();
+  });
+
+  it('bản heuristic hiện hướng dẫn thiếu audio thay vì thanh điểm', () => {
+    render(
+      <ReadingScoreCard
+        utterance={{
+          text: DEMO_TEXT,
+          corrected_text: DEMO_TEXT,
+          pronunciation: { score: 80.8, method: 'heuristic-v1', reason: 'no_audio', scored_text: DEMO_TEXT },
+        }}
+        onScore={vi.fn()}
+        onFeedback={vi.fn()}
+      />,
+    );
+    // Không hiện 4 thanh điểm gây hiểu lầm…
+    expect(screen.queryByTestId('reading-overall')).toBeNull();
+    // …mà hiện panel hướng dẫn + nút feedback bị khóa.
+    expect(screen.getByTestId('reading-heuristic').textContent).toContain('thiếu audio');
+    expect(screen.getByTestId('btn-ai-feedback').disabled).toBe(true);
   });
 });

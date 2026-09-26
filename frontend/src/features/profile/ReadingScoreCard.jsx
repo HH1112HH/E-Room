@@ -101,6 +101,12 @@ export function ReadingScoreCard({
   const topErrors = report?.top_errors || details.top_errors || [];
   const warnings = report?.warnings || details.warnings || [];
 
+  const isHeuristic = pron.method === 'heuristic-v1';
+  // Heuristic = không đủ bằng chứng audio để chấm thật (không có report).
+  // Hiện hướng dẫn thay vì thanh điểm gây hiểu lầm; nút feedback đã bị khóa
+  // bởi canAskFeedback == false ở dưới.
+  const heuristicReason = pron.reason || 'unknown';
+
   const canAskFeedback = Boolean(report);
 
   return (
@@ -117,7 +123,22 @@ export function ReadingScoreCard({
         {pron.scored_text || utterance?.corrected_text || utterance?.text}
       </p>
 
-      {/* 4 tiêu chí + tổng — luôn hiện sau khi chấm. */}
+      {/* Heuristic (thiếu audio / scorer lỗi): hiện hướng dẫn thay vì thanh điểm.
+          4 tiêu chí + tổng chỉ hiện sau khi chấm thật. */}
+      {isHeuristic ? (
+        <div className="er-alert er-alert--warn" style={{ marginTop: 12 }} data-testid="reading-heuristic">
+          {heuristicReason === 'no_audio'
+            ? 'Chưa chấm được vì thiếu audio của lượt nói này (bản ghi âm chưa có hoặc đã mất). Hãy vào phòng nói lại câu này rồi chấm lại.'
+            : heuristicReason === 'scorer_failed'
+              ? 'Máy chấm AI gặp sự cố nên chỉ ước lượng tạm. Hãy bấm Chấm lại để thử lại với scorer thật.'
+              : 'Điểm này chỉ là ước lượng tạm (thiếu dữ liệu chấm). Hãy chấm lại khi có audio.'}
+          <div style={{ marginTop: 8 }}>
+            <button type="button" className="er-btn" disabled={scoring || scoreDisabled} onClick={onScore}>
+              {scoring ? 'Đang chấm…' : 'Chấm lại'}
+            </button>
+          </div>
+        </div>
+      ) : (
       <div style={{ marginTop: 12 }} data-testid="reading-overall">
         <ScoreBar label="Sounds (âm)" value={scores.sounds} />
         <ScoreBar label="Stress (nhấn)" value={scores.stress} />
@@ -130,6 +151,7 @@ export function ReadingScoreCard({
           </span>
         </div>
       </div>
+      )}
 
       {warnings.length > 0 && (
         <p className="portal-muted" style={{ fontSize: 12, marginTop: 8 }}>
@@ -153,7 +175,7 @@ export function ReadingScoreCard({
           className="er-btn"
           aria-expanded={showFeedback}
           disabled={!canAskFeedback || feedbackLoading}
-          title={canAskFeedback ? '' : 'Chấm điểm trước rồi mới xin nhận xét'}
+          title={canAskFeedback ? '' : (isHeuristic ? 'Bản heuristic thiếu audio nên chưa xin nhận xét được — hãy chấm lại với scorer thật' : 'Chấm điểm trước rồi mới xin nhận xét')}
           onClick={() => {
             if (feedback) {
               setShowFeedback((v) => !v);

@@ -1335,19 +1335,31 @@ def request_pronun_feedback(
 
 
 # ═══════════════════════════════════════════════════════════════════
-# Part 11 — Nhận xét AI: gọi LLM local (get_llm), prompt ở prompts/feedback.md
-# (1 file, 2 mục ## utterance / ## session). Trả dict JSON nếu parse được,
-# không thì {"feedback_raw": ...} — frontend render được cả hai.
+# Part 11 — Nhận xét AI: gọi LLM local (get_llm), prompt riêng từng loại:
+# - prompts/feedback_utterance.md: nhận xét 1 câu đã chấm
+# - prompts/assessment.md: nhận xét AI cấp assessment/session
+# (fallback: feedback.md cũ với 2 mục ## utterance / ## session).
+# Trả dict JSON nếu parse được, không thì {"feedback_raw": ...} —
+# frontend render được cả hai.
 # ═══════════════════════════════════════════════════════════════════
 
 def _load_feedback_prompts() -> Dict[str, str]:
-    """Cắt feedback.md theo dòng ## utterance / ## session."""
+    """Đọc 2 prompt md riêng. Fallback feedback.md cũ nếu file mới thiếu."""
     from app.ai.prompt import load_prompt
 
     out = {"utterance": "", "session": ""}
+    utterance = load_prompt("feedback_utterance")
+    session = load_prompt("assessment")
+    if utterance:
+        out["utterance"] = utterance
+    if session:
+        out["session"] = session
+    if out["utterance"] and out["session"]:
+        return out
+    # Fallback: feedback.md cũ (1 file, 2 mục ## utterance / ## session).
     text = load_prompt("feedback")
     if not text:
-        log.warning("prompt feedback.md thieu/trong — feedback se chay prompt rong")
+        log.warning("prompt feedback thieu/trong — feedback se chay prompt rong")
         return out
     current = None
     buf: list[str] = []
@@ -1366,7 +1378,7 @@ def _load_feedback_prompts() -> Dict[str, str]:
     if current:
         out[current] = "\n".join(buf).strip()
     if not out["utterance"] or not out["session"]:
-        log.warning("feedback.md thieu muc ## utterance/## session")
+        log.warning("thieu prompt feedback_utterance/assessment")
     return out
 
 
@@ -1432,20 +1444,36 @@ def score_pronunciation(
 
     Thử local scorer -> pronun service (nếu có audio + text), fallback heuristic.
     Không bao giờ raise — luôn trả dict score.
+    Heuristic kèm `reason`: "no_audio" (không có file audio để chấm) hoặc
+    "scorer_failed" (có audio nhưng scorer lỗi) — frontend dùng để hiện
+    hướng dẫn đúng thay vì điểm số gây hiểu lầm.
     """
     words = words or []
+
+    def _heuristic(reason: str) -> Dict[str, Any]:
+        result = heuristic_score(
+            confidence=confidence,
+            avg_logprob=avg_logprob,
+            duration=duration,
+            words_count=len(words),
+        )
+        result["reason"] = reason
+        return result
+
     if prefer_wav2vec and audio_path and reference_text.strip():
         try:
             path = Path(audio_path)
             if path.exists():
                 return score_with_wav2vec2(path, reference_text, language)
-        except NotImplementedError:
-            pass
+            log.warning("scoring thiếu audio (file không tồn tại: %s) — fallback heuristic", audio_path)
+            return _heuristic("no_audio")
+        except NotImplementedError as error:
+            log.warning("local scoring failed và chưa cấu hình pronun service — fallback heuristic | err=%s", error)
+            return _heuristic("scorer_failed")
         except Exception as error:
             log.warning("wav2vec2 scoring failed, fallback heuristic | err=%s", error)
-    return heuristic_score(
-        confidence=confidence,
-        avg_logprob=avg_logprob,
-        duration=duration,
-        words_count=len(words),
-    )
+            return _heuristic("scorer_failed")
+    if prefer_wav2vec and reference_text.strip():
+        log.warning("scoring thiếu audio (audio_path=%r) — fallback heuristic", audio_path)
+        return _heuristic("no_audio")
+    return _heuristic("heuristic")
