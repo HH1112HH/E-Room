@@ -10,7 +10,7 @@
 Mic/user ──▶ VAD cắt câu ──▶ Whisper STT (raw, pronunciation=None)
       ──▶ user sửa corrected_text (PATCH)
       ──▶ POST .../score  → chấm trên corrected_text + audio ĐẦU–CUỐI lượt nói
-      ──▶ POST .../feedback → Nemotron đọc ScoringReport đã lưu, không chấm lại
+      ──▶ POST .../feedback → LLM local đọc ScoringReport đã lưu, không chấm lại
 ```
 
 | Bước | API | Luật |
@@ -21,7 +21,7 @@ Mic/user ──▶ VAD cắt câu ──▶ Whisper STT (raw, pronunciation=None
 
 ### Scorer (deterministic, không phải LLM)
 
-`app/ai/scoring_pipeline.py::score_attempt_v2` trả `ScoringReport`:
+`app/ai/pronunciation.py::score_attempt_v2` (Part 9, gộp từ scoring_pipeline) trả `ScoringReport`:
 
 - `scores`: `sounds` (âm), `stress` (nhấn), `fluency` (trôi chảy), `completeness` (đủ chữ), `overall` (trung bình trọng số). `intonation` = `None` ở MVP (chỉ detect monotone).
 - `word_details[]`: `{word, score, status, expected_ipa}` — `status` ∈ `ok` (≥70) · `pronunciation_error` · `no_evidence` (loại khỏi mẫu số, UI hiện "Không nghe rõ").
@@ -29,9 +29,9 @@ Mic/user ──▶ VAD cắt câu ──▶ Whisper STT (raw, pronunciation=None
 - `top_errors[]`: `{pattern, count, examples}` — tối đa 5.
 - Thứ tự thử model: local pipeline → Pronun service (`PRONUN_BASE_URL`) → heuristic chữ (không có `word_details`).
 
-### Nhận xét AI (Nemotron — chỉ giải thích, không tính điểm)
+### Nhận xét AI (LLM local — chỉ giải thích, không tính điểm)
 
-`app/ai/nemotron_client.py::generate_feedback` nhận **đúng 1 JSON `scoring_report`**, bị cấm đổi điểm / bịa lỗi (10 luật trong `SYSTEM_PROMPT`).
+`app/ai/feedback_llm.py::generate_feedback` (LLM local qua get_llm) nhận **đúng 1 JSON `scoring_report`**, bị cấm đổi điểm / bịa lỗi (luật trong `app/ai/prompts/feedback.md`).
 Trả: `summary`, `pronunciation_feedback`, `stress_feedback`, `intonation_feedback`,
 `fluency_feedback`, `priority_errors[]`, `practice_plan[]` (hoặc `feedback_raw` khi model trả text thô).
 
@@ -98,7 +98,7 @@ await fetchJson(`/rooms/${roomId}/speech-logs/${messageId}/feedback`, { method: 
 - **Session**: `SessionDetailPage` đọc `GET /rooms/{id}/speech-logs/me`, lọc theo
   `joined_at–left_at`, render `ReadingScoreCard` từng câu (mục *My pronunciation scores*).
 - **AI feedbacks**: `POST /sessions/{id}/feedback` — gộp câu đã chấm trong session (đọc DB,
-  fallback JSONL cho điểm cũ), gửi Nemotron với `SESSION_FEEDBACK_PROMPT` (gọn ~120 từ,
+  fallback JSONL cho điểm cũ), gửi LLM local với `SESSION_FEEDBACK_PROMPT` (mục ## session trong feedback.md, gọn ~120 từ,
   chỉ nêu từ sai/mất hơi + tip + 3 bước luyện). Chưa chấm câu nào → 409.
 - **Nghe mẫu**: mỗi dòng *What was said* có nút loa (Kokoro `POST /tts/speak`, cache theo
   giọng+câu) + `VoicePicker` 4 giọng (Heart/Adam/Emma/George). Giọng chỉ ảnh hưởng phần

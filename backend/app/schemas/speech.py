@@ -25,7 +25,6 @@ class SpeechUtterance(BaseModel):
 
 
 class SpeechFeedbackRequest(BaseModel):
-    api_key: Optional[str] = None
     model: Optional[str] = None
     temperature: Optional[float] = None
     max_tokens: Optional[int] = None

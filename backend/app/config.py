@@ -127,10 +127,8 @@ class Settings:
     wav2vec_model_id: str = os.getenv("WAV2VEC_MODEL_ID", "facebook/wav2vec2-base-960h")
     phoneme_model_id: str = os.getenv("PHONEME_MODEL_ID", "facebook/wav2vec2-xlsr-53-espeak-cv-ft")
 
-    # ─── LLM feedback (Nemotron qua OpenRouter, chi doc ScoringReport) ───────
-    openrouter_api_key: str = os.getenv("OPENROUTER_API_KEY", "")
-    openrouter_base_url: str = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
-    nemotron_model: str = os.getenv("NEMOTRON_MODEL", "nvidia/nemotron-3-ultra-550b-a55b")
+    # ─── LLM feedback (LLM local qua get_llm, chi doc ScoringReport) ───────
+    # Khong can key rieng — dung chung LLM_BASE_URL/LLM_MODEL.
 
     # ─── Speech logs (per-user transcript files cho summary + pronunciation) ─
     speech_log_dir: str = os.getenv("SPEECH_LOG_DIR", "log/speech")

@@ -287,7 +287,7 @@ def attach_feedback(
     message_id: int,
     feedback: Dict[str, Any],
 ) -> Optional[Dict[str, Any]]:
-    """Gắn nhận xét Nemotron vào 1 utterance (chỉ sau khi đã có pronunciation.report)."""
+    """Gắn nhận xét AI vào 1 utterance (chỉ sau khi đã có pronunciation.report)."""
     path = user_log_path(room_id, user_id)
     entries = _read_jsonl(path)
     updated: Optional[Dict[str, Any]] = None

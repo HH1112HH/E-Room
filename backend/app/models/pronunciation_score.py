@@ -35,7 +35,7 @@ class PronunciationScore(SQLModel, table=True):
     scorer_version: str = Field(default="", sa_column=Column(String(64)))
     # Full ScoringReport (word_details, phonemes, top_errors, warnings).
     report_json: str = Field(default="{}", sa_column=Column(Text))
-    # Nhận xét Nemotron (None cho tới khi POST .../feedback).
+    # Nhận xét AI (None cho tới khi POST .../feedback).
     feedback_json: Optional[str] = Field(default=None, sa_column=Column(Text))
     created_at: datetime = Field(default_factory=now_utc, nullable=False)
     updated_at: datetime = Field(default_factory=now_utc, nullable=False)

@@ -7,7 +7,7 @@
 - **Video rooms real-time** — LiveKit WebRTC, tối đa 4 seats, mic/cam/share màn hình, hand-raise, emoji reactions.
 - **Live transcript từng user** — worker nghe audio mỗi người, VAD cắt câu, faster-whisper (hoặc cloud STT) chuyển thành chữ, hiển thị kèm confidence badge.
 - **Trợ lý AI `@ai`** — mention `@ai` trong chat (hoặc nói "@ai ..." vào mic) để hỏi; đáp án stream từng từ qua LiveKit data channel, kèm thinking của model (reasoning) và quote lại câu hỏi gốc.
-- **Chấm điểm phát âm AI** — mỗi câu đã nói chấm được trên bản user đã sửa: điểm tổng + 4 tiêu chí (Sounds / Stress / Fluency / Completeness). **Điểm từng chữ ẩn mặc định**, chỉ hiện khi bấm **Thống kê điểm số** (bảng riêng); nút **Nhận xét AI** xin góp ý Nemotron (panel riêng). Xem `docs/reading-score.md`.
+- **Chấm điểm phát âm AI** — mỗi câu đã nói chấm được trên bản user đã sửa: điểm tổng + 4 tiêu chí (Sounds / Stress / Fluency / Completeness). **Điểm từng chữ ẩn mặc định**, chỉ hiện khi bấm **Thống kê điểm số** (bảng riêng); nút **Nhận xét AI** xin góp ý AI (panel riêng). Xem `docs/reading-score.md`.
 - **RAG tài liệu + web search** — agent tự tra tài liệu upload (Qdrant vector store + reranker) và Tavily web search khi cần, stream thinking ("Searching documents…") trước đáp án.
 - **Heartbeat** — phòng đang live mà im lặng quá lâu sẽ được AI gợi chuyện bằng 1 câu hỏi.
 - **Vòng đời phòng 3 trạng thái** — `open` (trống) → `live` (có người) → `ended` (chết). Hết người thì về open, bỏ hoang 24h mới ended.
@@ -21,7 +21,7 @@
 | Frontend | React 19, Vite 6, react-router-dom 7, TanStack Query 5, LiveKit components-react 2 + livekit-client 2, i18next, Zustand |
 | Backend | Python 3.13, FastAPI, SQLModel, Uvicorn, Alembic migrations |
 | AI | LangChain 1.x + LangGraph (agent), llama.cpp server (Gemma text gen + Qwen3 embedding), faster-whisper STT, Qwen3 reranker, Tavily search |
-| Chấm phát âm | Scorer deterministic trong backend (`app/scoring`: phoneme GOP + 4 tiêu chí) + Nemotron feedback qua OpenRouter (chỉ giải thích, không tính lại điểm) |
+| Chấm phát âm | Scorer trong `app/ai/pronunciation.py` (phoneme GOP + 4 tiêu chí) + nhận xét AI qua LLM local (chỉ giải thích, không tính lại điểm) |
 | Realtime | LiveKit (WebRTC video/audio/data channel) |
 | Jobs | Celery (ai, ai_observer, ai_transcriber queues) + beat, Redis |
 | Data | TiDB (MySQL-compatible), Qdrant (vectors), MinIO (S3 files), speech logs JSONL (`backend/log/speech/`, runtime — không commit) |
@@ -46,7 +46,7 @@ Mic/user ◀── LiveKit data ──◀ stream từng từ + thinking ◀─�
 ```
 Nói ──▶ STT raw (pronunciation=None) ──▶ user sửa corrected_text (PATCH)
   ──▶ POST .../score ──▶ điểm tổng + 4 tiêu chí (điểm từng chữ ẨN)
-  ──▶ [Thống kê điểm số] mở bảng riêng · [Nhận xét AI] xin góp ý Nemotron
+  ──▶ [Thống kê điểm số] mở bảng riêng · [Nhận xét AI] xin góp ý AI
 ```
 
 - Sửa câu sau khi đã chấm → điểm + nhận xét cũ bị reset, bắt chấm lại.
@@ -69,16 +69,9 @@ Người cuối out → về `open`. Trống quá `ROOM_EMPTY_END_SECONDS` (mặ
 E-Room/
 ├── backend/
 │   ├── app/
-│   │   ├── ai/                # LLM agent (query/events/thinking), STT dispatcher,
-│   │   │                      # VAD, transcriber/observer workers, RAG retrieval,
-│   │   │                      # tools, prompts, celery tasks, pronunciation hook,
+│   │   ├── ai/                # LLM agent, STT (auto), VAD, workers, RAG, prompts,
+│   │   │                      # pronunciation scorer (1 file, 10 parts) + feedback LLM,
 │   │   │                      # speech_log (raw → sửa → chấm)
-│   │   ├── scoring/           # scorer deterministic: pipeline, sounds (GOP),
-│   │   │                      # stress, metrics (fluency/completeness), ctc, phoneme_gop
-│   │   ├── speech/            # audio utils (load wav 16k, VAD, F0)
-│   │   ├── pronunciation/     # CMU dict + IPA map
-│   │   ├── llm/               # Nemotron feedback client (chỉ đọc ScoringReport)
-│   │   ├── speaking/          # alignment user_corrected ↔ whisper
 │   │   ├── api/routers/       # auth, google_auth, user, room, message, speech
 │   │   │                      # (speech-logs: me/score/feedback), document,
 │   │   │                      # notification (+ infra/health)
@@ -181,7 +174,7 @@ Xem đầy đủ ở `backend/.env.example`. Quan trọng nhất:
 | Variable | Default | Mô tả |
 |---|---|---|
 | `LLM_BASE_URL` | `http://localhost:8012/v1` | llama.cpp text gen |
-| `LLM_MODEL` | `gemma-4-E2B-it` | Model chat |
+| `LLM_MODEL` | `gemma-4-E2B-it` | Model chat + nhận xét phát âm AI (local, không key riêng) |
 | `EMBEDDING_BASE_URL` | `http://localhost:8013/v1` | llama.cpp embedding |
 | `QDRANT_HOST` / `QDRANT_PORT` | `localhost` / `6333` | Vector DB (trong docker: `qdrant`) |
 | `LIVEKIT_MODE` + `LIVEKIT_LOCAL_URL` | `local` / `ws://localhost:7880` | WebRTC (trong docker: `ws://livekit:7880`; public: `LIVEKIT_MODE=cloud`) |
@@ -191,7 +184,6 @@ Xem đầy đủ ở `backend/.env.example`. Quan trọng nhất:
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | — | Login Google (cần OAuth Client ID, không dùng service-account) |
 | `PRONUN_BASE_URL` | — | Scorer remote (không có thì chấm local → heuristic) |
 | `SCORING_MAX_PARALLEL` | `1` | Số lượt chấm local chạy song song (1 = tuần tự, chống OOM máy host) |
-| `OPENROUTER_API_KEY` / `NEMOTRON_MODEL` | — | Nhận xét phát âm AI (thiếu key thì `/feedback` báo lỗi, điểm số vẫn chấm bình thường) |
 | `SPEECH_LOG_DIR` | `backend/log/speech` | Nơi lưu transcript + audio từng câu (runtime, không commit) |
 
 > ⚠️ `.env` / `.env.docker` / `livekit.yaml` không commit (đã có trong `.gitignore`). Clone mới thì copy từ `.env.example` / `livekit.yaml.example` rồi điền secret.
@@ -216,7 +208,7 @@ Prefix `/api/v1`, chi tiết đầy đủ ở Swagger `http://localhost:8000/doc
 | GET | `/rooms/{room_id}/speech-logs/summary` | Cookie | Gộp sort theo giờ (cho mục summary) |
 | PATCH | `/rooms/{room_id}/speech-logs/{message_id}` | Cookie | Sửa `corrected_text` (reset điểm cũ) |
 | POST | `/rooms/{room_id}/speech-logs/{message_id}/score` | Cookie | Chấm phát âm 1 câu (máy host tính, lưu DB) |
-| POST | `/rooms/{room_id}/speech-logs/{message_id}/feedback` | Cookie | Nhận xét Nemotron (chỉ sau khi đã chấm) |
+| POST | `/rooms/{room_id}/speech-logs/{message_id}/feedback` | Cookie | Nhận xét AI (chỉ sau khi đã chấm) |
 | POST | `/sessions/{session_id}/feedback` | Cookie | AI feedbacks cả session (gọn, chỉ nêu phần sai; 409 nếu chưa chấm câu nào) |
 | GET/POST | `/messages/` | Cookie | Chat (`@ai` đầu tin nhắn → trigger agent) |
 | GET | `/users/{id}` `/users/me` | Cookie | Users |
@@ -254,7 +246,7 @@ Lưu ý: test dùng sqlite file `backend/test_eroom.db` (đã gitignore). Nếu 
 | List rooms hiện người đã out | Đợi ~5–10s (members refresh 5s, list 10s); nếu kẹt lâu là webhook miss — bấm Reload |
 | Worker báo `Unknown column` | Worker cũ hơn migration — `docker restart ai-worker` (code bind-mount) |
 | Job AI timeout 300s | LLM CPU ~3.7 tok/s; câu RAG nặng có thể quá trần — câu trả lời ngắn gọn hơn |
-| `/feedback` báo thiếu API key | Chưa set `OPENROUTER_API_KEY` — điểm số vẫn chấm bình thường, chỉ nhận xét AI là không chạy |
+| `/feedback` lỗi | LLM local (`:8012`) chưa chạy — điểm số vẫn chấm bình thường, chỉ nhận xét AI là không chạy |
 | Điểm từng chữ không hiện | Đúng thiết kế — bấm **Thống kê điểm số** để mở bảng riêng (`docs/reading-score.md`) |
 
 ## License

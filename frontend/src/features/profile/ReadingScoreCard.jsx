@@ -241,7 +241,7 @@ export function ReadingScoreCard({
 }
 
 function AIFeedbackBody({ feedback }) {
-  // Nemotron trả JSON: summary, pronunciation_feedback, stress_feedback,
+  // AI trả JSON: summary, pronunciation_feedback, stress_feedback,
   // intonation_feedback, fluency_feedback, priority_errors, practice_plan
   // — hoặc { feedback_raw } khi model trả text thô.
   if (feedback.feedback_raw) {

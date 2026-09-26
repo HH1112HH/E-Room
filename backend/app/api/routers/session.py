@@ -13,7 +13,7 @@ from app.ai.query import run_query, stream_events
 from app.ai.tools import TRANSCRIPT_TOOLS
 from app.api.dependencies import require_auth
 from app.database import get_session
-from app.ai.nemotron_client import SESSION_FEEDBACK_PROMPT
+from app.ai.feedback_llm import SESSION_FEEDBACK_PROMPT
 from app.models import MessageRole
 from app.schemas import (
     MySessionsResponse,
@@ -276,10 +276,10 @@ def session_feedback(
     db: Session = Depends(get_session),
     _: str = Depends(require_auth),
 ) -> dict:
-    """AI feedbacks cấp session (Nemotron, prompt gọn chỉ mô tả phần sai).
+    """AI feedbacks cấp session (LLM local, prompt gọn chỉ mô tả phần sai).
 
     Gộp các câu của CHÍNH user trong khoảng joined_at–left_at của session mà
-    đã có pronunciation.report, gửi Nemotron với SESSION_FEEDBACK_PROMPT.
+    đã có pronunciation.report, gửi LLM với SESSION_FEEDBACK_PROMPT.
     Không chấm lại, không nhận audio. Chưa có câu nào được chấm → 409.
 
     Nguồn điểm: bảng pronunciation_scores (máy host tính local, write-through
@@ -334,7 +334,6 @@ def session_feedback(
     try:
         feedback = request_pronun_feedback(
             scoring_report=payload,
-            api_key=opts.api_key or "",
             model=opts.model or "",
             temperature=opts.temperature if opts.temperature is not None else 0.6,
             max_tokens=opts.max_tokens if opts.max_tokens is not None else 1200,

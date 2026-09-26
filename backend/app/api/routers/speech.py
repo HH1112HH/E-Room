@@ -11,7 +11,7 @@ Luồng chấm điểm raw -> sửa -> chấm:
 - GET  /rooms/{room_id}/speech-logs/summary   -> gộp sort theo giờ (cho mục summary)
 - PATCH /rooms/{room_id}/speech-logs/{message_id} -> sửa corrected_text của mình
 - POST /rooms/{room_id}/speech-logs/{message_id}/score -> chấm phát âm lại
-- POST /rooms/{room_id}/speech-logs/{message_id}/feedback -> xin nhận xét Nemotron
+- POST /rooms/{room_id}/speech-logs/{message_id}/feedback -> xin nhận xét AI
   (chỉ sau khi đã có điểm; feedback đọc ScoringReport đã lưu, không chấm lại)
 """
 
@@ -203,7 +203,7 @@ def feedback_utterance(
     db: Session = Depends(get_session),
     _: str = Depends(require_auth),
 ) -> SpeechUtterance:
-    """Xin nhận xét Nemotron cho 1 câu đã chấm. Đọc ScoringReport đã lưu,
+    """Xin nhận xét AI cho 1 câu đã chấm. Đọc ScoringReport đã lưu,
     không chấm lại, không nhận audio."""
     _get_room_or_404(db, room_id, request)
     current = request.state.current_user
@@ -228,7 +228,6 @@ def feedback_utterance(
     try:
         feedback = request_pronun_feedback(
             scoring_report=report,
-            api_key=opts.api_key or "",
             model=opts.model or "",
             temperature=opts.temperature if opts.temperature is not None else 0.6,
             max_tokens=opts.max_tokens if opts.max_tokens is not None else 1200,

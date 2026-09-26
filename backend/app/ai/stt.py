@@ -188,8 +188,10 @@ def is_stt_server_alive() -> bool:
     alive = False
     try:
         url = (get_stt_server_url_override() or settings.stt_server_base_url).rstrip("/")
+        # /health nam o root (:8001/health), khong phai duoi /v1.
+        root = url[:-3] if url.endswith("/v1") else url
         with httpx.Client(timeout=settings.stt_server_alive_timeout) as client:
-            resp = client.get(f"{url}/health")
+            resp = client.get(f"{root}/health")
             alive = resp.status_code == 200
     except Exception as error:
         log.warning("Whisper host unreachable, fallback local | err=%s", str(error)[:150])

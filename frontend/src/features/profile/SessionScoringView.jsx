@@ -92,7 +92,7 @@ export function SessionScoringView({ sessionId: propSessionId }) {
   const sessionId = propSessionId || params.sessionId;
   const [voice, setVoice] = useState(() => getStoredVoice());
 
-  // AI feedbacks (Nemotron cấp session, prompt gọn chỉ mô tả phần sai).
+  // AI feedbacks (LLM local cấp session, prompt gọn chỉ mô tả phần sai).
   const [sessionFb, setSessionFb] = useState(null);
   const [sessionFbCount, setSessionFbCount] = useState(null);
   const [fbLoading, setFbLoading] = useState(false);
@@ -276,7 +276,7 @@ export function SessionScoringView({ sessionId: propSessionId }) {
             ) : !sessionFb ? (
               <>
                 <p className="portal-muted" style={{ fontSize: 13 }}>
-                  Nemotron đọc điểm các câu bạn đã chấm trong session này rồi góp ý gọn:
+                  AI đọc điểm các câu bạn đã chấm trong session này rồi góp ý gọn:
                   chỉ nêu từ sai / mất hơi, cách sửa và 3 bước luyện. Chưa chấm câu nào thì chấm ở mục dưới trước.
                 </p>
                 <button type="button" className="er-btn" disabled={fbLoading} onClick={askSessionFeedback}>
