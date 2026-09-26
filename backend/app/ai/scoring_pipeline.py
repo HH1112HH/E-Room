@@ -12,11 +12,11 @@ def score_attempt_v2(wav: np.ndarray, sr: int, whisper_raw: str, user_corrected:
                      char_words: list[dict] | None = None, greedy_text: str = "") -> dict:
     """char_words: output words từ app.score_utterance (forced aligner char-level, nguồn span thật).
     Nếu None, pipeline tự chạy? MVP: caller (app.py) truyền vào để tái dùng model đã load."""
-    from app.speaking.alignment import align_transcripts, apply_forced_spans
-    from app.scoring.sounds import score_sounds
-    from app.scoring.stress import score_stress
-    from app.scoring.metrics import score_fluency, score_completeness, calculate_overall
-    from app.speech.audio import vad_segments, extract_f0
+    from app.ai.speaking_alignment import align_transcripts, apply_forced_spans
+    from app.ai.scoring_sounds import score_sounds
+    from app.ai.scoring_stress import score_stress
+    from app.ai.scoring_metrics import score_fluency, score_completeness, calculate_overall
+    from app.ai.speech_audio import vad_segments, extract_f0
 
     t0 = time.time()
     warnings: list[str] = []
@@ -31,7 +31,7 @@ def score_attempt_v2(wav: np.ndarray, sr: int, whisper_raw: str, user_corrected:
     snd = None
     gop_model = None
     try:
-        from app.scoring.phoneme_gop import score_phones
+        from app.ai.scoring_phoneme_gop import score_phones
         ph = score_phones(wav, sr, user_corrected, accent)
         if "error" not in ph:
             snd = {"sounds": ph["sounds"], "word_details": ph["word_details"],

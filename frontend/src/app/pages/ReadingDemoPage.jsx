@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { HiArrowLeft, HiSparkles } from 'react-icons/hi2';
-import { ReadingScoreCard } from '../../features/speaking/ReadingScoreCard';
-import { DEMO_FEEDBACK, DEMO_PRONUNCIATION, DEMO_TEXT } from '../../features/speaking/readingDemoData';
+import { ReadingScoreCard } from '../../features/profile/ReadingScoreCard';
+import { DEMO_FEEDBACK, DEMO_PRONUNCIATION, DEMO_TEXT } from '../../features/profile/readingDemoData';
 
 /**
  * Trang demo /reading-demo — chạy không cần backend.

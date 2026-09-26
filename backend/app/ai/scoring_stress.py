@@ -3,7 +3,7 @@ không chia đều. MVP: word span -> N syllable spans theo tỉ lệ duration p
 từng char từ app.ctc_forced_align); v1.1 MFA cho boundary chuẩn 100%."""
 from __future__ import annotations
 import numpy as np
-from app.pronunciation.cmudict import get_pronunciation
+from app.ai.pronunciation_cmudict import get_pronunciation
 
 
 def score_stress(words_forced: list[dict], wav: np.ndarray, sr: int = 16000, accent: str = "en-US") -> dict:

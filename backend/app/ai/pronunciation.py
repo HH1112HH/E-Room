@@ -95,9 +95,9 @@ def score_local(
 
     Xếp hàng qua _scoring_gate: lượt chấm sau đợi lượt trước xong (tuần tự
     theo SCORING_MAX_PARALLEL) thay vì forward song song gây OOM."""
-    from app.scoring.ctc import score_utterance
-    from app.scoring.pipeline import score_attempt_v2
-    from app.speech.audio import load_wav_16k
+    from app.ai.scoring_ctc import score_utterance
+    from app.ai.scoring_pipeline import score_attempt_v2
+    from app.ai.speech_audio import load_wav_16k
 
     raw = Path(audio_path).read_bytes()
     if len(raw) > 100 * 1024 * 1024:
@@ -182,7 +182,7 @@ def request_pronun_feedback(
     chuyên biệt thay vì prompt mặc định. Raise khi cả hai đều lỗi."""
     import asyncio
 
-    from app.llm.nemotron_client import generate_feedback
+    from app.ai.nemotron_client import generate_feedback
 
     try:
         out = asyncio.run(generate_feedback(

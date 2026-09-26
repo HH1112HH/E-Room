@@ -102,7 +102,7 @@ E-Room/
 ├── docs/                      # overview, features, workflow, setup, reading-score
 ├── scripts/                   # dev.bat / golive.bat (chạy 1 lệnh) + mac.sh / linux.sh
 ├── nginx.conf
-└── docker-compose.yml         # 12 services (+ docker-compose.stt.yml cho máy STT riêng)
+└── docker-compose.yml         # 12 services (compose STT/TTS giữ local ở máy AI)
 ```
 
 ## Services & ports
@@ -119,14 +119,14 @@ E-Room/
 | redis | 6379 | Queue + presence + heartbeat |
 | minio | 9000 | S3 files |
 | ai-worker / ai-observer / ai-transcriber / ai-beat | — | Celery (code bind-mount, restart là nạp) |
-| stt-server (máy whisper riêng) | 8001 | faster-whisper-server `large-v3-turbo`, OpenAI-compatible — chạy bằng `scripts\stt-up.bat` + `docker-compose.stt.yml`, máy bạn chỉ cần trỏ `STT_SERVER_BASE_URL=http://<IP-máy-whisper>:8001/v1` |
+| stt-server (máy AI riêng) | 8001 | faster-whisper-server `large-v3-turbo`, OpenAI-compatible — chạy ở máy AI, máy này chỉ cần trỏ `STT_SERVER_BASE_URL=http://<IP-máy-AI>:8001/v1` (chết thì auto fallback local) |
 
 ### Chạy 2 máy (khuyên dùng)
 
 | Phe | Máy | Lệnh |
 |---|---|---|
-| AI: STT + TTS (bạn) | máy có GPU NVIDIA | `scripts\stt-up.bat` (lên `:8001` + `:8002`), rồi `scripts\ai-share.bat` để mở firewall + in URL Tailscale |
-| Full stack (bạn của bạn) | máy còn lại | `scripts\dev.bat`, rồi sửa `backend/.env.docker` theo đúng khối `ai-share.bat` in ra: `STT_PROVIDER=whisper_server`, `STT_SERVER_BASE_URL=http://100.x.y.z:8001/v1`, `TTS_BASE_URL=http://100.x.y.z:8002/v1`, `PRONUN_BASE_URL=` (trống = máy đó tự chấm local), xong `docker restart api` |
+| AI: STT + TTS (máy AI) | máy có GPU NVIDIA | Bên máy AI: `docker compose -f docker-compose.stt.yml up -d` (lên `:8001` + `:8002`; 2 file compose/script AI giữ local ở máy đó, không nằm trong nhánh này), mở firewall 8001/8002, lấy IP bằng `tailscale ip -4` |
+| Full stack (máy này, nhánh `student`) | máy còn lại | `scripts\dev.bat`, rồi sửa `backend/.env.docker`: `STT_PROVIDER=auto` (host sống thì dùng host, chết thì fallback local), `STT_SERVER_BASE_URL=http://100.x.y.z:8001/v1`, `TTS_BASE_URL=http://100.x.y.z:8002/v1`, `PRONUN_BASE_URL=` (trống = máy này tự chấm local), xong `docker restart api` |
 
 > 2 máy nối nhau qua **Tailscale** (cùng 1 tài khoản/tailnet): IP `100.x` là tĩnh vĩnh viễn, không lo DHCP đổi số, không cần mở port router hay set IP tĩnh. Chỉ cần cả 2 máy đều `tailscale up` là thấy nhau.
 

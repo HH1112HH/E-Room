@@ -82,7 +82,16 @@ class Settings:
     reranker_api_key: str = os.getenv("RERANKER_API_KEY", "")
 
     # ─── STT (whisper-server rieng, OpenAI-compatible) ────────────────────
-    stt_provider: str = os.getenv("STT_PROVIDER", "whisper_server")  # whisper_server | openai | groq | cloud
+    # auto: whisper host (:8001) song thi dung, chet thi fallback local cu.
+    stt_provider: str = os.getenv("STT_PROVIDER", "auto")  # auto | whisper_server | faster_whisper | local | openai | groq | cloud
+    stt_model_size: str = os.getenv("STT_MODEL_SIZE", "small")
+    stt_device: str = os.getenv("STT_DEVICE", "cpu")
+    stt_compute_type: str = os.getenv("STT_COMPUTE_TYPE", "int8")
+    stt_cpu_threads: int = int(os.getenv("STT_CPU_THREADS", 2))
+    stt_beam_size: int = int(os.getenv("STT_BEAM_SIZE", 3))
+    # Timeout cho health-check whisper host (auto mode). Ngan de chet nhanh fallback local.
+    stt_server_alive_timeout: float = float(os.getenv("STT_SERVER_ALIVE_TIMEOUT", 3.0))
+    stt_server_alive_ttl: float = float(os.getenv("STT_SERVER_ALIVE_TTL", 60.0))
     stt_language: str = os.getenv("STT_LANGUAGE", "en")  # en | vi | auto
     stt_cloud_api_key: str = os.getenv("STT_CLOUD_API_KEY", "")
     stt_cloud_base_url: str = os.getenv("STT_CLOUD_BASE_URL", "https://api.openai.com/v1")

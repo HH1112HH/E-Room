@@ -21,7 +21,7 @@ Mic/user ──▶ VAD cắt câu ──▶ Whisper STT (raw, pronunciation=None
 
 ### Scorer (deterministic, không phải LLM)
 
-`app/scoring/pipeline.py::score_attempt_v2` trả `ScoringReport`:
+`app/ai/scoring_pipeline.py::score_attempt_v2` trả `ScoringReport`:
 
 - `scores`: `sounds` (âm), `stress` (nhấn), `fluency` (trôi chảy), `completeness` (đủ chữ), `overall` (trung bình trọng số). `intonation` = `None` ở MVP (chỉ detect monotone).
 - `word_details[]`: `{word, score, status, expected_ipa}` — `status` ∈ `ok` (≥70) · `pronunciation_error` · `no_evidence` (loại khỏi mẫu số, UI hiện "Không nghe rõ").
@@ -31,13 +31,13 @@ Mic/user ──▶ VAD cắt câu ──▶ Whisper STT (raw, pronunciation=None
 
 ### Nhận xét AI (Nemotron — chỉ giải thích, không tính điểm)
 
-`app/llm/nemotron_client.py::generate_feedback` nhận **đúng 1 JSON `scoring_report`**, bị cấm đổi điểm / bịa lỗi (10 luật trong `SYSTEM_PROMPT`).
+`app/ai/nemotron_client.py::generate_feedback` nhận **đúng 1 JSON `scoring_report`**, bị cấm đổi điểm / bịa lỗi (10 luật trong `SYSTEM_PROMPT`).
 Trả: `summary`, `pronunciation_feedback`, `stress_feedback`, `intonation_feedback`,
 `fluency_feedback`, `priority_errors[]`, `practice_plan[]` (hoặc `feedback_raw` khi model trả text thô).
 
 ## 2. Thiết kế UI (frontend)
 
-Component: `frontend/src/features/speaking/ReadingScoreCard.jsx`
+Component: `frontend/src/features/profile/ReadingScoreCard.jsx`
 (props: `utterance {text, corrected_text, pronunciation, feedback}`, `onScore`, `onFeedback`, `scoring`, `feedbackLoading`)
 
 ### Trạng thái
@@ -61,7 +61,7 @@ Component: `frontend/src/features/speaking/ReadingScoreCard.jsx`
 ## 3. Demo
 
 - Trang: `frontend/src/app/pages/ReadingDemoPage.jsx` — route **`/reading-demo`** (không cần backend, scoring/feedback giả lập 1.2s).
-- Dữ liệu mẫu: `frontend/src/features/speaking/readingDemoData.js`
+- Dữ liệu mẫu: `frontend/src/features/profile/readingDemoData.js`
   (câu *"I think this is the best thing we have ever done"*, lỗi mẫu `/θ/ → /s/` ở think/thing, 1 chữ `no_evidence`).
 - Test: `ReadingScoreCard.test.jsx` — 4 case (chưa chấm / ẩn mặc định / mở bảng / panel feedback độc lập).
 - Chạy:
@@ -69,7 +69,7 @@ Component: `frontend/src/features/speaking/ReadingScoreCard.jsx`
 ```bash
 cd frontend
 npm run dev          # mở https://localhost:3000/reading-demo
-npx vitest run src/features/speaking/ReadingScoreCard.test.jsx
+npx vitest run src/features/profile/ReadingScoreCard.test.jsx
 npm run build        # verify build
 ```
 

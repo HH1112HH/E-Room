@@ -146,8 +146,8 @@ def score_phones(wav, sr: int, text: str, accent: str = "en-US") -> dict[str, An
     """Full pipeline phoneme GOP. Trả word_details/phonemes/top_errors/sounds cùng schema sounds.py."""
     import re
     import numpy as np
-    from app.pronunciation.cmudict import get_pronunciation
-    from app.scoring.ctc import ctc_forced_align
+    from app.ai.pronunciation_cmudict import get_pronunciation
+    from app.ai.scoring_ctc import ctc_forced_align
 
     torch = _load_torch()
     fe, model = get_phone_model()

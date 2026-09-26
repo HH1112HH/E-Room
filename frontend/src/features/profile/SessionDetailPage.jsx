@@ -1,13 +1,18 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { HiArrowLeft, HiChatBubbleLeftRight, HiClock, HiSparkles, HiSpeakerWave, HiUsers } from 'react-icons/hi2';
-import { fetchJson } from '../../lib/api';
+import { HiArrowLeft, HiChatBubbleLeftRight, HiClock, HiPaperAirplane, HiSparkles, HiUsers } from 'react-icons/hi2';
+import { API_BASE_URL, fetchJson, getTokens } from '../../lib/api';
 import { Face } from '../../components/common/Faces';
-import { ReadingScoreCard } from '../speaking/ReadingScoreCard';
-import { VoicePicker } from '../chat/VoicePicker';
-import { getStoredVoice, speakToAudioUrl, storeVoice } from '../chat/voiceApi';
 import '../../styles/ProfilePage.css';
+
+const QUICK_PROMPTS = [
+  'Recap it for Notion',
+  'What did we decide?',
+  'Which new words appeared?',
+  'Give me feedback on my English',
+  'What should I practice next?',
+];
 
 function parseTranscript(text) {
   return String(text || '')
@@ -39,68 +44,39 @@ function formatShortDateTime(iso) {
   return `${date.toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}, ${date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}`;
 }
 
-function inWindow(iso, startIso, endIso) {
-  const t = Date.parse(iso || '');
-  if (Number.isNaN(t)) return false;
-  if (startIso && t < Date.parse(startIso)) return false;
-  if (endIso && t > Date.parse(endIso)) return false;
-  return true;
-}
+async function* readSseEvents(response) {
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
 
-// Cache object URL theo giọng + câu để bấm loa lần 2 không gọi TTS lại.
-const ttsCache = new Map();
-
-function SpeakButton({ text, voice }) {
-  const [state, setState] = useState('idle'); // idle | loading | playing | error
-  async function play() {
-    const clean = String(text || '').trim();
-    if (!clean || state === 'loading') return;
-    setState('loading');
-    try {
-      const key = `${voice}::${clean}`;
-      let url = ttsCache.get(key);
-      if (!url) {
-        url = await speakToAudioUrl(clean, voice);
-        ttsCache.set(key, url);
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const frames = buffer.split('\n\n');
+    buffer = frames.pop() || '';
+    for (const frame of frames) {
+      for (const line of frame.split('\n')) {
+        const clean = line.trim();
+        if (!clean.startsWith('data:')) continue;
+        try {
+          yield JSON.parse(clean.slice(5).trim());
+        } catch {
+          /* skip partial frame */
+        }
       }
-      const audio = new Audio(url);
-      setState('playing');
-      audio.onended = () => setState('idle');
-      audio.onerror = () => setState('error');
-      await audio.play();
-    } catch {
-      setState('error');
     }
   }
-  return (
-    <button
-      type="button"
-      className="portal-topic pf-chipbtn"
-      onClick={play}
-      disabled={state === 'loading'}
-      title={state === 'error' ? 'TTS chưa sẵn sàng (server Kokoro :8002)' : 'Nghe mẫu đọc đúng'}
-      aria-label={`Nghe: ${String(text || '').slice(0, 40)}`}
-      style={{ padding: '2px 8px' }}
-    >
-      <HiSpeakerWave size={14} /> {state === 'loading' ? '…' : state === 'playing' ? '▶' : ''}
-    </button>
-  );
 }
 
 export function SessionDetailPage() {
   const { sessionId } = useParams();
-  const [voice, setVoice] = useState(() => getStoredVoice());
-
-  // AI feedbacks (Nemotron cấp session, prompt gọn chỉ mô tả phần sai).
-  const [sessionFb, setSessionFb] = useState(null);
-  const [sessionFbCount, setSessionFbCount] = useState(null);
-  const [fbLoading, setFbLoading] = useState(false);
-  const [fbError, setFbError] = useState('');
-
-  // Chấm tuần tự: chỉ 1 lượt chấm chạy tại 1 thời điểm (máy host).
-  const [busyScoreKey, setBusyScoreKey] = useState(null);
-  const [scoreError, setScoreError] = useState('');
-  const [busyFbKey, setBusyFbKey] = useState(null);
+  const [question, setQuestion] = useState('');
+  const [chat, setChat] = useState([]);
+  const [thinkingText, setThinkingText] = useState('');
+  const [streaming, setStreaming] = useState(false);
+  const [askError, setAskError] = useState('');
+  const chatEndRef = useRef(null);
 
   const detailQuery = useQuery({
     queryKey: ['session', sessionId],
@@ -118,75 +94,10 @@ export function SessionDetailPage() {
   const detail = detailQuery.data ?? null;
   const session = detail?.session ?? null;
   const room = detail?.room ?? null;
-
-  // Cách 1: đọc câu của chính mình từ speech log scope ROOM (đã có điểm thì
-  // hiện, chưa chấm thì chấm tại chỗ). Điểm thật nằm trong DB
-  // (pronunciation_scores), JSONL chỉ là log raw/audio.
-  const speechQuery = useQuery({
-    queryKey: ['session', sessionId, 'speech'],
-    queryFn: () => fetchJson(`/rooms/${room.id}/speech-logs/me`),
-    enabled: Boolean(room?.id),
-    retry: false,
-  });
-  const myUtterances = useMemo(() => {
-    const list = Array.isArray(speechQuery.data) ? speechQuery.data : [];
-    if (!session) return [];
-    return list.filter((u) => inWindow(u?.created_at, session.joined_at, session?.left_at));
-  }, [speechQuery.data, session]);
-
-  function changeVoice(next) {
-    setVoice(next);
-    storeVoice(next);
-  }
-
-  async function askSessionFeedback() {
-    if (fbLoading) return;
-    setFbLoading(true);
-    setFbError('');
-    try {
-      const res = await fetchJson(`/sessions/${sessionId}/feedback`, { method: 'POST' });
-      setSessionFb(res?.feedback || null);
-      setSessionFbCount({ scored: res?.scored_count ?? 0, total: res?.total_utterances ?? 0 });
-    } catch (error) {
-      setFbError(error?.message || 'AI could not answer right now');
-    } finally {
-      setFbLoading(false);
-    }
-  }
-
-  async function scoreUtterance(entry) {
-    const key = entry?.message_id ?? entry?.created_at ?? Math.random();
-    if (busyScoreKey !== null || entry?.message_id == null) {
-      if (entry?.message_id == null) setScoreError('Câu log cũ không có message_id — không chấm lại được.');
-      return;
-    }
-    setBusyScoreKey(key);
-    setScoreError('');
-    try {
-      await fetchJson(`/rooms/${room.id}/speech-logs/${entry.message_id}/score`, { method: 'POST' });
-      await speechQuery.refetch();
-    } catch (error) {
-      setScoreError(error?.message || 'Chấm điểm thất bại');
-    } finally {
-      setBusyScoreKey(null);
-    }
-  }
-
-  async function feedbackUtterance(entry) {
-    const key = entry?.message_id ?? entry?.created_at ?? Math.random();
-    if (entry?.message_id == null) return;
-    setBusyFbKey(key);
-    setScoreError('');
-    try {
-      await fetchJson(`/rooms/${room.id}/speech-logs/${entry.message_id}/feedback`, { method: 'POST', body: JSON.stringify({}) });
-      await speechQuery.refetch();
-    } catch (error) {
-      setScoreError(error?.message || 'Xin nhận xét thất bại');
-    } finally {
-      setBusyFbKey(null);
-    }
-  }
-
+  const savedChat = useMemo(() => {
+    const turns = messagesQuery.data?.chat;
+    return Array.isArray(turns) ? turns.filter((t) => t && typeof t.text === 'string') : [];
+  }, [messagesQuery.data]);
   const lines = useMemo(() => {
     const structured = messagesQuery.data?.transcript_lines;
     if (Array.isArray(structured) && structured.length > 0) {
@@ -201,6 +112,63 @@ export function SessionDetailPage() {
   const speakers = useMemo(() => [...new Set(lines.map((l) => l.speaker).filter(Boolean))], [lines]);
   const lineCount = detail?.message_count ?? 0;
   const emptySession = !messagesQuery.isLoading && lineCount === 0;
+
+  useEffect(() => {
+    if (savedChat.length > 0) {
+      setChat((log) => (log.length === 0 ? savedChat.map((t) => ({ role: t.role, text: t.text })) : log));
+    }
+  }, [savedChat]);
+
+  async function ask(text) {
+    const clean = String(text || '').trim();
+    if (!clean || streaming || emptySession) return;
+    setStreaming(true);
+    setAskError('');
+    setThinkingText('');
+    setChat((log) => [...log, { role: 'user', text: clean }]);
+    setQuestion('');
+
+    let aiIndex = -1;
+    setChat((log) => {
+      aiIndex = log.length;
+      return [...log, { role: 'ai', text: '' }];
+    });
+
+    try {
+      const { access } = getTokens();
+      const response = await fetch(`${API_BASE_URL}/sessions/${sessionId}/chat/stream`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', ...(access ? { Authorization: `Bearer ${access}` } : {}) },
+        body: JSON.stringify({ question: clean }),
+      });
+      if (!response.ok || !response.body) {
+        const body = await response.json().catch(() => ({}));
+        throw new Error(body.detail || `Request failed with status ${response.status}`);
+      }
+
+      for await (const event of readSseEvents(response)) {
+        if (event.kind === 'thinking' && event.text) {
+          const piece = event.text;
+          setThinkingText((prev) => (prev + piece).slice(-500));
+        } else if (event.kind === 'token' && event.text) {
+          const piece = event.text;
+          setChat((log) => log.map((turn, i) => (i === aiIndex ? { ...turn, text: turn.text + piece } : turn)));
+        } else if (event.kind === 'error') {
+          throw new Error(event.text || 'AI could not answer right now');
+        }
+      }
+    } catch (error) {
+      setAskError(error?.message || 'AI could not answer right now');
+      setChat((log) => log.filter((_, i) => i !== aiIndex));
+    } finally {
+      setStreaming(false);
+      setThinkingText('');
+      if (typeof chatEndRef.current?.scrollIntoView === 'function') {
+        chatEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+  }
 
   if (detailQuery.isLoading || messagesQuery.isLoading) {
     return (
@@ -267,84 +235,66 @@ export function SessionDetailPage() {
         <div className="portal-stack" style={{ marginTop: 16 }}>
           <section className="portal-panel pf-aichat">
             <div className="portal-panel__head">
-              <h2><HiSparkles size={15} /> AI feedbacks</h2>
-              {sessionFbCount && <span className="portal-muted">{sessionFbCount.scored} scored lines</span>}
+              <h2><HiSparkles size={15} /> Ask AI about this session</h2>
+              <span className="portal-muted">{lineCount} lines of context</span>
             </div>
             {emptySession ? (
               <div className="portal-empty">No transcript in this session — nothing was said while you were inside, so AI has nothing to read.</div>
-            ) : !sessionFb ? (
-              <>
-                <p className="portal-muted" style={{ fontSize: 13 }}>
-                  Nemotron đọc điểm các câu bạn đã chấm trong session này rồi góp ý gọn:
-                  chỉ nêu từ sai / mất hơi, cách sửa và 3 bước luyện. Chưa chấm câu nào thì chấm ở mục dưới trước.
-                </p>
-                <button type="button" className="er-btn" disabled={fbLoading} onClick={askSessionFeedback}>
-                  {fbLoading ? 'AI đang đọc điểm…' : 'Get AI feedback'}
-                </button>
-                {fbError && <div className="er-alert er-alert--err" style={{ marginTop: 8 }}>{fbError}</div>}
-              </>
             ) : (
               <>
-                <SessionFeedbackBody feedback={sessionFb} />
-                <div style={{ marginTop: 10 }}>
-                  <button type="button" className="er-btn" disabled={fbLoading} onClick={askSessionFeedback}>
-                    {fbLoading ? 'AI đang đọc điểm…' : 'Refresh feedback'}
-                  </button>
+                <div className="pf-chatlog pf-chatlog--roomy pf-chatlog--tall">
+                  {chat.length === 0 && (
+                    <div className="pf-greet">
+                      <span className="portal-badge">AI</span>
+                      <p className="pf-greet__title">I’ve read every line of this session.</p>
+                      <p className="portal-muted">Pick a starter below, or ask anything in your own words.</p>
+                    </div>
+                  )}
+                  {chat.map((turn, i) => {
+                    const isLive = streaming && i === chat.length - 1;
+                    const showThinking = turn.role === 'ai' && isLive && !turn.text;
+                    return (
+                      <div key={i} className={`pf-chatlog__turn is-${turn.role}`}>
+                        <span className="portal-badge">{turn.role === 'ai' ? 'AI' : 'YOU'}</span>
+                        <span className={`pf-chattext${showThinking ? ' portal-muted' : ''}`}>
+                          {showThinking ? (thinkingText || 'Thinking…') : turn.text}
+                          {turn.role === 'ai' && isLive && !showThinking && <span className="pf-caret" aria-hidden="true" />}
+                        </span>
+                      </div>
+                    );
+                  })}
+                  <div ref={chatEndRef} />
                 </div>
-                {fbError && <div className="er-alert er-alert--err" style={{ marginTop: 8 }}>{fbError}</div>}
+                {chat.length === 0 && (
+                  <div className="pf-chips pf-chips--starters">
+                    {QUICK_PROMPTS.map((prompt) => (
+                      <button key={prompt} type="button" className="portal-topic pf-chipbtn" disabled={streaming} onClick={() => ask(prompt)}>
+                        {prompt}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <form onSubmit={(e) => { e.preventDefault(); ask(question); }} className="pf-askrow">
+                  <input
+                    className="er-input" value={question}
+                    onChange={(e) => setQuestion(e.target.value)}
+                    placeholder="Ask about this session…"
+                    aria-label="Ask about this session"
+                    disabled={streaming}
+                  />
+                  <button type="submit" className="er-btn" aria-label="Ask" title="Ask" disabled={streaming || !question.trim()}>
+                    {streaming ? '…' : <HiPaperAirplane size={16} />}
+                  </button>
+                </form>
+                {askError && <div className="er-alert er-alert--err">{askError}</div>}
               </>
-            )}
-          </section>
-
-          <section className="portal-panel">
-            <div className="portal-panel__head">
-              <h2>My pronunciation scores</h2>
-              <span className="portal-muted">{myUtterances.length} lines</span>
-            </div>
-            {speechQuery.isError ? (
-              <div className="portal-empty">Chưa tải được câu đã nói (speech log). Vào phòng nói vài câu rồi quay lại.</div>
-            ) : speechQuery.isLoading ? (
-              <div className="portal-skeleton"><span /><span /></div>
-            ) : myUtterances.length === 0 ? (
-              <div className="portal-empty">Bạn chưa nói câu nào trong session này (hoặc câu nói chưa vào log).</div>
-            ) : (
-              <div className="portal-stack">
-                {myUtterances.map((u, i) => {
-                  const key = u?.message_id ?? u?.created_at ?? i;
-                  return (
-                    <ReadingScoreCard
-                      key={key}
-                      utterance={{
-                        text: u?.text,
-                        corrected_text: u?.corrected_text || u?.text,
-                        pronunciation: u?.pronunciation || null,
-                        feedback: u?.feedback || null,
-                      }}
-                      scoring={busyScoreKey === key}
-                      feedbackLoading={busyFbKey === key}
-                      scoreDisabled={busyScoreKey !== null && busyScoreKey !== key}
-                      onScore={() => scoreUtterance(u)}
-                      onFeedback={() => feedbackUtterance(u)}
-                    />
-                  );
-                })}
-              </div>
-            )}
-            {scoreError && <div className="er-alert er-alert--err" style={{ marginTop: 8 }}>{scoreError}</div>}
-            {busyScoreKey !== null && (
-              <p className="portal-muted" style={{ fontSize: 12, marginTop: 8 }}>
-                Máy host đang chấm 1 câu — các nút chấm khác tạm khóa để không quá tải (chấm tuần tự).
-              </p>
             )}
           </section>
 
           <section className="portal-panel">
             <div className="portal-panel__head">
               <h2>What was said</h2>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span className="portal-muted">{lines.length} lines</span>
-                <VoicePicker value={voice} onChange={changeVoice} />
-              </span>
+              <span className="portal-muted">{lines.length} lines</span>
             </div>
             {lines.length === 0 ? (
               <div className="portal-empty">No messages were said while you were inside.</div>
@@ -357,7 +307,6 @@ export function SessionDetailPage() {
                       {line.speaker && <span className="portal-row__text">{line.speaker}</span>}
                       <span className={line.speaker ? 'portal-row__sub pf-chattext' : 'portal-row__text pf-chattext'}>{line.body}</span>
                     </span>
-                    <SpeakButton text={line.body} voice={voice} />
                   </div>
                 ))}
               </div>
@@ -365,41 +314,6 @@ export function SessionDetailPage() {
           </section>
         </div>
       </main>
-    </div>
-  );
-}
-
-function SessionFeedbackBody({ feedback }) {
-  if (!feedback) return null;
-  if (feedback.feedback_raw) {
-    return <p style={{ fontSize: 14, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{feedback.feedback_raw}</p>;
-  }
-  const errors = Array.isArray(feedback.error_words) ? feedback.error_words : [];
-  const plan = Array.isArray(feedback.practice_plan) ? feedback.practice_plan : [];
-  return (
-    <div style={{ display: 'grid', gap: 8 }}>
-      {feedback.summary && <p style={{ fontSize: 14, margin: 0, lineHeight: 1.55 }}>{feedback.summary}</p>}
-      {errors.length > 0 && (
-        <div>
-          <div style={{ fontSize: 13, fontWeight: 800 }}>Words to fix</div>
-          <ul style={{ fontSize: 14, paddingLeft: 18, margin: '4px 0 0' }}>
-            {errors.map((e, i) => (
-              <li key={i}><b>{e.word}</b> — {e.issue}{e.tip ? ` → ${e.tip}` : ''}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-      {plan.length > 0 && (
-        <div>
-          <div style={{ fontSize: 13, fontWeight: 800 }}>Practice plan</div>
-          <ol style={{ fontSize: 14, paddingLeft: 18, margin: '4px 0 0' }}>
-            {plan.map((step, i) => <li key={i}>{step}</li>)}
-          </ol>
-        </div>
-      )}
-      {!feedback.summary && errors.length === 0 && plan.length === 0 && (
-        <p className="portal-muted" style={{ fontSize: 13 }}>AI không trả đúng định dạng — bấm Refresh để thử lại.</p>
-      )}
     </div>
   );
 }

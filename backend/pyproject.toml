@@ -44,6 +44,9 @@ dependencies = [
     "pymupdf>=1.28.2",
     "tavily-python>=0.7.27",
     "livekit>=1.1.14",
+    # STT local fallback (whisper small chay trong worker khi whisper-server
+    # host chet). Nang hon (~500MB ctranslate2) nhung dam bao khong câm.
+    "faster-whisper>=1.2.1",
     # Scorer phat am local (port tu demo/pronun-app): torch CPU + transformers +
     # librosa + CMUdict/g2p-en. May chay backend gánh compute.
     "torch>=2.2",

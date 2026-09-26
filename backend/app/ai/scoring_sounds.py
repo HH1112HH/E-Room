@@ -7,8 +7,8 @@ Case bắt buộc: user đọc /sɪŋk/ nhưng corrected là think -> phải ra 
 from __future__ import annotations
 import math
 from typing import Any
-from app.pronunciation.cmudict import get_pronunciation
-from app.pronunciation.ipa import arpa_to_ipa
+from app.ai.pronunciation_cmudict import get_pronunciation
+from app.ai.pronunciation_ipa import arpa_to_ipa
 
 
 def observe_phones_fallback(greedy_text: str, canonical_arpa: list[str]) -> list[str]:
