@@ -1,4 +1,4 @@
-"""feedback_llm: 1 file prompt feedback.md (2 muc) + LLM local."""
+"""Nhan xet AI: 2 prompt md rieng (feedback_utterance.md + assessment.md) + LLM local."""
 import asyncio
 from unittest.mock import AsyncMock, patch
 

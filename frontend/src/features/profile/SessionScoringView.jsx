@@ -254,7 +254,7 @@ export function SessionScoringView({ sessionId: propSessionId }) {
       <div className="portal-app portal-app--page">
         <main className="portal-main pf-center--wide">
           <div className="er-alert er-alert--err">Session not found or you have no access.</div>
-          <Link className="er-btn" style={{ textDecoration: 'none', marginTop: 12 }} to="/session"><HiArrowLeft size={14} /> Sessions</Link>
+          <Link className="er-btn" style={{ textDecoration: 'none', marginTop: 12 }} to="/assessment"><HiArrowLeft size={14} /> Assessment</Link>
         </main>
       </div>
     );
@@ -268,7 +268,7 @@ export function SessionScoringView({ sessionId: propSessionId }) {
       <main className="portal-main pf-center--wide">
         <div className="portal-pagehead">
           <div>
-            <div className="pf-crumb"><Link to="/session">Sessions</Link> / #{session.id}</div>
+            <div className="pf-crumb"><Link to="/assessment">Assessment</Link> / #{session.id} · <Link to={`/session/${session.id}`}>View session</Link></div>
           </div>
         </div>
 
