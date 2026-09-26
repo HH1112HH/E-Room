@@ -5,7 +5,7 @@ from unittest.mock import patch
 from fastapi.testclient import TestClient
 
 from app.config import settings
-from app.ai.feedback_llm import SESSION_FEEDBACK_PROMPT
+from app.ai.pronunciation import SESSION_FEEDBACK_PROMPT
 
 
 def _make_room_and_session(client: TestClient, alice: dict) -> tuple[dict, int]:

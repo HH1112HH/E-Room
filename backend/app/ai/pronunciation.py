@@ -1323,8 +1323,6 @@ def request_pronun_feedback(
     chuyên biệt thay vì prompt mặc định. Raise khi LLM lỗi."""
     import asyncio
 
-    from app.ai.feedback_llm import generate_feedback
-
     try:
         out = asyncio.run(generate_feedback(
             scoring_report, model, temperature, max_tokens, system_prompt, user_label,
@@ -1334,6 +1332,90 @@ def request_pronun_feedback(
     if "error" in out:
         raise RuntimeError(out["error"])
     return out
+
+
+# ═══════════════════════════════════════════════════════════════════
+# Part 11 — Nhận xét AI: gọi LLM local (get_llm), prompt ở prompts/feedback.md
+# (1 file, 2 mục ## utterance / ## session). Trả dict JSON nếu parse được,
+# không thì {"feedback_raw": ...} — frontend render được cả hai.
+# ═══════════════════════════════════════════════════════════════════
+
+def _load_feedback_prompts() -> Dict[str, str]:
+    """Cắt feedback.md theo dòng ## utterance / ## session."""
+    from app.ai.prompt import load_prompt
+
+    out = {"utterance": "", "session": ""}
+    text = load_prompt("feedback")
+    if not text:
+        log.warning("prompt feedback.md thieu/trong — feedback se chay prompt rong")
+        return out
+    current = None
+    buf: list[str] = []
+    for line in text.splitlines():
+        head = line.strip().lower()
+        if head == "## utterance":
+            if current:
+                out[current] = "\n".join(buf).strip()
+            current, buf = "utterance", []
+        elif head == "## session":
+            if current:
+                out[current] = "\n".join(buf).strip()
+            current, buf = "session", []
+        elif current:
+            buf.append(line)
+    if current:
+        out[current] = "\n".join(buf).strip()
+    if not out["utterance"] or not out["session"]:
+        log.warning("feedback.md thieu muc ## utterance/## session")
+    return out
+
+
+_PROMPTS = _load_feedback_prompts()
+SYSTEM_PROMPT = _PROMPTS["utterance"]
+SESSION_FEEDBACK_PROMPT = _PROMPTS["session"]
+
+
+def _extract_json(content: str) -> Dict[str, Any] | None:
+    """LLM local tra JSON (co the kem text). Boc tach object JSON dau tien."""
+    text = (content or "").strip()
+    if not text:
+        return None
+    try:
+        parsed = json.loads(text)
+        return parsed if isinstance(parsed, dict) else None
+    except (TypeError, ValueError):
+        pass
+    start = text.find("{")
+    end = text.rfind("}")
+    if start >= 0 and end > start:
+        try:
+            parsed = json.loads(text[start : end + 1])
+            return parsed if isinstance(parsed, dict) else None
+        except (TypeError, ValueError):
+            return None
+    return None
+
+
+async def generate_feedback(scoring_report: dict, model: str = "",
+                            temperature: float = 0.6, max_tokens: int = 1200,
+                            system_prompt: str = "", user_label: str = "scoring_report") -> dict:
+    from app.ai import get_llm
+
+    user_msg = f"{user_label}:\n" + json.dumps(scoring_report, ensure_ascii=False)[:12000]
+    try:
+        llm = get_llm(model=model, temperature=temperature, max_tokens=max_tokens)
+        msg = await llm.ainvoke([
+            {"role": "system", "content": system_prompt or SYSTEM_PROMPT},
+            {"role": "user", "content": user_msg},
+        ])
+    except Exception as error:
+        return {"error": f"LLM local lỗi ({settings.llm_base_url}): {error}"}
+    content = getattr(msg, "content", "") or ""
+    parsed = _extract_json(content if isinstance(content, str) else str(content))
+    if parsed:
+        parsed.setdefault("model", (model or "").strip() or settings.llm_model)
+        return parsed
+    return {"feedback_raw": content, "model": (model or "").strip() or settings.llm_model, "usage": {}}
 
 
 def score_pronunciation(

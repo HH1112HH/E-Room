@@ -13,7 +13,7 @@ from app.ai.query import run_query, stream_events
 from app.ai.tools import TRANSCRIPT_TOOLS
 from app.api.dependencies import require_auth
 from app.database import get_session
-from app.ai.feedback_llm import SESSION_FEEDBACK_PROMPT
+from app.ai.pronunciation import SESSION_FEEDBACK_PROMPT
 from app.models import MessageRole
 from app.schemas import (
     MySessionsResponse,
