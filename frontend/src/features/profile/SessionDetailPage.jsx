@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { HiAcademicCap, HiArrowLeft, HiChatBubbleLeftRight, HiClock, HiPaperAirplane, HiSparkles, HiUsers } from 'react-icons/hi2';
+import { HiArrowLeft, HiChatBubbleLeftRight, HiClock, HiPaperAirplane, HiSparkles, HiUsers } from 'react-icons/hi2';
 import { API_BASE_URL, fetchJson, getTokens } from '../../lib/api';
 import { Face } from '../../components/common/Faces';
 import '../../styles/ProfilePage.css';
@@ -230,15 +230,6 @@ export function SessionDetailPage() {
             </div>
           </div>
           {room?.description && <p className="portal-muted pf-sesscard__desc">{room.description}</p>}
-          <div style={{ marginTop: 12 }}>
-            <Link
-              className="er-btn"
-              style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}
-              to={`/assessment/${session.id}`}
-            >
-              <HiAcademicCap size={15} /> Chấm điểm phát âm
-            </Link>
-          </div>
         </section>
 
         <div className="portal-stack" style={{ marginTop: 16 }}>

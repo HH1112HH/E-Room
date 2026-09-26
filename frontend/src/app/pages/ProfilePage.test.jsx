@@ -179,16 +179,12 @@ describe('ProfilePage portal', () => {
     expect(screen.getByText(/1 invited/)).toBeTruthy();
   });
 
-  it('shows assessment session list with links to separate scoring pages', async () => {
+  it('shows assessment session scoring view for latest session', async () => {
     renderPortal('assessment');
     expect(await screen.findByText('Replay what you said, level up how you say it.')).toBeTruthy();
+    expect(await screen.findByText('AI feedbacks')).toBeTruthy();
+    expect(await screen.findByText('My pronunciation scores')).toBeTruthy();
     expect(await screen.findByText('Old Session')).toBeTruthy();
-    const link = screen.getByRole('link', { name: 'Assess' });
-    expect(link.getAttribute('href')).toBe('/assessment/101');
-    // Trang Assessment chỉ liệt kê session — nội dung chấm điểm nằm ở
-    // trang riêng /assessment/:id, không nhúng chung với Session.
-    expect(screen.queryByText('AI feedbacks')).toBeNull();
-    expect(screen.queryByText('My pronunciation scores')).toBeNull();
   });
 
   it('opens profile resume with pencil edits, avatar popup and save bar', async () => {
