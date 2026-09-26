@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { HiArrowLeft, HiChatBubbleLeftRight, HiClock, HiSparkles, HiSpeakerWave, HiUsers } from 'react-icons/hi2';
+import { HiArrowLeft, HiChatBubbleLeftRight, HiClock, HiPencil, HiSparkles, HiSpeakerWave, HiUsers } from 'react-icons/hi2';
 import { fetchJson } from '../../lib/api';
 import { Face } from '../../components/common/Faces';
 import { ReadingScoreCard } from './ReadingScoreCard';
@@ -102,6 +102,10 @@ export function SessionScoringView({ sessionId: propSessionId }) {
   const [busyScoreKey, setBusyScoreKey] = useState(null);
   const [scoreError, setScoreError] = useState('');
   const [busyFbKey, setBusyFbKey] = useState(null);
+  // Tự sửa câu đã nói trong What was said.
+  const [editingId, setEditingId] = useState(null);
+  const [editText, setEditText] = useState('');
+  const [editSaving, setEditSaving] = useState(false);
 
   const detailQuery = useQuery({
     queryKey: ['session', sessionId],
@@ -192,13 +196,42 @@ export function SessionScoringView({ sessionId: propSessionId }) {
     const structured = messagesQuery.data?.transcript_lines;
     if (Array.isArray(structured) && structured.length > 0) {
       return structured.map((line, i) => ({
-        id: i,
+        id: line?.message_id ?? i,
         speaker: line?.speaker || null,
         body: line?.text ?? '',
+        message_id: line?.message_id ?? null,
       }));
     }
     return parseTranscript(messagesQuery.data?.transcript);
   }, [messagesQuery.data]);
+  // Câu của chính mình (theo message_id) để hiện nút Sửa + bản đã sửa.
+  const myUtteranceById = useMemo(() => {
+    const map = new Map();
+    for (const u of myUtterances) {
+      if (u?.message_id != null) map.set(u.message_id, u);
+    }
+    return map;
+  }, [myUtterances]);
+
+  async function saveEdit(line) {
+    const clean = editText.trim();
+    if (!clean || !line?.message_id || editSaving) return;
+    setEditSaving(true);
+    setScoreError('');
+    try {
+      await fetchJson(`/rooms/${room.id}/speech-logs/${line.message_id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ corrected_text: clean }),
+      });
+      setEditingId(null);
+      // Sửa sau khi chấm thì backend reset điểm → tải lại cả 2 nguồn.
+      await Promise.all([speechQuery.refetch(), messagesQuery.refetch()]);
+    } catch (error) {
+      setScoreError(error?.message || 'Sửa câu thất bại');
+    } finally {
+      setEditSaving(false);
+    }
+  }
   const speakers = useMemo(() => [...new Set(lines.map((l) => l.speaker).filter(Boolean))], [lines]);
   const lineCount = detail?.message_count ?? 0;
   const emptySession = !messagesQuery.isLoading && lineCount === 0;
@@ -351,16 +384,62 @@ export function SessionScoringView({ sessionId: propSessionId }) {
               <div className="portal-empty">No messages were said while you were inside.</div>
             ) : (
               <div className="portal-list">
-                {lines.map((line) => (
-                  <div key={line.id} className="portal-row">
-                    <Face name={line.speaker || '?'} size={30} />
-                    <span className="portal-row__main">
-                      {line.speaker && <span className="portal-row__text">{line.speaker}</span>}
-                      <span className={line.speaker ? 'portal-row__sub pf-chattext' : 'portal-row__text pf-chattext'}>{line.body}</span>
-                    </span>
-                    <SpeakButton text={line.body} voice={voice} />
-                  </div>
-                ))}
+                {lines.map((line) => {
+                  const mine = line.message_id != null ? myUtteranceById.get(line.message_id) : null;
+                  const corrected = mine?.corrected_text || null;
+                  const isEdited = corrected && corrected !== line.body;
+                  const shown = corrected || line.body;
+                  const isEditing = editingId === line.id;
+                  return (
+                    <div key={line.id} className="portal-row">
+                      <Face name={line.speaker || '?'} size={30} />
+                      <span className="portal-row__main">
+                        {line.speaker && <span className="portal-row__text">{line.speaker}</span>}
+                        {isEditing ? (
+                          <span style={{ display: 'flex', gap: 6, marginTop: 4 }}>
+                            <input
+                              className="er-input" value={editText}
+                              onChange={(e) => setEditText(e.target.value)}
+                              aria-label="Sửa câu đã nói"
+                              disabled={editSaving}
+                              style={{ flex: 1, fontSize: 13 }}
+                            />
+                            <button type="button" className="er-btn" disabled={editSaving || !editText.trim()} onClick={() => saveEdit(line)}>
+                              {editSaving ? '…' : 'Lưu'}
+                            </button>
+                            <button type="button" className="portal-topic pf-chipbtn" disabled={editSaving} onClick={() => setEditingId(null)}>
+                              Hủy
+                            </button>
+                          </span>
+                        ) : (
+                          <span className={line.speaker ? 'portal-row__sub pf-chattext' : 'portal-row__text pf-chattext'}>
+                            {shown}
+                            {isEdited && <span className="portal-badge" style={{ marginLeft: 6 }} title="Bạn đã sửa lại câu này (bản STT gốc đã thay bằng bản sửa)">đã sửa</span>}
+                          </span>
+                        )}
+                        {mine?.pronunciation == null && isEdited && (
+                          <span className="portal-muted" style={{ fontSize: 12 }}>Câu đã sửa nên điểm cũ bị xóa — chấm lại ở mục My pronunciation scores.</span>
+                        )}
+                      </span>
+                      {!isEditing && (
+                        <span style={{ display: 'flex', gap: 4 }}>
+                          {mine && (
+                            <button
+                              type="button" className="portal-topic pf-chipbtn"
+                              title="Tự sửa lại câu này"
+                              aria-label={`Sửa: ${line.body.slice(0, 40)}`}
+                              onClick={() => { setEditingId(line.id); setEditText(shown); }}
+                              style={{ padding: '2px 8px' }}
+                            >
+                              <HiPencil size={14} />
+                            </button>
+                          )}
+                          <SpeakButton text={shown} voice={voice} />
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </section>

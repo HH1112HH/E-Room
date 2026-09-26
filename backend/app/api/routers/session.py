@@ -146,7 +146,11 @@ def get_session_messages(
 ) -> dict:
     db_session = get_my_session(db, session_id, request)
     transcript, count = build_transcript(db, db_session)
-    transcript_lines = [{"speaker": line["speaker"], "text": line["text"]} for line in session_lines(db, db_session)]
+    transcript_lines = [
+        {"speaker": line["speaker"], "text": line["text"],
+         "message_id": line.get("message_id"), "user_id": line.get("user_id")}
+        for line in session_lines(db, db_session, with_ids=True)
+    ]
 
     return {
         "session_id": session_id,
