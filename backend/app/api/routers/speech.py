@@ -32,6 +32,7 @@ from app.ai.speech_log import (
 )
 from app.api.dependencies import authorize_room_access, require_auth
 from app.database import get_session
+from app.log import get_logger
 from app.schemas.speech import (
     SpeechFeedbackRequest,
     SpeechLogUpdateSchema,
@@ -39,8 +40,12 @@ from app.schemas.speech import (
     SpeechUtterance,
 )
 from app.services import room_crud
+from app.services.pronunciation_score import pronunciation_score_crud
+from app.services.session import session_crud
 
 router = APIRouter()
+
+log = get_logger("app.api.routers.speech")
 
 
 def _get_room_or_404(db: Session, room_id: int, request: Request):
@@ -171,6 +176,20 @@ def rescore_utterance(
     if attempt_id is not None:
         score["attempt_id"] = attempt_id
     updated = attach_pronunciation(room_id, target_uid, message_id, score)
+    # Write-through DB (máy host tính, DB lưu kết quả cho đồng nhất).
+    # JSONL vẫn giữ làm log raw/audio. Lỗi DB không được làm rớt điểm vừa chấm.
+    try:
+        open_session = session_crud.get_open(db, user_id=target_uid, room_id=room_id)
+        pronunciation_score_crud.upsert_score(
+            db,
+            room_id=room_id,
+            user_id=target_uid,
+            message_id=message_id,
+            session_id=open_session.id if open_session else None,
+            score=score,
+        )
+    except Exception as error:
+        log.warning("score DB write-through failed | room=%s msg=%s err=%s", room_id, message_id, error)
     return SpeechUtterance(**(updated or {**entry, "pronunciation": score}))
 
 
@@ -219,4 +238,11 @@ def feedback_utterance(
     except Exception as error:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"Pronun feedback lỗi: {error}")
     updated = attach_feedback(room_id, target_uid, message_id, feedback)
+    # Write-through feedback vào DB (khớp dòng điểm đã lưu ở POST .../score).
+    try:
+        row = pronunciation_score_crud.find_for_utterance(db, room_id, target_uid, message_id)
+        if row is not None:
+            pronunciation_score_crud.attach_feedback(db, row, feedback)
+    except Exception as error:
+        log.warning("feedback DB write-through failed | room=%s msg=%s err=%s", room_id, message_id, error)
     return SpeechUtterance(**(updated or {**entry, "feedback": feedback}))

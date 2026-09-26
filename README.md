@@ -190,6 +190,7 @@ Xem đầy đủ ở `backend/.env.example`. Quan trọng nhất:
 | `TAVILY_API_KEY` | — | Web search (không có thì agent bỏ qua) |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | — | Login Google (cần OAuth Client ID, không dùng service-account) |
 | `PRONUN_BASE_URL` | — | Scorer remote (không có thì chấm local → heuristic) |
+| `SCORING_MAX_PARALLEL` | `1` | Số lượt chấm local chạy song song (1 = tuần tự, chống OOM máy host) |
 | `OPENROUTER_API_KEY` / `NEMOTRON_MODEL` | — | Nhận xét phát âm AI (thiếu key thì `/feedback` báo lỗi, điểm số vẫn chấm bình thường) |
 | `SPEECH_LOG_DIR` | `backend/log/speech` | Nơi lưu transcript + audio từng câu (runtime, không commit) |
 
@@ -214,8 +215,9 @@ Prefix `/api/v1`, chi tiết đầy đủ ở Swagger `http://localhost:8000/doc
 | GET | `/rooms/{room_id}/speech-logs` | Cookie | Toàn bộ room, group theo user |
 | GET | `/rooms/{room_id}/speech-logs/summary` | Cookie | Gộp sort theo giờ (cho mục summary) |
 | PATCH | `/rooms/{room_id}/speech-logs/{message_id}` | Cookie | Sửa `corrected_text` (reset điểm cũ) |
-| POST | `/rooms/{room_id}/speech-logs/{message_id}/score` | Cookie | Chấm phát âm 1 câu |
+| POST | `/rooms/{room_id}/speech-logs/{message_id}/score` | Cookie | Chấm phát âm 1 câu (máy host tính, lưu DB) |
 | POST | `/rooms/{room_id}/speech-logs/{message_id}/feedback` | Cookie | Nhận xét Nemotron (chỉ sau khi đã chấm) |
+| POST | `/sessions/{session_id}/feedback` | Cookie | AI feedbacks cả session (gọn, chỉ nêu phần sai; 409 nếu chưa chấm câu nào) |
 | GET/POST | `/messages/` | Cookie | Chat (`@ai` đầu tin nhắn → trigger agent) |
 | GET | `/users/{id}` `/users/me` | Cookie | Users |
 | — | `/documents/` `/notifications/` | Cookie | Upload tài liệu RAG, thông báo |

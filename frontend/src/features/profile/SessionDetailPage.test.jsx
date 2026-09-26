@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -8,15 +8,42 @@ vi.mock('../../lib/api', () => ({
   getTokens: () => ({ access: 'test-token', refresh: null }),
   API_BASE_URL: '/api/v1',
 }));
-vi.mock('../../app/AuthContext', () => ({
-  useAuth: () => ({ user: { id: 9, email: 'an@example.com', full_name: 'An Nguyen' } }),
+vi.mock('../chat/voiceApi', () => ({
+  getStoredVoice: () => 'af_heart',
+  storeVoice: vi.fn(),
+  speakToAudioUrl: vi.fn(async () => 'blob:mock'),
+  FALLBACK_VOICES: [{ id: 'af_heart', label: 'Heart' }],
+  fetchVoices: vi.fn(async () => [{ id: 'af_heart', label: 'Heart' }]),
 }));
 
 import { fetchJson } from '../../lib/api';
 import { SessionDetailPage } from './SessionDetailPage';
 
-let mockChat = [];
-fetchJson.mockImplementation(async (path) => {
+const SCORED_UTTERANCE = {
+  message_id: 7,
+  room_id: 3,
+  text: 'I think this is good',
+  corrected_text: 'I think this is good',
+  created_at: '2026-08-20T11:10:00Z',
+  pronunciation: {
+    score: 78.4,
+    method: 'local-v2',
+    scored_text: 'I think this is good',
+    details: { sounds: 74, stress: 81, fluency: 83, completeness: 100 },
+    report: {
+      scores: { sounds: 74, stress: 81, fluency: 83, completeness: 100, overall: 78.4 },
+      word_details: [
+        { word: 'think', score: 58.5, status: 'pronunciation_error', expected_ipa: '/θɪŋk/' },
+      ],
+      top_errors: [{ pattern: '/θ/ → /s/', count: 1, examples: ['think'] }],
+      warnings: [],
+    },
+  },
+  feedback: null,
+};
+
+let mockSpeech = [];
+fetchJson.mockImplementation(async (path, options = {}) => {
   if (path === '/sessions/101') {
     return {
       session: { id: 101, user_id: 9, room_id: 3, joined_at: '2026-08-20T11:00:00Z', left_at: '2026-08-20T11:30:00Z', duration_seconds: 1800, summary: null },
@@ -33,24 +60,22 @@ fetchJson.mockImplementation(async (path) => {
         { speaker: 'An Nguyen', text: 'hello there' },
         { speaker: 'An Nguyen', text: 'it was great' },
       ],
-      chat: mockChat,
+      chat: [],
+    };
+  }
+  if (path === '/rooms/3/speech-logs/me') return mockSpeech;
+  if (path === '/sessions/101/feedback' && (options.method || 'GET') === 'POST') {
+    return {
+      session_id: 101, scored_count: 1, total_utterances: 1,
+      feedback: {
+        summary: 'Fix /θ/ in think.',
+        error_words: [{ word: 'think', issue: '/θ/ → /s/', tip: 'Tongue between teeth.' }],
+        practice_plan: ['Drill think–sink ×10.', 'Re-read slowly ×5.', 'Re-score.'],
+      },
     };
   }
   return {};
 });
-
-function mockStreamSse(frames) {
-  const payload = frames.map((event) => `data: ${JSON.stringify(event)}\n\n`).join('');
-  global.fetch = vi.fn(async () => ({
-    ok: true,
-    body: new ReadableStream({
-      start(controller) {
-        controller.enqueue(new TextEncoder().encode(payload));
-        controller.close();
-      },
-    }),
-  }));
-}
 
 function renderDetail() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
@@ -67,75 +92,50 @@ function renderDetail() {
 }
 
 describe('SessionDetailPage', () => {
-  it('shows transcript and streams answers with thinking', async () => {
-    mockStreamSse([
-      { kind: 'thinking', text: 'Reading transcript…' },
-      { kind: 'token', text: 'They greeted' },
-      { kind: 'token', text: ' and praised.' },
-      { kind: 'done', message_count: 2 },
-    ]);
+  it('shows AI feedbacks panel and fetches session feedback', async () => {
     renderDetail();
-    expect(await screen.findByText('Old Session')).toBeTruthy();
-    expect(await screen.findByText(/hello there/)).toBeTruthy();
-
-    fireEvent.change(screen.getByLabelText('Ask about this session'), { target: { value: 'What was said?' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Ask' }));
-
-    expect(await screen.findByText('They greeted and praised.')).toBeTruthy();
-    expect(global.fetch).toHaveBeenCalledWith(
-      '/api/v1/sessions/101/chat/stream',
-      expect.objectContaining({ method: 'POST' }),
-    );
+    expect(await screen.findByText('AI feedbacks')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Get AI feedback' }));
+    expect(await screen.findByText('Fix /θ/ in think.')).toBeTruthy();
+    expect(await screen.findByText(/Tongue between teeth/)).toBeTruthy();
+    expect(fetchJson).toHaveBeenCalledWith('/sessions/101/feedback', expect.objectContaining({ method: 'POST' }));
   });
 
-  it('asks via quick prompt chips', async () => {
-    mockStreamSse([{ kind: 'token', text: 'They greeted and praised.' }, { kind: 'done', message_count: 2 }]);
-    renderDetail();
-    fireEvent.click(await screen.findByRole('button', { name: 'What did we decide?' }));
-    expect(await screen.findByText('They greeted and praised.')).toBeTruthy();
-  });
-
-  it('restores saved chat history after reload', async () => {
-    mockChat = [{ role: 'user', text: 'Old question?' }, { role: 'ai', text: 'Old answer.' }];
-    try {
-      renderDetail();
-      expect(await screen.findByText('Old question?')).toBeTruthy();
-      expect(await screen.findByText('Old answer.')).toBeTruthy();
-    } finally {
-      mockChat = [];
-    }
-  });
-
-  it('ignores colons inside message text when listing speakers', async () => {
+  it('shows 409-style error when nothing scored', async () => {
     const fallback = fetchJson.getMockImplementation();
-    fetchJson.mockImplementation(async (path) => {
-      if (path === '/sessions/101/messages') {
-        return {
-          session_id: 101,
-          message_count: 2,
-          transcript: 'You: hi\nAI: Key points:\n- **Item one:** done',
-          transcript_lines: [
-            { speaker: 'An Nguyen', text: 'hi' },
-            { speaker: 'AI', text: 'Key points:\n- **Item one:** done\nSee https://x.y/z for more' },
-          ],
-          chat: [],
-        };
-      }
-      return fallback(path);
+    fetchJson.mockImplementation(async (path, options = {}) => {
+      if (path === '/sessions/101/feedback') throw new Error('Chưa có câu nào được chấm điểm trong session này');
+      return fallback(path, options);
     });
     try {
       renderDetail();
-      expect(await screen.findByText('An Nguyen, AI')).toBeTruthy();
-      expect(await screen.findByText(/Item one/)).toBeTruthy();
+      fireEvent.click(await screen.findByRole('button', { name: 'Get AI feedback' }));
+      expect(await screen.findByText(/Chưa có câu nào được chấm điểm/)).toBeTruthy();
     } finally {
       fetchJson.mockImplementation(fallback);
     }
   });
 
-  it('shows the server error message when the stream fails', async () => {
-    mockStreamSse([{ kind: 'error', text: 'No messages in this session yet' }]);
+  it('lists my scored utterances with hidden word stats by default', async () => {
+    mockSpeech = [SCORED_UTTERANCE];
+    try {
+      renderDetail();
+      expect(await screen.findByText('My pronunciation scores')).toBeTruthy();
+      // Tổng hiện, bảng từng chữ ẩn.
+      expect(await screen.findByText('78.4 điểm')).toBeTruthy();
+      expect(screen.queryByText('/θɪŋk/')).toBeNull();
+      const card = screen.getByText('I think this is good').closest('div');
+      fireEvent.click(within(card.parentElement.parentElement).getByRole('button', { name: 'Thống kê điểm số' }));
+      expect(await screen.findByText('/θɪŋk/')).toBeTruthy();
+    } finally {
+      mockSpeech = [];
+    }
+  });
+
+  it('shows voice picker and speaker buttons in What was said', async () => {
     renderDetail();
-    fireEvent.click(await screen.findByRole('button', { name: 'What did we decide?' }));
-    expect(await screen.findByText('No messages in this session yet')).toBeTruthy();
+    expect(await screen.findByText('What was said')).toBeTruthy();
+    expect(screen.getByLabelText('Choose AI voice')).toBeTruthy();
+    expect(screen.getAllByLabelText(/Nghe:/).length).toBe(2);
   });
 });

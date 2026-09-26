@@ -83,3 +83,23 @@ await fetchJson(`/rooms/${roomId}/speech-logs/${messageId}/feedback`, { method: 
 ```
 
 `PATCH .../speech-logs/{message_id}` khi user sửa câu. `ReadingScoreCard` giữ nguyên — nó chỉ đọc `utterance.pronunciation` / `utterance.feedback` theo đúng schema `SpeechUtterance`.
+
+## 5. Session wiring + DB + chấm tuần tự (v2.1)
+
+- **Máy host tự tính**: scorer local (wav2vec2 + XLSR phoneme) chạy trên backend máy host.
+  `PRONUN_BASE_URL` để trống. TTS (`:8002`) và STT (`:8001`) chạy Docker cùng máy host.
+- **Chấm tuần tự**: `threading.Semaphore(SCORING_MAX_PARALLEL=1)` quanh `score_local`
+  (`app/ai/pronunciation.py`) — 3-4 người bấm chấm cùng lúc thì xếp hàng, không OOM.
+  Frontend khóa các nút chấm khác khi đang có 1 lượt chạy (`scoreDisabled`).
+- **Điểm vào DB**: bảng `pronunciation_scores` (`app/models/pronunciation_score.py`,
+  tự tạo bởi `create_all`). POST `.../score` upsert (chấm lại cùng câu không đẻ dòng mới,
+  reset feedback cũ); POST `.../feedback` điền `feedback_json`. JSONL giữ làm log raw/audio.
+  Lỗi ghi DB không làm rớt điểm vừa chấm (log warning).
+- **Session**: `SessionDetailPage` đọc `GET /rooms/{id}/speech-logs/me`, lọc theo
+  `joined_at–left_at`, render `ReadingScoreCard` từng câu (mục *My pronunciation scores*).
+- **AI feedbacks**: `POST /sessions/{id}/feedback` — gộp câu đã chấm trong session (đọc DB,
+  fallback JSONL cho điểm cũ), gửi Nemotron với `SESSION_FEEDBACK_PROMPT` (gọn ~120 từ,
+  chỉ nêu từ sai/mất hơi + tip + 3 bước luyện). Chưa chấm câu nào → 409.
+- **Nghe mẫu**: mỗi dòng *What was said* có nút loa (Kokoro `POST /tts/speak`, cache theo
+  giọng+câu) + `VoicePicker` 4 giọng (Heart/Adam/Emma/George). Giọng chỉ ảnh hưởng phần
+  nghe, **không đổi điểm** (scorer không so sánh audio TTS — DTW vs Kokoro hoãn v1.1).

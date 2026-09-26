@@ -53,6 +53,9 @@ export function ReadingScoreCard({
   onFeedback,
   scoring = false,
   feedbackLoading = false,
+  // scoreDisabled: parent khóa khi đang có 1 lượt chấm khác chạy (chấm tuần tự,
+  // tránh dồn tải máy host khi 3-4 người bấm cùng lúc).
+  scoreDisabled = false,
 }) {
   // utterance: SpeechUtterance-like { text, corrected_text, pronunciation, feedback }
   // pronunciation: { score, method, details:{sounds,stress,fluency,completeness,...}, report:{scores,word_details,phonemes,top_errors,warnings} }
@@ -78,7 +81,7 @@ export function ReadingScoreCard({
           Chưa chấm. Sửa câu đúng ý bạn rồi bấm <b>Chấm điểm AI</b> — điểm chấm trên toàn bộ
           bản bạn đã sửa, dùng audio ĐẦU–CUỐI của lượt nói.
         </p>
-        <button type="button" className="er-btn" disabled={scoring} onClick={onScore}>
+        <button type="button" className="er-btn" disabled={scoring || scoreDisabled} onClick={onScore} title={scoreDisabled ? 'Đang có 1 lượt chấm chạy — đợi xong rồi chấm tiếp' : ''}>
           {scoring ? 'Đang chấm…' : 'Chấm điểm AI'}
         </button>
       </div>

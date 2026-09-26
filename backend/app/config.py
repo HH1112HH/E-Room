@@ -109,6 +109,9 @@ class Settings:
     # May AI chay `docker compose -f docker-compose.stt.yml up -d` (service `pronun`).
     pronun_base_url: str = os.getenv("PRONUN_BASE_URL", "")
     pronun_timeout: float = float(os.getenv("PRONUN_TIMEOUT", 300.0))
+    # May host web yeu (3-4 nguoi cham cung luc): serialize inference local
+    # de khong spike RAM/VRAM. 1 = tuan tu hoan toan (khuyen nghi).
+    scoring_max_parallel: int = max(1, int(os.getenv("SCORING_MAX_PARALLEL", "1") or 1))
 
     # ─── Scorer local (ruot scorer port vao backend: wav2vec2 + phoneme GOP) ──
     # May chay backend gánh compute. Model tai 1 lan vao HF cache.

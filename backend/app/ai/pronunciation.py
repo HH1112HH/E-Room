@@ -8,6 +8,8 @@ không đổi nên caller (speech.py) không phải sửa gì.
 from __future__ import annotations
 
 import json
+import threading
+import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -17,6 +19,13 @@ from app.config import settings
 from app.log import get_logger
 
 log = get_logger("app.ai.pronunciation")
+
+# Cổng chấm local: serialize inference wav2vec2/XLSR để máy host web không
+# quá tải khi 3-4 người bấm chấm cùng lúc (model đã cache, chỉ inference
+# là nặng — xem app/scoring/ctc.py + phoneme_gop.py). Rescore endpoint là
+# sync def (chạy trong worker thread) nên threading.Semaphore là đủ, không
+# cần Celery cho tới khi tải cao hơn (lúc đó offload qua PRONUN_BASE_URL).
+_scoring_gate = threading.Semaphore(max(1, settings.scoring_max_parallel))
 
 
 def heuristic_score(
@@ -82,7 +91,10 @@ def score_local(
     language: str = "en",
 ) -> Dict[str, Any]:
     """Chấm bằng ruột scorer trong backend (app/scoring): full-audio 1 pass,
-    phoneme GOP + 4 tiêu chí. Raise khi model/audio lỗi."""
+    phoneme GOP + 4 tiêu chí. Raise khi model/audio lỗi.
+
+    Xếp hàng qua _scoring_gate: lượt chấm sau đợi lượt trước xong (tuần tự
+    theo SCORING_MAX_PARALLEL) thay vì forward song song gây OOM."""
     from app.scoring.ctc import score_utterance
     from app.scoring.pipeline import score_attempt_v2
     from app.speech.audio import load_wav_16k
@@ -90,14 +102,19 @@ def score_local(
     raw = Path(audio_path).read_bytes()
     if len(raw) > 100 * 1024 * 1024:
         raise ValueError("Audio > 100MB.")
-    wav, sr = load_wav_16k(raw)
-    r = score_utterance(wav, int(sr), reference_text)
-    if "error" in r and "words" not in r:
-        raise RuntimeError(f"local scorer: {r.get('error')}")
-    report = score_attempt_v2(
-        wav, sr, "", reference_text, "free_speaking", None, "en-US",
-        None, r.get("words", []), r.get("greedy_decoded", ""),
-    )
+    queued_at = time.monotonic()
+    with _scoring_gate:
+        waited = time.monotonic() - queued_at
+        if waited > 1.0:
+            log.info("scoring queued %.1fs (nhieu nguoi cham cung luc)", waited)
+        wav, sr = load_wav_16k(raw)
+        r = score_utterance(wav, int(sr), reference_text)
+        if "error" in r and "words" not in r:
+            raise RuntimeError(f"local scorer: {r.get('error')}")
+        report = score_attempt_v2(
+            wav, sr, "", reference_text, "free_speaking", None, "en-US",
+            None, r.get("words", []), r.get("greedy_decoded", ""),
+        )
     if "error" in report and "scores" not in report:
         raise RuntimeError(f"local scorer: {report.get('error')}")
     return _report_to_hook(report, "local-v2")
@@ -156,17 +173,20 @@ def request_pronun_feedback(
     model: str = "",
     temperature: float = 0.6,
     max_tokens: int = 1200,
+    system_prompt: str = "",
+    user_label: str = "scoring_report",
 ) -> Dict[str, Any]:
     """Xin nhận xét Nemotron: local (app/llm) trước, Pronun service sau.
     Chỉ gửi ScoringReport (không audio, không tự tính điểm — đúng luật đã khóa).
-    Raise khi cả hai đều lỗi."""
+    system_prompt != "" cho phép caller (vd session feedback) dùng prompt gọn
+    chuyên biệt thay vì prompt mặc định. Raise khi cả hai đều lỗi."""
     import asyncio
 
     from app.llm.nemotron_client import generate_feedback
 
     try:
         out = asyncio.run(generate_feedback(
-            scoring_report, api_key, model, temperature, max_tokens,
+            scoring_report, api_key, model, temperature, max_tokens, system_prompt, user_label,
         ))
     except Exception as error:
         out = {"error": f"local feedback: {error}"}
