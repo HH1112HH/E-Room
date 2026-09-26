@@ -125,8 +125,8 @@ E-Room/
 
 | Phe | Máy | Lệnh |
 |---|---|---|
-| Whisper (bạn) | máy có GPU NVIDIA | `scripts\stt-up.bat` → server GPU lên ở `:8001` |
-| Full stack (bạn của bạn) | máy còn lại | `scripts\dev.bat`, rồi sửa `backend/.env.docker`: `STT_PROVIDER=whisper_server`, `STT_SERVER_BASE_URL=http://100.x.y.z:8001/v1` (IP Tailscale của máy whisper, xem bằng `tailscale ip -4`) |
+| AI: STT + TTS (bạn) | máy có GPU NVIDIA | `scripts\stt-up.bat` (lên `:8001` + `:8002`), rồi `scripts\ai-share.bat` để mở firewall + in URL Tailscale |
+| Full stack (bạn của bạn) | máy còn lại | `scripts\dev.bat`, rồi sửa `backend/.env.docker` theo đúng khối `ai-share.bat` in ra: `STT_PROVIDER=whisper_server`, `STT_SERVER_BASE_URL=http://100.x.y.z:8001/v1`, `TTS_BASE_URL=http://100.x.y.z:8002/v1`, `PRONUN_BASE_URL=` (trống = máy đó tự chấm local), xong `docker restart api` |
 
 > 2 máy nối nhau qua **Tailscale** (cùng 1 tài khoản/tailnet): IP `100.x` là tĩnh vĩnh viễn, không lo DHCP đổi số, không cần mở port router hay set IP tĩnh. Chỉ cần cả 2 máy đều `tailscale up` là thấy nhau.
 
