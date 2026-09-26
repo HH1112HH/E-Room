@@ -1,7 +1,21 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { ReadingScoreCard } from './ReadingScoreCard';
-import { DEMO_FEEDBACK, DEMO_PRONUNCIATION, DEMO_TEXT } from './readingDemoData';
+
+const DEMO_TEXT = 'I think this is the best thing we have done';
+const DEMO_PRONUNCIATION = {
+  score: 78.4, method: 'local-v2', scored_text: DEMO_TEXT,
+  details: { sounds: 74.2, stress: 81.0, fluency: 83.5, completeness: 100.0 },
+  report: {
+    scores: { sounds: 74.2, stress: 81.0, fluency: 83.5, completeness: 100.0, overall: 78.4 },
+    word_details: [
+      { word: 'think', score: 58.5, status: 'pronunciation_error', expected_ipa: '/θɪŋk/' },
+    ],
+    top_errors: [{ pattern: '/θ/ → /s/', count: 1, examples: ['think'] }],
+    warnings: [],
+  },
+};
+const DEMO_FEEDBACK = { summary: 'Fix /θ/ in think.', error_words: [], practice_plan: [] };
 
 describe('ReadingScoreCard', () => {
   it('hiện nút chấm khi chưa có điểm', () => {

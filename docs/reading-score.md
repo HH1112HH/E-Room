@@ -58,24 +58,20 @@ Component: `frontend/src/features/profile/ReadingScoreCard.jsx`
 4. Chấm lại → reset cả 2 panel về đóng (ẩn mặc định).
 5. Bản heuristic (không `word_details`) → bảng hiện dòng "Chưa có chi tiết từng chữ".
 
-## 3. Demo
+## 3. Demo & test
 
-- Trang: `frontend/src/app/pages/ReadingDemoPage.jsx` — route **`/reading-demo`** (không cần backend, scoring/feedback giả lập 1.2s).
-- Dữ liệu mẫu: `frontend/src/features/profile/readingDemoData.js`
-  (câu *"I think this is the best thing we have ever done"*, lỗi mẫu `/θ/ → /s/` ở think/thing, 1 chữ `no_evidence`).
-- Test: `ReadingScoreCard.test.jsx` — 4 case (chưa chấm / ẩn mặc định / mở bảng / panel feedback độc lập).
+- Test: `ReadingScoreCard.test.jsx` — 4 case (chưa chấm / ẩn mặc định / mở bảng / panel feedback độc lập), dữ liệu mẫu inline trong file test.
 - Chạy:
 
 ```bash
 cd frontend
-npm run dev          # mở https://localhost:3000/reading-demo
 npx vitest run src/features/profile/ReadingScoreCard.test.jsx
 npm run build        # verify build
 ```
 
-## 4. Gắn backend thật (việc còn lại)
+## 4. Gắn backend (đã gắn ở Assessment)
 
-Trong `ReadingDemoPage` thay 2 handler giả lập bằng:
+`SessionScoringView` gọi thật:
 
 ```js
 await fetchJson(`/rooms/${roomId}/speech-logs/${messageId}/score`, { method: 'POST' });

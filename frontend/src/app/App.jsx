@@ -18,7 +18,6 @@ const OnboardingWizard = lazy(() => import('../features/onboarding/OnboardingWiz
 const BlogPage = lazy(() => import('./pages/BlogPage').then(m => ({ default: m.BlogPage })));
 const BlogDetailPage = lazy(() => import('./pages/BlogDetailPage').then(m => ({ default: m.BlogDetailPage })));
 const ContactPage = lazy(() => import('./pages/ContactPage').then(m => ({ default: m.ContactPage })));
-const ReadingDemoPage = lazy(() => import('./pages/ReadingDemoPage').then(m => ({ default: m.ReadingDemoPage })));
 
 function PageLoader() {
   return (
@@ -49,7 +48,6 @@ export function App() {
             <Route path="/blog" element={<AppShell><BlogPage /></AppShell>} />
             <Route path="/blog/:slug" element={<AppShell><BlogDetailPage /></AppShell>} />
             <Route path="/contact" element={<AppShell><ContactPage /></AppShell>} />
-            <Route path="/reading-demo" element={<AppShell><ReadingDemoPage /></AppShell>} />
 
             {/* Onboarding */}
             <Route path="/onboarding" element={<AuthGuard><OnboardingWizard /></AuthGuard>} />

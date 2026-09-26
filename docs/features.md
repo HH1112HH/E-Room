@@ -53,7 +53,7 @@ Video grid lọc `ai_*`; max 4 seats chỉ tính người thật.
 - Luồng `raw → sửa → chấm → nhận xét`: STT lưu raw (`pronunciation=None`) → user sửa `corrected_text` (`PATCH`, sửa sau khi chấm thì reset điểm) → `POST .../score` chấm trên bản đã sửa + audio ĐẦU–CUỐI lượt nói → `POST .../feedback` xin góp ý AI (LLM local, chưa chấm thì `409`).
 - Kết quả: điểm tổng + 4 tiêu chí (Sounds / Stress / Fluency / Completeness). **Điểm từng chữ ẩn mặc định** — bấm **Thống kê điểm số** mới mở bảng riêng (Chữ · Điểm · Trạng thái · IPA + lỗi âm nổi bật); nút **Nhận xét AI** độc lập.
 - Máy host tự tính (wav2vec2 + phoneme GOP local), chấm tuần tự (`SCORING_MAX_PARALLEL=1`) chống OOM khi 3-4 người bấm dồn. Điểm lưu DB (`pronunciation_scores`), JSONL giữ làm log raw/audio.
-- Demo không cần backend: `/reading-demo`. Chi tiết: `reading-score.md`.
+- Xem trực tiếp ở mục Assessment. Chi tiết: `reading-score.md`.
 
 ## 7. Assessment (chấm điểm theo session)
 

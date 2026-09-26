@@ -50,6 +50,13 @@ function inWindow(iso, startIso, endIso) {
 // Cache object URL theo giọng + câu để bấm loa lần 2 không gọi TTS lại.
 const ttsCache = new Map();
 
+// Cụm nút icon đồng cỡ cho mỗi dòng transcript (loa + bút chì).
+const iconBtn = {
+  width: 28, height: 28, padding: 0,
+  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+};
+const rowActions = { display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 };
+
 function SpeakButton({ text, voice }) {
   const [state, setState] = useState('idle'); // idle | loading | playing | error
   async function play() {
@@ -80,7 +87,7 @@ function SpeakButton({ text, voice }) {
       disabled={state === 'loading'}
       title={state === 'error' ? 'TTS chưa sẵn sàng (server Kokoro :8002)' : 'Nghe mẫu đọc đúng'}
       aria-label={`Nghe: ${String(text || '').slice(0, 40)}`}
-      style={{ padding: '2px 8px' }}
+      style={iconBtn}
     >
       <HiSpeakerWave size={14} /> {state === 'loading' ? '…' : state === 'playing' ? '▶' : ''}
     </button>
@@ -422,14 +429,14 @@ export function SessionScoringView({ sessionId: propSessionId }) {
                         )}
                       </span>
                       {!isEditing && (
-                        <span style={{ display: 'flex', gap: 4 }}>
+                        <span style={rowActions}>
                           {mine && (
                             <button
                               type="button" className="portal-topic pf-chipbtn"
                               title="Tự sửa lại câu này"
                               aria-label={`Sửa: ${line.body.slice(0, 40)}`}
                               onClick={() => { setEditingId(line.id); setEditText(shown); }}
-                              style={{ padding: '2px 8px' }}
+                              style={iconBtn}
                             >
                               <HiPencil size={14} />
                             </button>
